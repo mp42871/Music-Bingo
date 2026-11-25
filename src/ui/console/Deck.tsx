@@ -10,7 +10,7 @@ export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, cl
   const spinning = cs.phase === 'playing';
   const clipPct = Math.min(100, (cs.clipElapsedMs / Math.max(1, clipMs)) * 100);
   const status = {
-    idle: 'Ready', loading: 'Cueing…', playing: 'On air', paused: 'Paused', gap: cs.gapRemainingMs > 0 ? `Next in ${Math.ceil(cs.gapRemainingMs / 1000)}` : 'Waiting for you', done: 'All songs played',
+    idle: 'Ready', loading: 'Cueing…', playing: 'On air', manual: 'Play it yourself', paused: 'Paused', gap: cs.gapRemainingMs > 0 ? `Next in ${Math.ceil(cs.gapRemainingMs / 1000)}` : 'Waiting for you', done: 'All songs played',
   }[cs.phase];
   return (
     <div className="panel relative overflow-hidden p-5">

@@ -2,14 +2,15 @@ import { computeStartMs } from '../core/clip';
 import type { Call, ClipSettings, Song } from '../core/types';
 
 export interface PlaybackPort {
-  play(uri: string, positionMs: number): Promise<void>;
+  /** Resolves 'manual' when the host must play this song themselves (e.g. in the Spotify app). */
+  play(uri: string, positionMs: number): Promise<void | 'manual'>;
   pause(): Promise<void>;
   resume(): Promise<void>;
   seek(ms: number): Promise<void>;
   setVolume(pct: number): Promise<void>;
 }
 
-export type Phase = 'idle' | 'loading' | 'playing' | 'paused' | 'gap' | 'done';
+export type Phase = 'idle' | 'loading' | 'playing' | 'manual' | 'paused' | 'gap' | 'done';
 
 export interface ControllerState {
   phase: Phase;
@@ -50,6 +51,8 @@ export class GameController {
   /** Order position of the song currently loaded (may be behind index after a replay/previous). */
   private cursor = -1;
   private detached = false;
+  /** A manual song waiting for the host to confirm it was played. */
+  private pendingManual: string | null = null;
 
   constructor(
     private port: PlaybackPort,
@@ -120,9 +123,10 @@ export class GameController {
     const start = record || id !== this.s.currentId ? computeStartMs(song, this.settings, this.rand) : this.s.clipStartMs;
     this.s = { ...this.s, phase: 'loading', currentId: id, clipStartMs: start, positionMs: start, clipElapsedMs: 0, gapRemainingMs: 0, pausedFrom: undefined };
     this.emit();
+    let result: void | 'manual';
     try {
       if (this.settings.fadeSec > 0) { this.lastSentVolume = -1; await this.port.setVolume(Math.round(this.targetVolume() * 0.05)).catch(() => {}); }
-      await this.port.play(song.uri, start);
+      result = await this.port.play(song.uri, start);
     } catch (e) {
       if (this.detached) return 'fatal';
       const msg = e instanceof Error ? e.message : String(e);
@@ -145,6 +149,14 @@ export class GameController {
     if (this.detached) return 'fatal';
     this.lastTick = this.now();
     this.cursor = index;
+    if (result === 'manual') {
+      this.manualAt = index;
+      this.s.phase = 'manual';
+      if (record) { this.s.index = index; this.pendingManual = this.called.has(id) ? null : id; }
+      this.emit();
+      return 'ok';
+    }
+    this.manualAt = -1;
     this.s.phase = 'playing';
     if (record) {
       this.s.index = index;
@@ -158,8 +170,26 @@ export class GameController {
     return 'ok';
   }
 
+  /** Host confirms the manual song was played: record it and wait for Next. */
+  markPlayed() {
+    if (this.detached || this.s.phase !== 'manual') return;
+    this.recordPending();
+    this.s = { ...this.s, phase: 'gap', gapRemainingMs: 0 };
+    this.emit();
+  }
+
+  private recordPending() {
+    const id = this.pendingManual;
+    this.pendingManual = null;
+    if (id && !this.called.has(id)) {
+      this.called.add(id);
+      this.events.onCall({ songId: id, at: Date.now() });
+    }
+  }
+
   private async advance(): Promise<void> {
     if (this.busy || this.detached) return;
+    this.recordPending();
     this.busy = true;
     try {
       for (let tries = 0; tries < MAX_SKIPS; tries++) {
@@ -291,6 +321,9 @@ export class GameController {
     this.emit();
   }
 
+  private manualAt = -1;
+  private cursorIsManual() { return this.manualAt === this.cursor; }
+
   tick(): void {
     const t = this.now();
     const dt = Math.max(0, t - (this.lastTick ?? t));
@@ -310,9 +343,13 @@ export class GameController {
       }
       this.pushVolume();
       this.emit();
+    } else if (this.s.phase === 'manual') {
+      this.s.clipElapsedMs += dt;
+      this.s.positionMs += dt;
+      this.emit();
     } else if (this.s.phase === 'gap') {
       this.gapElapsed += dt;
-      if (!this.settings.autoAdvance) return;
+      if (!this.settings.autoAdvance || this.cursorIsManual()) return;
       this.s.gapRemainingMs = Math.max(0, this.s.gapRemainingMs - dt);
       this.emit();
       if (this.s.gapRemainingMs <= 0) void this.advance();

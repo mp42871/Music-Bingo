@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { liveWinners } from '../../core/check';
 import { patternName } from '../../core/patterns';
-import { currentRound, roundMasks, spotifyPort, useGame } from '../../game/store';
+import { currentRound, hybridPort, roundMasks, useGame } from '../../game/store';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Deck } from '../console/Deck';
 import { DevicePicker } from '../console/DevicePicker';
@@ -81,7 +81,7 @@ export default function Console() {
     <main className="mx-auto max-w-7xl px-4 py-5">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <h1 className="mr-auto font-display text-2xl md:text-3xl">{game.name}</h1>
-        {g.makePort === spotifyPort && <DevicePicker onError={(m) => useGame.setState((s) => ({ errors: [...s.errors.slice(-3), m] }))} />}
+        {g.makePort === hybridPort && <DevicePicker onError={(m) => useGame.setState((s) => ({ errors: [...s.errors.slice(-3), m] }))} />}
         <button type="button" className="btn" onClick={() => window.open(`${window.location.pathname}#/audience`, 'mb-audience', 'width=1280,height=720')}>Open screen for players</button>
         <button type="button" className="btn btn-b" onClick={() => setChecking('open')}>Check a card</button>
       </div>

@@ -7,7 +7,7 @@ const songs = Array.from({ length: 5 }, (_, i) => song(i, { durationMs: 300_000 
 const byId = new Map(songs.map((s) => [s.id, s]));
 const order = songs.map((s) => s.id);
 
-function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = [], fatal = false) {
+function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = [], fatal = false, manualIds: string[] = []) {
   let t = 0;
   const plays: { uri: string; pos: number }[] = [];
   const volumes: number[] = [];
@@ -15,6 +15,7 @@ function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = [], fat
     play: vi.fn(async (uri: string, pos: number) => {
       if (failIds.some((id) => uri.endsWith(id))) throw Object.assign(new Error('unavailable'), fatal ? { fatal: true } : {});
       plays.push({ uri, pos });
+      if (manualIds.some((id) => uri.endsWith(id))) return 'manual' as const;
     }),
     pause: vi.fn(async () => {}),
     resume: vi.fn(async () => {}),
@@ -215,5 +216,35 @@ test('detached controller stops playback and emits nothing more', async () => {
   expect(h.port.pause).toHaveBeenCalled();
   await h.advance(5_000);
   await h.c.next();
+  expect(h.calls).toHaveLength(1);
+});
+
+test('manual song is not recorded until Played', async () => {
+  const h = setup({ clipSec: 5 }, [], false, ['s0']);
+  await h.c.start();
+  expect(h.state.phase).toBe('manual');
+  expect(h.calls).toHaveLength(0);
+  h.c.markPlayed();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0']);
+  expect(h.state.phase).toBe('gap');
+});
+
+test('next on a manual song records it once then advances', async () => {
+  const h = setup({}, [], false, ['s0']);
+  await h.c.start();
+  await h.c.next();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0', 's1']);
+  h.c.markPlayed();
+  expect(h.calls).toHaveLength(2);
+});
+
+test('manual songs never auto-advance', async () => {
+  const h = setup({ clipSec: 5, gapSec: 1 }, [], false, ['s0']);
+  await h.c.start();
+  await h.advance(60_000);
+  expect(h.state.phase).toBe('manual');
+  expect(h.state.clipElapsedMs).toBeGreaterThan(0);
+  h.c.markPlayed();
+  await h.advance(60_000);
   expect(h.calls).toHaveLength(1);
 });

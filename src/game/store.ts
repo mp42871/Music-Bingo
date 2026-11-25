@@ -10,6 +10,11 @@ import { getAccessToken } from '../spotify/auth';
 import type { SpotifyError } from '../spotify/api';
 import { loadPlayer } from '../spotify/sdk';
 import { openChannel, type AudienceMessage } from './broadcast';
+import { createHybridPort } from './hybridPort';
+import { createFilePlayer } from '../audio/filePlayer';
+import { getAudioBlob } from '../db/audio';
+import { reportNetworkFailure, useNet } from '../app/online';
+import type { Source } from '../core/offline';
 import { GameController, type ControllerState, type PlaybackPort } from './controller';
 
 export type PortFactory = () => Promise<{ port: PlaybackPort; deviceName: string }>;
@@ -64,6 +69,22 @@ export const spotifyPort = (): PlaybackPort => {
   };
 };
 
+let filePlayer: ReturnType<typeof createFilePlayer> | null = null;
+
+/** Default port: per song, Spotify / music file / manual depending on the game's music source and the connection. */
+export const hybridPort = (): PlaybackPort => createHybridPort({
+  spotify: spotifyPort(),
+  file: (filePlayer ??= createFilePlayer()),
+  getSong: (uri) => [...useGame.getState().songs.values()].find((s) => s.uri === uri),
+  getBlob: getAudioBlob,
+  policy: () => useGame.getState().game?.settings.source ?? 'auto',
+  online: () => useNet.getState().online,
+  spotifyReady: () => useSpotify.getState().connected && !!getDevice(),
+  onSource: (source) => useGame.setState({ source }),
+  onNotice: (m) => useGame.setState((s) => ({ errors: [...s.errors.slice(-3), m] })),
+  onNetworkFailure: reportNetworkFailure,
+});
+
 interface GameStore {
   game: Game | null;
   cardSet: CardSet | null;
@@ -73,6 +94,7 @@ interface GameStore {
   revealed: boolean;
   showQr: boolean;
   errors: string[];
+  source: Source | null;
   makePort: () => PlaybackPort;
   load(id: string): Promise<boolean>;
   unload(): void;
@@ -98,8 +120,8 @@ export function songLabel(s: Song | undefined) {
 }
 
 export const useGame = create<GameStore>((set, get) => ({
-  game: null, cardSet: null, songs: new Map(), ctrl: null, cs: null, revealed: false, showQr: false, errors: [],
-  makePort: spotifyPort,
+  game: null, cardSet: null, songs: new Map(), ctrl: null, cs: null, revealed: false, showQr: false, errors: [], source: null,
+  makePort: hybridPort,
 
   async load(id) {
     get().ctrl?.detach();
@@ -107,6 +129,7 @@ export const useGame = create<GameStore>((set, get) => ({
     if (!game) return false;
     const cardSet = (await getCardSet(game.cardSetId)) ?? null;
     const songs = new Map(game.pool.songs.map((s) => [s.id, s]));
+    set({ songs });
     const ctrl = new GameController(get().makePort(), [...game.callOrder], songs, game.settings, {
       onState: (cs) => { set({ cs }); broadcast(); },
       onCall: (c) => {
