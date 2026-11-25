@@ -99,7 +99,7 @@ export default function PoolEditor() {
       </div>
       {note && <p role="status" className="mb-4 rounded-lg border border-deck-a/40 bg-deck-a/10 px-3 py-2">{note}</p>}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,26rem)_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <section className="panel h-fit p-4 lg:sticky lg:top-20">
           <h2 className="mb-3 text-lg font-bold">Find songs</h2>
           <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
@@ -124,7 +124,7 @@ export default function PoolEditor() {
             {health.length === 0
               ? <p className="text-sm text-dim">Categories become card columns (like “80s | 90s | Country”) or a whole-card theme. Pick a quick category or add your own.</p>
               : (
-                <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                   {health.map(({ c, n }) => {
                     const pct = Math.min(100, (n / GOOD_PER_COLUMN) * 100);
                     const color = n < MIN_PER_COLUMN ? 'bg-deck-b' : n < GOOD_PER_COLUMN ? 'bg-peak' : 'bg-ok';

@@ -68,7 +68,7 @@ export default function Home() {
       {games.length > 0 && (
         <section className="mb-8">
           <h2 className="mb-3 text-lg font-bold">Pick up where you left off</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((g) => (
               <li key={g.id}><Link to={`/console/${g.id}`} className="panel block p-4 hover:border-deck-a">
                 <div className="font-semibold">{g.name}</div>
@@ -85,7 +85,7 @@ export default function Home() {
           <p className="text-dim">You need printed cards first. <Link to="/designer" className="text-deck-a underline">Make cards</Link></p>
         ) : (
           <div className="grid gap-5">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Game name"><input value={name} onChange={(e) => setName(e.target.value)} /></Field>
               <Field label="Card set" hint={set ? `${set.cards.length} cards · ${songCount} songs` : undefined}>
                 <select value={setId} onChange={(e) => setSetId(e.target.value)}>
@@ -93,7 +93,7 @@ export default function Home() {
                 </select>
               </Field>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="First round pattern">
                 <select value={pattern} onChange={(e) => setPattern(e.target.value)}>
                   {PATTERNS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

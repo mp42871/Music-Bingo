@@ -55,7 +55,7 @@ function GameDetail({ game, onDelete }: { game: Game; onDelete(): void }) {
         <button type="button" className="btn" onClick={() => download(`${game.name}.json`, JSON.stringify(game, null, 2))}>Export JSON</button>
         <button type="button" className="btn text-dim" onClick={onDelete}>Delete</button>
       </div>
-      <div className="mb-5 grid gap-2 sm:grid-cols-2">
+      <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {game.rounds.map((r, i) => (
           <div key={i} className="rounded-xl border border-rail p-3">
             <div className="font-semibold">Round {i + 1} · {patternName(r.patternId)}</div>

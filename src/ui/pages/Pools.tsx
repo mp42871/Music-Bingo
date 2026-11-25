@@ -41,7 +41,7 @@ export default function Pools() {
           <button type="button" className="btn btn-a" onClick={() => create()}>Make your first playlist</button>
         </div>
       )}
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {pools?.map((p) => {
           const art = p.songs.filter((s) => s.artUrl).slice(0, 4);
           return (

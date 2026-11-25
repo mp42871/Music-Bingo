@@ -75,7 +75,7 @@ export function ClaimChecker({ game, cardSet, initial, onGameChange }: {
 
       {num !== null && !res && <p className="text-deck-b">No card {cardNo(num)} in this game’s card set.</p>}
       {res && (
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="aspect-square w-full max-w-xl">
             <CardGrid card={res.card} layout={cardSet.layout} songsById={songs} style={{ ...DEFAULT_STYLE, ...cardSet.style, inkSaver: false, showArt: false, theme: 'neon', accent: '', background: '' }}
               marked={res.result.marked} highlightMask={res.result.winningMask} uncalled={uncalled} />

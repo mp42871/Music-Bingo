@@ -117,10 +117,10 @@ export default function Designer() {
         <button type="button" className="btn btn-b" disabled={!validation?.ok} onClick={generate}>Make {count} cards &amp; print</button>
       </PageHeader>
       {err && <p role="alert" className="mb-4 text-deck-b">{err}</p>}
-      <div className="grid gap-5 lg:grid-cols-[1fr_minmax(0,30rem)]">
-        <div className="grid gap-5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
           <Section title="Playlist and layout">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Playlist">
                 <select value={poolId} onChange={(e) => setPoolId(e.target.value)}>
                   {pools.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.songs.length})</option>)}
@@ -134,7 +134,7 @@ export default function Designer() {
             </div>
             <div className="mt-4 grid gap-2">
               <span className="label">Across the top</span>
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {HEADER_MODES.map((m) => (
                   <button key={m.id} type="button" onClick={() => set('headerMode', m.id)}
                     className={`rounded-xl border p-3 text-left ${layout.headerMode === m.id ? 'border-deck-b bg-deck-b/10' : 'border-rail hover:border-dim'}`}>
@@ -173,7 +173,7 @@ export default function Designer() {
                 <input value={layout.letters} maxLength={layout.size} onChange={(e) => set('letters', e.target.value.toUpperCase())} className="w-40 font-display tracking-widest" />
               </Field></div>
             )}
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Squares show">
                 <select value={layout.cellContent} onChange={(e) => set('cellContent', e.target.value as CellContent)}>
                   {CONTENT.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
@@ -200,14 +200,14 @@ export default function Designer() {
           </Section>
 
           <Section title="How many">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Number of cards"><NumberInput value={count} min={1} max={4999} onChange={setCount} className="w-full" /></Field>
               <Field label="First card number"><NumberInput value={startNumber} min={1} max={4999} onChange={setStartNumber} className="w-full" /></Field>
               <Field label="Shuffle">
                 <button type="button" className="btn" onClick={() => setSeed(randomSeed())}>Reshuffle cards</button>
               </Field>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-[14rem_1fr] sm:items-center">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[14rem_1fr] sm:items-center">
               <Field label="Forecast for pattern">
                 <select value={pattern} onChange={(e) => setPattern(e.target.value)}>
                   {PATTERNS.filter((p) => p.id !== 'custom').map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -225,7 +225,7 @@ export default function Designer() {
           </Section>
 
           <Section title="Look">
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {THEMES.map((t) => (
                 <button key={t.id} type="button" onClick={() => st('theme', t.id)}
                   className={`flex items-center gap-3 rounded-xl border p-2.5 text-left ${style.theme === t.id ? 'border-deck-b' : 'border-rail hover:border-dim'}`}>
@@ -236,7 +236,7 @@ export default function Designer() {
                 </button>
               ))}
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Title"><input value={style.title} onChange={(e) => st('title', e.target.value)} /></Field>
               <Field label="Subtitle (event, date, charity…)"><input value={style.subtitle} onChange={(e) => st('subtitle', e.target.value)} /></Field>
               <Field label="Accent color">
@@ -292,7 +292,7 @@ export default function Designer() {
           </Section>
         </div>
 
-        <div className="flex flex-col gap-5 lg:sticky lg:top-20 lg:h-fit">
+        <div className="flex min-w-0 flex-col gap-5 lg:sticky lg:top-20 lg:h-fit">
           <div className="panel p-4">
             <div className="mb-3 flex items-center justify-between"><h2 className="font-bold">Preview</h2><span className="text-sm text-dim">card {cardNo(startNumber)}</span></div>
             {preview && pool
@@ -302,7 +302,7 @@ export default function Designer() {
           {sets.length > 0 && (
             <div className="panel p-4">
               <h2 className="mb-2 font-bold">Saved card sets</h2>
-              <ul className="grid gap-1.5 text-sm">
+              <ul className="grid grid-cols-1 gap-1.5 text-sm">
                 {sets.map((s) => (
                   <li key={s.id} className="flex items-center gap-2">
                     <span className="min-w-0 flex-1 truncate">{s.name} <span className="text-dim">· {s.cards.length} cards · {new Date(s.createdAt).toLocaleDateString()}</span></span>

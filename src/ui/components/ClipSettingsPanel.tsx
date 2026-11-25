@@ -14,7 +14,7 @@ export function ClipSettingsPanel({ value, onChange, compact }: { value: ClipSet
       <span className="label flex justify-between"><span>{label}</span><span className="text-ink tabular-nums">{value[k]}</span></span>
       <div className="flex items-center gap-2">
         <input type="range" min={min} max={max} step={step} value={value[k]} aria-hidden tabIndex={-1}
-          onChange={(e) => set(k, Number(e.target.value))} className="flex-1" />
+          onChange={(e) => set(k, Number(e.target.value))} className="min-w-0 flex-1" />
         <NumberInput aria-label={label} min={min} max={max} step={step} value={value[k]} onChange={(n) => set(k, n)} />
       </div>
     </label>

@@ -14,7 +14,7 @@ export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, cl
   }[cs.phase];
   return (
     <div className="panel relative overflow-hidden p-5">
-      <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-deck-b/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 -top-24 hidden size-72 rounded-full bg-deck-b/10 blur-3xl sm:block" />
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
         <div className="relative size-48 shrink-0 sm:size-56">
           <div className={`vinyl absolute inset-0 rounded-full ${spinning ? 'vinyl-spin' : ''}`}
