@@ -11,6 +11,10 @@ import { RoundDialog } from '../console/RoundDialog';
 import { Transport } from '../console/Transport';
 import { WinnerTracker } from '../console/WinnerTracker';
 import { ClaimPanel } from '../console/ClaimPanel';
+import { Readiness } from '../components/Readiness';
+import { useOnline } from '../../app/online';
+import { useSpotify } from '../../app/spotifyStore';
+import { listAudio } from '../../db/audio';
 
 export default function Console() {
   const { gameId } = useParams();
@@ -20,6 +24,9 @@ export default function Console() {
   const [roundDlg, setRoundDlg] = useState(false);
   const [checking, setChecking] = useState<number | null | 'open'>(null);
   const [settingsOpen, setSettingsOpen] = useState(true);
+  const [fileIds, setFileIds] = useState<Set<string>>(new Set());
+  const online = useOnline();
+  useEffect(() => { listAudio().then((fs) => setFileIds(new Set(fs.map((f) => f.id)))).catch(() => {}); }, []);
 
   useEffect(() => {
     let alive = true;
@@ -50,7 +57,7 @@ export default function Console() {
       if (!c) return;
       const k = e.key;
       const map: Record<string, () => unknown> = {
-        ' ': () => c.togglePause(), ArrowRight: () => c.next(), ArrowLeft: () => c.previous(),
+        ' ': () => (c.state.phase === 'manual' ? c.markPlayed() : c.togglePause()), ArrowRight: () => c.next(), ArrowLeft: () => c.previous(),
         r: () => c.replayLast(), R: () => c.replayLast(), m: () => c.toggleMute(), M: () => c.toggleMute(),
         t: () => c.toggleDuck(), T: () => c.toggleDuck(),
         ArrowUp: () => c.setVolume(c.state.volume + 5), ArrowDown: () => c.setVolume(c.state.volume - 5),
@@ -105,7 +112,8 @@ export default function Console() {
             <button type="button" className="btn ml-auto" onClick={() => setRoundDlg(true)}>End round</button>
           </div>
           <Deck cs={cs} song={cur} callNumber={game.calls.length} total={game.calls.length + upcoming.length} hidden={hidden}
-            onReveal={() => g.setReveal(true)} onSeek={(ms) => ctrl.seekTo(ms)} clipMs={game.settings.clipSec * 1000} />
+            onReveal={() => g.setReveal(true)} onSeek={(ms) => ctrl.seekTo(ms)} clipMs={game.settings.clipSec * 1000}
+            onPlayed={() => ctrl.markPlayed()} source={g.source} />
           <Transport cs={cs} onPrev={() => ctrl.previous()} onReplay={() => ctrl.replayLast()} onToggle={() => ctrl.togglePause()}
             onNext={() => ctrl.next()} onBack={() => ctrl.seekBy(-10_000)} onFwd={() => ctrl.seekBy(10_000)}
             onVolume={(v) => ctrl.setVolume(v)} onMute={() => ctrl.toggleMute()} onDuck={() => ctrl.toggleDuck()} />
@@ -120,6 +128,12 @@ export default function Console() {
         </div>
         <div className="flex flex-col gap-5">
           <WinnerTracker live={live} recorded={recorded} onCheck={(n) => setChecking(n)} />
+          <div className="panel p-4">
+            <h2 className="mb-2 font-bold">Offline</h2>
+            <Readiness compact songs={[...(cur && cs.phase !== 'done' ? [cur] : []), ...upcoming.map((id) => songs.get(id)!).filter(Boolean)]}
+              fileIds={fileIds} online={online}
+              onSaveOrder={(uris) => useSpotify.getState().api.createPlaylist(`${game.name} — call order`, uris)} />
+          </div>
           <div className="panel p-4">
             <button type="button" className="mb-2 flex w-full items-center justify-between font-bold" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(!settingsOpen)}>
               Live settings <span className="text-dim">{settingsOpen ? '−' : '+'}</span>

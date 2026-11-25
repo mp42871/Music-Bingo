@@ -106,3 +106,30 @@ test('leaving the console pauses playback and detaches the game', async () => {
   await ctrl.next();
   expect(port.play).toHaveBeenCalledTimes(1);
 });
+
+test('manual songs show a play-it-yourself prompt and Played records the call', async () => {
+  await setup();
+  vi.mocked(port.play).mockImplementation(async () => 'manual');
+  await userEvent.keyboard(' ');
+  expect(await screen.findByText(/Play now in Spotify/)).toBeInTheDocument();
+  const first = useGame.getState().songs.get(useGame.getState().cs!.currentId!)!;
+  expect(screen.getAllByText(first.title).length).toBeGreaterThan(0);
+  expect(useGame.getState().game!.calls).toHaveLength(0);
+  await userEvent.click(screen.getByRole('button', { name: 'Played' }));
+  expect(useGame.getState().game!.calls.map((c) => c.songId)).toEqual([first.id]);
+});
+
+test('space marks a manual song as played', async () => {
+  await setup();
+  vi.mocked(port.play).mockImplementation(async () => 'manual');
+  await userEvent.keyboard(' ');
+  await screen.findByText(/Play now in Spotify/);
+  await userEvent.keyboard(' ');
+  expect(useGame.getState().game!.calls).toHaveLength(1);
+});
+
+test('music source can be switched live', async () => {
+  await setup();
+  await userEvent.click(screen.getByRole('radio', { name: 'Manual only' }));
+  expect(useGame.getState().game!.settings.source).toBe('manual');
+});

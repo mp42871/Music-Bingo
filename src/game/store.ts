@@ -5,7 +5,8 @@ import { masksFor, patternName } from '../core/patterns';
 import { phoneUrl, poolToPhoneDef } from '../core/phone';
 import { DEFAULT_STYLE } from '../core/style';
 import type { CardSet, ClipSettings, Game, Song } from '../core/types';
-import { getCardSet, getGame, saveGame } from '../db/repo';
+import { getCardSet, getGame, getPool, saveGame } from '../db/repo';
+import { withLatestFiles } from '../core/offline';
 import { getAccessToken } from '../spotify/auth';
 import type { SpotifyError } from '../spotify/api';
 import { loadPlayer } from '../spotify/sdk';
@@ -125,8 +126,11 @@ export const useGame = create<GameStore>((set, get) => ({
 
   async load(id) {
     get().ctrl?.detach();
-    const game = await getGame(id);
-    if (!game) return false;
+    const stored = await getGame(id);
+    if (!stored) return false;
+    // Pick up music files linked in the playlist since the cards were made.
+    const live = await getPool(stored.pool.id).catch(() => undefined);
+    const game = { ...stored, pool: { ...stored.pool, songs: withLatestFiles(stored.pool.songs, live?.songs) } };
     const cardSet = (await getCardSet(game.cardSetId)) ?? null;
     const songs = new Map(game.pool.songs.map((s) => [s.id, s]));
     set({ songs });

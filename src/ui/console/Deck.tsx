@@ -3,10 +3,11 @@ import type { Song } from '../../core/types';
 import { formatTime } from '../../core/io';
 import { songLabel } from '../../game/store';
 
-export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, clipMs }: {
+export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, clipMs, onPlayed, source }: {
   cs: ControllerState; song?: Song; callNumber: number; total: number; hidden: boolean;
-  onReveal: () => void; onSeek: (ms: number) => void; clipMs: number;
+  onReveal: () => void; onSeek: (ms: number) => void; clipMs: number; onPlayed: () => void; source?: string | null;
 }) {
+  const manual = cs.phase === 'manual';
   const spinning = cs.phase === 'playing';
   const clipPct = Math.min(100, (cs.clipElapsedMs / Math.max(1, clipMs)) * 100);
   const status = {
@@ -33,8 +34,19 @@ export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, cl
               {cs.phase === 'playing' && <span className="size-2 animate-pulse rounded-full bg-deck-b" />}{status}
             </span>
             <span className="text-sm text-dim tabular-nums">Song {callNumber} of {total}</span>
+            {source && <span className="chip text-xs" title="Where this song is playing from">{source === 'spotify' ? 'Spotify' : source === 'file' ? 'Music file' : 'Manual'}</span>}
           </div>
-          {song ? (
+          {manual && song ? (
+            <div className="mt-3 rounded-2xl border-2 border-peak bg-peak/10 p-4">
+              <div className="text-sm font-semibold text-peak">Play now in Spotify</div>
+              <div className="font-display text-3xl leading-tight">{songLabel(song)}</div>
+              <div className="text-lg text-dim">{song.artist}</div>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button type="button" className="btn btn-b" onClick={onPlayed}>Played</button>
+                <span className="text-sm text-dim tabular-nums">{Math.max(0, Math.ceil((clipMs - cs.clipElapsedMs) / 1000))}s left in the clip — fade it out then press Played (Space)</span>
+              </div>
+            </div>
+          ) : song ? (
             hidden ? (
               <div className="mt-3">
                 <div className="font-display text-3xl text-dim">Mystery song #{callNumber}</div>

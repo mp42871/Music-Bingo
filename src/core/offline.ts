@@ -54,3 +54,16 @@ export function fileSong(f: AudioFile): Song {
     album: f.album ?? '', durationMs: f.durationMs, categories: [],
   };
 }
+
+/** Brings a card-set/game song snapshot up to date with the playlist's current music-file links. */
+export function withLatestFiles(snapshot: Song[], live: Song[] | undefined): Song[] {
+  if (!live) return snapshot;
+  const byId = new Map(live.map((s) => [s.id, s]));
+  return snapshot.map((s) => {
+    if (s.id.startsWith('file:')) return s;
+    const l = byId.get(s.id);
+    if (!l) return s;
+    if (l.fileId) return { ...s, fileId: l.fileId };
+    const { fileId: _x, ...rest } = s; void _x; return rest;
+  });
+}

@@ -1,6 +1,12 @@
 import { NumberInput } from './NumberInput';
 import type { ClipSettings } from '../../core/types';
 
+const SOURCES: { id: ClipSettings['source']; label: string; hint: string }[] = [
+  { id: 'auto', label: 'Automatic', hint: 'Spotify when online, your music files when not, otherwise you play it.' },
+  { id: 'files', label: 'Prefer my files', hint: 'Use your music files whenever a song has one.' },
+  { id: 'manual', label: 'Manual only', hint: 'Play each song yourself in the Spotify app; this screen tells you which.' },
+];
+
 const START_MODES: { id: ClipSettings['startMode']; label: string }[] = [
   { id: 'random', label: 'Random spot' },
   { id: 'fixed', label: 'Fixed time' },
@@ -41,6 +47,16 @@ export function ClipSettingsPanel({ value, onChange, compact }: { value: ClipSet
         </div>
       )}
       {num('fadeSec', 'Fade in/out (seconds)', 0, 5, 0.5)}
+      <div className="flex flex-col gap-1">
+        <span className="label">Music source</span>
+        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Music source">
+          {SOURCES.map((m) => (
+            <button key={m.id} type="button" className="chip" role="radio" aria-checked={(value.source ?? 'auto') === m.id}
+              aria-pressed={(value.source ?? 'auto') === m.id} title={m.hint} onClick={() => set('source', m.id)}>{m.label}</button>
+          ))}
+        </div>
+        <span className="text-xs text-dim">{SOURCES.find((m) => m.id === (value.source ?? 'auto'))!.hint}</span>
+      </div>
       <div className="flex flex-col gap-2">
         <label className="flex items-center gap-2"><input type="checkbox" checked={value.autoAdvance} onChange={(e) => set('autoAdvance', e.target.checked)} /> Play next song automatically</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={value.hideTitles} onChange={(e) => set('hideTitles', e.target.checked)} /> Hide song titles on my screen until revealed</label>

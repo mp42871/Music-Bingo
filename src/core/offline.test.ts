@@ -1,4 +1,4 @@
-import { fileSong, matchFiles, parseFileName, pickSource, readiness } from './offline';
+import { fileSong, matchFiles, parseFileName, pickSource, readiness, withLatestFiles } from './offline';
 import { DEFAULT_CLIP } from './clip';
 import type { AudioFile } from './types';
 import { song } from '../test/fixtures';
@@ -56,4 +56,11 @@ test('fileSong ids and default source', () => {
   const s = fileSong(af('x', 'Jolene', 'Dolly'));
   expect(s).toMatchObject({ id: 'file:x', uri: 'file:x', fileId: 'x', title: 'Jolene', artist: 'Dolly', durationMs: 1000 });
   expect(DEFAULT_CLIP.source).toBe('auto');
+});
+
+test('withLatestFiles copies current file links onto a game snapshot', () => {
+  const snap = [song(1), song(2, { fileId: 'old' }), song(3, { fileId: 'x' })];
+  const live = [song(1, { fileId: 'a' }), song(2, { fileId: 'b' }), song(3)];
+  expect(withLatestFiles(snap, live).map((s) => s.fileId)).toEqual(['a', 'b', undefined]);
+  expect(withLatestFiles(snap, undefined)).toBe(snap);
 });

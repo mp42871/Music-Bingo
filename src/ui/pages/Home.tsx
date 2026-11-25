@@ -4,12 +4,16 @@ import { DEFAULT_CLIP } from '../../core/clip';
 import { makeCallOrder, tuneCallOrder } from '../../core/forecast';
 import { masksFor, PATTERNS } from '../../core/patterns';
 import { randomSeed, uid } from '../../core/rng';
-import type { CardSet, ClipSettings, Game } from '../../core/types';
-import { getSetting, listCardSets, listGames, saveGame } from '../../db/repo';
+import type { CardSet, ClipSettings, Game, Pool } from '../../core/types';
+import { getPool, getSetting, listCardSets, listGames, saveGame } from '../../db/repo';
+import { withLatestFiles } from '../../core/offline';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Field } from '../components/Field';
 import { NumberInput } from '../components/NumberInput';
 import { PatternPicker } from '../components/PatternPicker';
+import { Readiness } from '../components/Readiness';
+import { listAudio } from '../../db/audio';
+import { useOnline } from '../../app/online';
 
 export default function Home() {
   const nav = useNavigate();
@@ -24,14 +28,19 @@ export default function Home() {
   const [clip, setClip] = useState<ClipSettings>(DEFAULT_CLIP);
   const [showClip, setShowClip] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [fileIds, setFileIds] = useState<Set<string>>(new Set());
+  const online = useOnline();
+  const [livePool, setLivePool] = useState<Pool | undefined>();
 
   useEffect(() => {
     listCardSets().then((s) => { setSets(s); if (s[0]) setSetId(s[0].id); });
     listGames().then((g) => setGames(g.filter((x) => x.status !== 'finished')));
     getSetting('clip', DEFAULT_CLIP).then((c) => setClip({ ...DEFAULT_CLIP, ...c }));
+    listAudio().then((fs) => setFileIds(new Set(fs.map((f) => f.id)))).catch(() => {});
   }, []);
 
   const set = sets?.find((s) => s.id === setId);
+  useEffect(() => { if (set) getPool(set.poolId).then(setLivePool).catch(() => setLivePool(undefined)); }, [set]);
   const songCount = set?.songs?.length ?? 0;
   const size = set?.layout.size ?? 5;
   const byId = useMemo(() => new Map(set?.songs?.map((s) => [s.id, s])), [set]);
@@ -111,6 +120,12 @@ export default function Home() {
               <button type="button" className="text-sm text-dim underline" onClick={() => setShowClip(!showClip)} aria-expanded={showClip}>Clip and break settings ({clip.clipSec}s clips, {clip.gapSec}s breaks)</button>
               {showClip && <div className="mt-3"><ClipSettingsPanel value={clip} onChange={setClip} /></div>}
             </div>
+            {set?.songs && (
+              <div className="rounded-xl border border-rail p-3">
+                <Readiness songs={withLatestFiles(set.songs, livePool?.songs)} fileIds={fileIds} online={online} />
+                <p className="mt-1 text-xs text-dim">Link music files from the playlist’s “Link music files” button — games pick up new links automatically.</p>
+              </div>
+            )}
             {note && <p className="text-peak">{note}</p>}
             <div><button type="button" className="btn btn-b px-6 py-3 text-lg" disabled={!set?.songs} onClick={start}>Open the DJ console</button></div>
           </div>

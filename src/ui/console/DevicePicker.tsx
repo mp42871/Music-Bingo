@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOnline } from '../../app/online';
 import { useSpotify } from '../../app/spotifyStore';
 import type { Device } from '../../spotify/api';
 import { browserDeviceId, connectBrowserPlayer, getDevice, setDevice } from '../../game/store';
@@ -8,6 +9,7 @@ export function DevicePicker({ onError }: { onError(m: string): void }) {
   const [devices, setDevices] = useState<Device[]>([]);
   const [current, setCurrent] = useState<string | null>(getDevice());
   const [busy, setBusy] = useState(false);
+  const online = useOnline();
 
   const refresh = () => api.devices().then(setDevices).catch((e) => onError(e.message));
   const useBrowser = async () => {
@@ -18,11 +20,13 @@ export function DevicePicker({ onError }: { onError(m: string): void }) {
   };
 
   useEffect(() => {
+    if (!online) return;
     if (connected && !getDevice()) void useBrowser();
     else if (connected) void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected]);
+  }, [connected, online]);
 
+  if (!online) return <span className="chip border-peak text-peak" title="Songs play from your music files, or you play them in the Spotify app">Offline — music files &amp; manual play</span>;
   if (!connected) return <span className="chip text-peak">Spotify not connected — <a className="underline" href="#/settings">connect</a></span>;
   return (
     <div className="flex items-center gap-2">
