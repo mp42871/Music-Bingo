@@ -35,7 +35,7 @@ export function ClipSettingsPanel({ value, onChange, compact }: { value: ClipSet
       </div>
       {value.startMode === 'fixed' && num('fixedStartSec', 'Start at (seconds in)', 0, 180)}
       {value.startMode === 'random' && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid gap-2 ${compact ? "" : "grid-cols-2"}`}>
           {num('randomMinSec', 'Earliest (s)', 0, 180)}
           {num('randomMaxSec', 'Latest (s)', 0, 240)}
         </div>

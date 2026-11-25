@@ -66,3 +66,7 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
+
+@keyframes vinyl-spin { to { transform: rotate(360deg); } }
+.vinyl-spin { animation: vinyl-spin 1.8s linear infinite; }
+.vinyl { box-shadow: 0 0 0 2px #2e2558, 0 20px 60px -20px rgb(255 62 165 / .45); }
