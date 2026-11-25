@@ -6,6 +6,8 @@ import type { Preset } from '../../core/presets';
 import type { Pool, Song } from '../../core/types';
 import { getPool, savePool } from '../../db/repo';
 import { ImportDialog } from '../components/ImportDialog';
+import { mergeFromSources } from '../../core/spotifyImport';
+import { useOnline } from '../../app/online';
 import { LinkFilesDialog } from '../components/LinkFilesDialog';
 import { listAudio } from '../../db/audio';
 import type { AudioFile } from '../../core/types';
@@ -35,6 +37,8 @@ export default function PoolEditor() {
   const [newCat, setNewCat] = useState('');
   const [importing, setImporting] = useState(false);
   const [linking, setLinking] = useState<AudioFile[] | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const online = useOnline();
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => { getPool(id!).then((p) => (p ? setPool(p) : setMissing(true))); }, [id]);
@@ -81,6 +85,20 @@ export default function PoolEditor() {
         <input aria-label="Playlist name" value={pool.name} onChange={(e) => update((p) => ({ ...p, name: e.target.value }))}
           className="min-w-0 flex-1 border-transparent bg-transparent font-display text-2xl md:text-3xl hover:border-rail" />
         <div className="flex flex-wrap gap-2">
+          {pool.sources?.length ? (
+            <button type="button" className="btn btn-a" disabled={!online || syncing} title={`From: ${pool.sources.map((x) => x.name).join(', ')}`}
+              onClick={async () => {
+                setSyncing(true);
+                try {
+                  const lists = [];
+                  for (const src of pool.sources!) lists.push({ ...src, songs: await api.playlistSongs(src.id) });
+                  const res = mergeFromSources(pool, lists);
+                  update(() => res.pool);
+                  flash(`Updated from Spotify: ${res.added} song${res.added === 1 ? '' : 's'} added, ${res.removed} removed.`);
+                } catch (e) { flash(e instanceof Error ? e.message : String(e)); }
+                finally { setSyncing(false); }
+              }}>{syncing ? 'Updating…' : 'Update from Spotify'}</button>
+          ) : null}
           <button type="button" className="btn" onClick={() => setImporting(true)}>Import</button>
           <button type="button" className="btn" onClick={async () => setLinking(await listAudio())}>Link music files</button>
           <details className="relative">

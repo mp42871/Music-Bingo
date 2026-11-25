@@ -5,10 +5,14 @@ import { uid } from '../../core/rng';
 import type { Pool } from '../../core/types';
 import { deletePool, listPools, savePool } from '../../db/repo';
 import { PageHeader } from '../components/Field';
+import { SpotifyPicker } from '../components/SpotifyPicker';
+import { useOnline } from '../../app/online';
 
 export default function Pools() {
   const [pools, setPools] = useState<Pool[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  const online = useOnline();
   const nav = useNavigate();
   const refresh = () => listPools().then(setPools);
   useEffect(() => { void refresh(); }, []);
@@ -32,13 +36,16 @@ export default function Pools() {
               catch (x) { setErr(x instanceof Error ? x.message : String(x)); }
             }} />
         </label>
-        <button type="button" className="btn btn-a" onClick={() => create()}>New playlist</button>
+        <button type="button" className="btn" onClick={() => create()}>Start empty</button>
+        <button type="button" className="btn btn-a" disabled={!online} title={online ? undefined : 'Needs internet'} onClick={() => setPicking(true)}>Import from Spotify</button>
       </PageHeader>
+      {!online && <p className="mb-4 text-sm text-peak">You’re offline — importing from Spotify needs internet. Your saved playlists still work.</p>}
       {err && <p role="alert" className="mb-4 text-deck-b">{err}</p>}
       {pools && pools.length === 0 && (
         <div className="panel p-10 text-center">
-          <p className="mb-4 text-lg">A playlist is the pool of songs your cards are made from.</p>
-          <button type="button" className="btn btn-a" onClick={() => create()}>Make your first playlist</button>
+          <p className="mb-2 text-lg">A playlist is the pool of songs your cards are made from.</p>
+          <p className="mb-5 text-dim">Make playlists in the Spotify app, then bring them in here. Pick several to turn each one into a card column.</p>
+          <button type="button" className="btn btn-a" disabled={!online} onClick={() => setPicking(true)}>Import from Spotify</button>
         </div>
       )}
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,6 +69,10 @@ export default function Pools() {
           );
         })}
       </ul>
+      {picking && (
+        <SpotifyPicker onClose={() => setPicking(false)}
+          onDone={async (p) => { await savePool(p); setPicking(false); nav(`/pools/${p.id}`); }} />
+      )}
     </main>
   );
 }

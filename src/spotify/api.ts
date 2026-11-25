@@ -78,20 +78,42 @@ export class SpotifyApi {
     return out;
   }
 
+  async playlistInfo(idOrUrl: string): Promise<{ id: string; name: string; image?: string; count: number }> {
+    const id = parsePlaylistId(idOrUrl);
+    if (!id) throw new SpotifyError('That doesn’t look like a Spotify playlist link.');
+    const p: any = await this.req(`/playlists/${id}?fields=id,name,images,tracks.total,items.total`);
+    return { id: p.id ?? id, name: p.name ?? 'Spotify playlist', image: p.images?.[0]?.url, count: p.items?.total ?? p.tracks?.total ?? 0 };
+  }
+
   async playlistSongs(idOrUrl: string): Promise<Song[]> {
     const id = parsePlaylistId(idOrUrl);
     if (!id) throw new SpotifyError('That doesn’t look like a Spotify playlist link.');
-    const out: Song[] = [];
-    let url: string | null = `/playlists/${id}/tracks?limit=50`;
-    while (url && out.length < 2000) {
-      const r: any = await this.req(url);
-      for (const it of r.items ?? []) {
-        const t = it?.track ?? it?.item;
-        if (t?.id && t.type !== 'episode') out.push(trackToSong(t));
+    const read = async (first: string) => {
+      const out: Song[] = [];
+      let url: string | null = first;
+      while (url && out.length < 2000) {
+        const r: any = await this.req(url);
+        for (const it of r.items ?? []) {
+          const t = it?.track ?? it?.item;
+          if (t?.id && t.type !== 'episode') out.push(trackToSong(t));
+        }
+        url = r.next;
       }
-      url = r.next;
+      return out;
+    };
+    try {
+      try {
+        return await read(`/playlists/${id}/items?limit=50`);
+      } catch (e) {
+        // Older API shape: fall back to the /tracks endpoint.
+        if (e instanceof SpotifyError && (e.status === 404 || e.status === 400)) return await read(`/playlists/${id}/tracks?limit=50`);
+        throw e;
+      }
+    } catch (e) {
+      if (e instanceof SpotifyError && (e.status === 403 || e.status === 404))
+        throw new SpotifyError('Spotify will only share playlists you created or collaborate on. For a Spotify-made playlist, add its songs to a playlist of your own in the Spotify app first.', e.status);
+      throw e;
     }
-    return out;
   }
 
   async createPlaylist(name: string, uris: string[]): Promise<string> {

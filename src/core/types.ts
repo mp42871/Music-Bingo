@@ -4,10 +4,14 @@ export interface Song {
   startMs?: number; categories: string[]; excluded?: boolean;
   /** Linked music file in this browser's library (offline playback). */
   fileId?: string;
+  /** Spotify playlists this song was imported from (songs added by hand have none). */
+  sourceIds?: string[];
 }
 export interface Pool {
   id: string; name: string; songs: Song[]; categories: string[];
   createdAt: number; updatedAt: number;
+  /** Spotify playlists this bingo playlist was imported from (for "Update from Spotify"). */
+  sources?: { id: string; name: string }[];
 }
 export type HeaderMode = 'categories' | 'theme' | 'letters';
 export type CellContent = 'title' | 'artist' | 'both' | 'artistBingo';

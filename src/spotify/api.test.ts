@@ -47,3 +47,28 @@ test('not connected throws', async () => {
   const api = new SpotifyApi(async () => null);
   await expect(api.searchTracks('x')).rejects.toThrow(/Connect Spotify/);
 });
+
+test('playlistSongs uses the items endpoint and falls back to tracks', async () => {
+  const item = { track: { ...track, id: 't9', uri: 'spotify:track:t9' } };
+  const f = vi.fn()
+    .mockResolvedValueOnce(new Response(JSON.stringify({ error: { message: 'Not found' } }), { status: 404 }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ items: [item], next: null }), { status: 200 }));
+  vi.stubGlobal('fetch', f);
+  const songs = await new SpotifyApi(async () => 'tok').playlistSongs('https://open.spotify.com/playlist/37i9dQZF1DX4UtSsGT1Sbe');
+  expect(songs.map((s) => s.id)).toEqual(['t9']);
+  expect(String(f.mock.calls[0][0])).toContain('/playlists/37i9dQZF1DX4UtSsGT1Sbe/items');
+  expect(String(f.mock.calls[1][0])).toContain('/playlists/37i9dQZF1DX4UtSsGT1Sbe/tracks');
+  vi.unstubAllGlobals();
+});
+
+test('a playlist Spotify will not share gives a clear message', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => new Response(JSON.stringify({ error: { message: 'Forbidden' } }), { status: 403 })));
+  await expect(new SpotifyApi(async () => 'tok').playlistSongs('37i9dQZF1DX4UtSsGT1Sbe')).rejects.toThrow(/only share playlists you created or collaborate on/);
+  vi.unstubAllGlobals();
+});
+
+test('playlistInfo returns the name', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'p', name: 'Road Trip', images: [] }), { status: 200 })));
+  expect(await new SpotifyApi(async () => 'tok').playlistInfo('37i9dQZF1DX4UtSsGT1Sbe')).toMatchObject({ id: 'p', name: 'Road Trip' });
+  vi.unstubAllGlobals();
+});
