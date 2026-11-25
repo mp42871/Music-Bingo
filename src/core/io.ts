@@ -72,14 +72,23 @@ export function parseCsv(text: string): string[][] {
   return rows.filter((r) => r.some((c) => c.trim() !== ''));
 }
 
-export function parseSongLines(text: string): { title: string; artist: string }[] {
+export function parseSongLines(text: string): { title: string; artist: string; categories?: string[]; startMs?: number }[] {
   const firstLine = text.split(/\r?\n/).find((l) => l.trim()) ?? '';
   const header = parseCsv(firstLine)[0]?.map((h) => h.trim().toLowerCase()) ?? [];
   const ti = header.findIndex((h) => h === 'title' || h === 'song' || h === 'track' || h === 'name');
   const ai = header.findIndex((h) => h === 'artist' || h === 'artists');
   if (ti >= 0 && ai >= 0) {
+    const ci = header.indexOf('categories');
+    const si = header.indexOf('start');
     return parseCsv(text).slice(1)
-      .map((r) => ({ title: (r[ti] ?? '').trim(), artist: (r[ai] ?? '').trim() }))
+      .map((r) => {
+        const row: { title: string; artist: string; categories?: string[]; startMs?: number } = { title: (r[ti] ?? '').trim(), artist: (r[ai] ?? '').trim() };
+        const cats = ci >= 0 ? (r[ci] ?? '').split('|').map((c) => c.trim()).filter(Boolean) : [];
+        if (cats.length) row.categories = cats;
+        const st = si >= 0 ? parseTime(r[si] ?? '') : null;
+        if (st !== null) row.startMs = st;
+        return row;
+      })
       .filter((r) => r.title);
   }
   return text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
