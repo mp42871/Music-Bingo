@@ -4,13 +4,12 @@ import { cleanTitle } from '../core/io';
 import { masksFor, patternName } from '../core/patterns';
 import { phoneUrl } from '../core/phone';
 import { setPhoneDef } from './phoneLink';
-import { throttleVolume } from './spotifyVolume';
+import { createSpotifyPort } from './spotifyPort';
 import { DEFAULT_STYLE } from '../core/style';
 import type { CardSet, ClipSettings, Game, Song } from '../core/types';
 import { getCardSet, getGame, getPool, saveGame } from '../db/repo';
 import { withLatestFiles } from '../core/offline';
 import { getAccessToken } from '../spotify/auth';
-import type { SpotifyError } from '../spotify/api';
 import { loadPlayer } from '../spotify/sdk';
 import { openChannel, type AudienceMessage } from './broadcast';
 import { createHybridPort } from './hybridPort';
@@ -34,6 +33,8 @@ export async function connectBrowserPlayer(onError: (m: string) => void): Promis
   sdkPlayer = player;
   sdkDeviceId = deviceId;
   currentDeviceId = deviceId;
+  // Make the browser the active Spotify device now, so the first song doesn't start on a cold device.
+  await useSpotify.getState().api.transfer(deviceId).catch(() => {});
   return deviceId;
 }
 
@@ -41,38 +42,12 @@ export function setDevice(id: string) { currentDeviceId = id; }
 export function getDevice() { return currentDeviceId; }
 export function browserDeviceId() { return sdkDeviceId; }
 
-export const spotifyPort = (): PlaybackPort => {
-  const api = () => useSpotify.getState().api;
-  // External speakers are controlled over the internet: limit fade steps to avoid Spotify rate limits.
-  const remoteVolume = throttleVolume((v) => (currentDeviceId ? api().volume(currentDeviceId, v) : Promise.resolve()), 500);
-  const dev = () => {
-    if (!currentDeviceId) throw new Error('No Spotify device selected. Pick a device in the console.');
-    return currentDeviceId;
-  };
-  return {
-    play: async (uri, pos) => {
-      try {
-        // Unlock audio on browsers that need a user gesture before the SDK can play.
-        if (sdkPlayer && currentDeviceId === sdkDeviceId) await sdkPlayer.activateElement().catch(() => {});
-        await api().play(dev(), uri, pos);
-      } catch (e) {
-        // Device/auth problems affect every song: stop instead of skipping through the list.
-        const status = (e as SpotifyError).status;
-        const msg = e instanceof Error ? e.message : String(e);
-        if (status === 401 || status === 403 || status === 429 || (status === 404 && /device|player/i.test(msg)) || /No Spotify device|Connect Spotify/i.test(msg))
-          throw Object.assign(e instanceof Error ? e : new Error(msg), { fatal: true });
-        throw e;
-      }
-    },
-    pause: async () => { await api().pause(dev()); },
-    resume: async () => { await api().resume(dev()); },
-    seek: async (ms) => { await api().seek(dev(), ms); },
-    setVolume: async (v) => {
-      if (sdkPlayer && currentDeviceId === sdkDeviceId) await sdkPlayer.setVolume(Math.max(0, Math.min(1, v / 100)));
-      else await remoteVolume(v);
-    },
-  };
-};
+export const spotifyPort = (): PlaybackPort => createSpotifyPort({
+  api: () => useSpotify.getState().api,
+  device: () => currentDeviceId,
+  browserPlayer: () => (sdkPlayer && currentDeviceId && currentDeviceId === sdkDeviceId ? sdkPlayer : null),
+  wait: (ms) => new Promise((r) => setTimeout(r, ms)),
+});
 
 let filePlayer: ReturnType<typeof createFilePlayer> | null = null;
 

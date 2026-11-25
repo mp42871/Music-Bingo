@@ -21,6 +21,7 @@ function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = [], fat
     resume: vi.fn(async () => {}),
     seek: vi.fn(async () => {}),
     setVolume: vi.fn(async (v: number) => { volumes.push(v); }),
+    prime: vi.fn(),
   };
   const calls: Call[] = [];
   const errors: string[] = [];
@@ -275,4 +276,22 @@ test('previous during a manual song keeps it pending; Next records it once', asy
   expect(h.calls.map((x) => x.songId)).toEqual(['s0']);
   await h.c.next();
   expect(h.calls.map((x) => x.songId)).toEqual(['s0', 's1', 's2']);
+});
+
+test('play is primed synchronously (inside the click) before anything async', () => {
+  const h = setup();
+  void h.c.start();
+  expect(h.port.prime).toHaveBeenCalledTimes(1);
+  expect(vi.mocked(h.port.prime!).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(h.port.play).mock.invocationCallOrder[0]);
+});
+
+test('the clip fades all the way to silence before pausing', async () => {
+  const h = setup({ clipSec: 5, fadeSec: 1.5 });
+  await h.c.start();
+  h.c.setVolume(80);
+  await h.advance(5_000);
+  expect(h.state.phase).toBe('gap');
+  const zeroAt = vi.mocked(h.port.setVolume).mock.calls.findIndex(([v]) => v === 0);
+  expect(zeroAt).toBeGreaterThanOrEqual(0);
+  expect(vi.mocked(h.port.setVolume).mock.invocationCallOrder[zeroAt]).toBeLessThan(vi.mocked(h.port.pause).mock.invocationCallOrder.at(-1)!);
 });

@@ -8,6 +8,8 @@ export interface PlaybackPort {
   resume(): Promise<void>;
   seek(ms: number): Promise<void>;
   setVolume(pct: number): Promise<void>;
+  /** Called synchronously inside the host's click/keypress so browsers allow audio to start. */
+  prime?(): void;
 }
 
 export type Phase = 'idle' | 'loading' | 'playing' | 'manual' | 'paused' | 'gap' | 'done';
@@ -224,16 +226,18 @@ export class GameController {
     this.port.pause().catch(() => {});
   }
 
-  start(): Promise<void> { return this.advance(); }
-  next(): Promise<void> { return this.advance(); }
+  start(): Promise<void> { this.port.prime?.(); return this.advance(); }
+  next(): Promise<void> { this.port.prime?.(); return this.advance(); }
 
   async previous(): Promise<void> {
+    this.port.prime?.();
     const target = (this.cursor >= 0 ? this.cursor : this.s.index) - 1;
     if (target < 0) return this.replayLast();
     return this.oneOff(target);
   }
 
   async replayLast(): Promise<void> {
+    this.port.prime?.();
     if (this.s.index < 0 || !this.s.currentId) return;
     const at = this.order.indexOf(this.s.currentId);
     if (at < 0) return;
@@ -241,6 +245,7 @@ export class GameController {
   }
 
   async jumpTo(songId: string): Promise<void> {
+    this.port.prime?.();
     const at = this.order.indexOf(songId);
     if (at < 0) return;
     if (at <= this.s.index) return this.oneOff(at);
@@ -251,6 +256,7 @@ export class GameController {
   }
 
   async togglePause(): Promise<void> {
+    this.port.prime?.();
     if (this.s.phase === 'playing') {
       this.s.phase = 'paused';
       this.s.pausedFrom = 'playing';
@@ -341,7 +347,10 @@ export class GameController {
         this.s.phase = 'gap';
         this.gapElapsed = 0;
         this.s.gapRemainingMs = this.settings.autoAdvance ? this.settings.gapSec * 1000 : 0;
-        this.port.pause().catch(() => {});
+        // Finish the fade at silence, then pause — no abrupt cut.
+        const silence = this.settings.fadeSec > 0 ? this.port.setVolume(0).catch(() => {}) : Promise.resolve();
+        this.lastSentVolume = 0;
+        void silence.then(() => this.port.pause().catch(() => {}));
         this.emit();
         if (this.settings.autoAdvance && this.s.gapRemainingMs <= 0) void this.advance();
         return;

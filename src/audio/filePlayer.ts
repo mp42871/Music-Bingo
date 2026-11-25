@@ -58,6 +58,7 @@ export function createFilePlayer(): FilePlayer & { position(): number } {
       if (gain && ctx) gain.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
       else el.volume = volume;
     },
+    prime() { ensureGraph(); void ctx?.resume().catch(() => {}); },
     stop() {
       el.pause();
       if (url) { URL.revokeObjectURL(url); url = null; el.removeAttribute('src'); }

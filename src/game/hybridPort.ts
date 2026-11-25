@@ -10,6 +10,8 @@ export interface FilePlayer {
   seek(ms: number): Promise<void>;
   setVolume(pct: number): Promise<void>;
   stop(): void;
+  /** Called inside the host's click so the browser lets audio start. */
+  prime?(): void;
 }
 
 export interface HybridDeps {
@@ -63,6 +65,7 @@ export function createHybridPort(d: HybridDeps): PlaybackPort & { current(): Sou
 
   return {
     current: () => active,
+    prime() { d.spotify.prime?.(); d.file.prime?.(); },
     async play(uri, pos) {
       const song = d.getSong(uri);
       if (!song) throw new Error('Unknown song');
