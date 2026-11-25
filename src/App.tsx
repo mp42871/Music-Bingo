@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { useSpotify } from './app/spotifyStore';
 import { Nav } from './ui/components/Nav';
 import Home from './ui/pages/Home';
 import Pools from './ui/pages/Pools';
@@ -38,6 +40,7 @@ function Shell() {
 }
 
 export default function App() {
+  useEffect(() => { void useSpotify.getState().init(); }, []);
   return (
     <HashRouter>
       <Shell />
