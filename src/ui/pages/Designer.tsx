@@ -58,9 +58,11 @@ export default function Designer() {
     setLayout((l) => {
       const cats = Array.from({ length: l.size }, (_, i) => (pool.categories.includes(l.columnCategories[i]) ? l.columnCategories[i] : pool.categories[i % Math.max(1, pool.categories.length)] ?? ''));
       const theme = l.themeCategory && pool.categories.includes(l.themeCategory) ? l.themeCategory : pool.categories[0];
-      return { ...l, columnCategories: cats, themeCategory: theme };
+      // A playlist without categories can only make letter-header cards.
+      const headerMode = pool.categories.length === 0 ? 'letters' : l.headerMode;
+      return { ...l, columnCategories: cats, themeCategory: theme, headerMode };
     });
-  }, [pool, layout.size]);
+  }, [pool, layout.size, layout.headerMode]);
 
   const validation = pool ? validatePool(pool, layout) : null;
   const preview = useMemo(() => {

@@ -20,6 +20,23 @@ A web app for hosting music bingo at parties, charity events and work gatherings
 
 All data stays in your browser. Use **Settings → Backup** now and then.
 
+## Playing offline
+
+Spotify can't stream without internet, so offline games use **your own music files**, **manual play** from the Spotify app, or a mix of both. Each song uses the best source it has.
+
+**Before the event, while you're online:**
+1. Open the app once on the laptop you'll use. It saves itself for offline use, and Chrome and Edge also offer to **Install** it.
+2. **Music files:** add MP3, M4A, WAV, OGG or FLAC files you own. In each playlist, press **Link music files** to match them to songs. You can also make a playlist straight from your files.
+3. **Optional, for songs without a file:** open the game's console and press **Save call order to Spotify**. Download that playlist in the Spotify app with shuffle off.
+4. The game setup screen and the console's **Offline** panel tell you how many songs will play automatically.
+
+**At the venue:** the Online/Offline badge shows the connection.
+- Songs with a file play with every console control: clip length, start point, fades, seek, replay, volume and talk-over.
+- Songs without a file show **Play now in Spotify: Title — Artist**. Play it in the Spotify app, then press **Played** or Space.
+- **Music source** in Live settings can be switched mid-game: *Automatic*, *Prefer my files* or *Manual only*.
+
+Music files are stored only in this browser and are not included in backups. Phone cards need the players' phones to be online.
+
 ## One-time Spotify setup
 
 You need Spotify **Premium**.
