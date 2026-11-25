@@ -201,7 +201,7 @@ export default function Designer() {
 
           <Section title="How many">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Field label="Number of cards"><NumberInput value={count} min={1} max={4999} onChange={setCount} className="w-full" /></Field>
+              <Field label="Number of cards"><NumberInput value={count} min={1} max={4999 - startNumber + 1} onChange={setCount} className="w-full" /></Field>
               <Field label="First card number"><NumberInput value={startNumber} min={1} max={4999} onChange={setStartNumber} className="w-full" /></Field>
               <Field label="Shuffle">
                 <button type="button" className="btn" onClick={() => setSeed(randomSeed())}>Reshuffle cards</button>

@@ -24,7 +24,14 @@ export default function Console() {
   useEffect(() => {
     let alive = true;
     useGame.getState().load(gameId!).then((ok) => alive && !ok && setMissing(true));
-    return () => { alive = false; void useGame.getState().persist(); };
+    return () => {
+      alive = false;
+      // Save, stop the music and drop this controller — but only if a newer console hasn't loaded one already.
+      const st = useGame.getState();
+      const mine = st.ctrl;
+      void st.persist();
+      if (mine && useGame.getState().ctrl === mine) useGame.getState().unload();
+    };
   }, [gameId]);
 
   // Drive clip timing.

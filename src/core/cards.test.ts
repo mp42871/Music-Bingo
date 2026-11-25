@@ -85,3 +85,10 @@ test('theme mode uses only theme category', () => {
   const card = generateCard(big, layout({ headerMode: 'theme', themeCategory: '80s' }), 1, 1);
   card.cells.forEach((c) => c.kind === 'song' && expect(bigById.get(c.songId)!.categories).toContain('80s'));
 });
+
+test('printed card numbers never reach the phone range (5000+)', () => {
+  const res = generateCardSet(pool, layout(), { seed: 1, count: 20, startNumber: 4990 });
+  expect(res.set.cards.at(-1)!.number).toBe(4999);
+  expect(res.capped).toBe(true);
+  expect(res.message).toMatch(/4999/);
+});

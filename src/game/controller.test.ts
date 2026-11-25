@@ -7,13 +7,13 @@ const songs = Array.from({ length: 5 }, (_, i) => song(i, { durationMs: 300_000 
 const byId = new Map(songs.map((s) => [s.id, s]));
 const order = songs.map((s) => s.id);
 
-function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = []) {
+function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = [], fatal = false) {
   let t = 0;
   const plays: { uri: string; pos: number }[] = [];
   const volumes: number[] = [];
   const port: PlaybackPort = {
     play: vi.fn(async (uri: string, pos: number) => {
-      if (failIds.some((id) => uri.endsWith(id))) throw new Error('unavailable');
+      if (failIds.some((id) => uri.endsWith(id))) throw Object.assign(new Error('unavailable'), fatal ? { fatal: true } : {});
       plays.push({ uri, pos });
     }),
     pause: vi.fn(async () => {}),
@@ -23,14 +23,15 @@ function setup(settings: Partial<ClipSettings> = {}, failIds: string[] = []) {
   };
   const calls: Call[] = [];
   const errors: string[] = [];
+  const orders: string[][] = [];
   let state!: ControllerState;
   const c = new GameController(port, [...order], byId, { ...DEFAULT_CLIP, startMode: 'beginning', fadeSec: 0, ...settings }, {
-    onState: (s) => (state = s), onCall: (x) => calls.push(x), onError: (m) => errors.push(m),
+    onState: (s) => (state = s), onCall: (x) => calls.push(x), onError: (m) => errors.push(m), onOrder: (o) => orders.push(o),
   }, () => t, () => 0.5);
   const advance = async (ms: number, step = 250) => {
     for (let x = 0; x < ms; x += step) { t += step; c.tick(); await Promise.resolve(); await Promise.resolve(); }
   };
-  return { c, port, plays, calls, errors, volumes, advance, get state() { return state; } };
+  return { c, port, plays, calls, errors, volumes, orders, advance, failIds, get state() { return state; } };
 }
 
 test('start plays first song and records one call', async () => {
@@ -141,4 +142,78 @@ test('end of list goes to done', async () => {
   await h.advance(20_000);
   expect(h.calls).toHaveLength(5);
   expect(h.state.phase).toBe('done');
+});
+
+test('replaying an earlier called song does not rewind the game', async () => {
+  const h = setup({ clipSec: 5, gapSec: 1 });
+  await h.c.start();
+  await h.c.next();
+  await h.c.next();
+  await h.c.jumpTo('s0');
+  expect(h.plays.at(-1)!.uri).toBe('spotify:track:s0');
+  await h.c.next();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0', 's1', 's2', 's3']);
+});
+
+test('previous then next goes on to a new song', async () => {
+  const h = setup({ clipSec: 5 });
+  await h.c.start();
+  await h.c.next();
+  await h.c.previous();
+  expect(h.plays.at(-1)!.uri).toBe('spotify:track:s0');
+  await h.c.next();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0', 's1', 's2']);
+});
+
+test('failure while replaying a called song keeps the order and does not stick in loading', async () => {
+  const h = setup({ clipSec: 5 });
+  await h.c.start();
+  await h.c.next();
+  h.failIds.push('s0');
+  await h.c.jumpTo('s0');
+  expect(h.c.fullOrder()).toEqual(['s0', 's1', 's2', 's3', 's4']);
+  expect(h.state.phase).not.toBe('loading');
+  h.failIds.length = 0;
+  await h.c.next();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0', 's1', 's2']);
+});
+
+test('device errors stop the game instead of skipping songs', async () => {
+  const h = setup({}, ['s0', 's1', 's2', 's3', 's4'], true);
+  await h.c.start();
+  expect(h.c.fullOrder()).toHaveLength(5);
+  expect(h.errors).toHaveLength(1);
+  expect(h.state.phase).toBe('paused');
+  expect(h.calls).toHaveLength(0);
+});
+
+test('repeated track failures stop after a few and leave the console usable', async () => {
+  const h = setup({}, ['s0', 's1', 's2', 's3', 's4']);
+  await h.c.start();
+  expect(h.errors).toHaveLength(4); // 3 skipped songs + one "check your device" notice
+  expect(h.errors.at(-1)).toMatch(/Check your Spotify device/);
+  expect(h.c.fullOrder()).toHaveLength(2);
+  expect(h.state.phase).toBe('paused');
+  await h.advance(5_000);
+  expect(h.errors).toHaveLength(4);
+});
+
+test('order changes are reported for saving', async () => {
+  const h = setup();
+  await h.c.start();
+  h.c.reorder(['s4', 's3', 's2', 's1']);
+  h.c.remove('s2');
+  await h.c.jumpTo('s1');
+  expect(h.orders.at(-1)).toEqual(h.c.fullOrder());
+  expect(h.orders.length).toBeGreaterThanOrEqual(3);
+});
+
+test('detached controller stops playback and emits nothing more', async () => {
+  const h = setup({ clipSec: 1, gapSec: 0 });
+  await h.c.start();
+  h.c.detach();
+  expect(h.port.pause).toHaveBeenCalled();
+  await h.advance(5_000);
+  await h.c.next();
+  expect(h.calls).toHaveLength(1);
 });

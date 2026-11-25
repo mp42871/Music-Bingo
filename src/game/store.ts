@@ -7,6 +7,7 @@ import { DEFAULT_STYLE } from '../core/style';
 import type { CardSet, ClipSettings, Game, Song } from '../core/types';
 import { getCardSet, getGame, saveGame } from '../db/repo';
 import { getAccessToken } from '../spotify/auth';
+import type { SpotifyError } from '../spotify/api';
 import { loadPlayer } from '../spotify/sdk';
 import { openChannel, type AudienceMessage } from './broadcast';
 import { GameController, type ControllerState, type PlaybackPort } from './controller';
@@ -40,9 +41,18 @@ export const spotifyPort = (): PlaybackPort => {
   };
   return {
     play: async (uri, pos) => {
-      // Unlock audio on browsers that need a user gesture before the SDK can play.
-      if (sdkPlayer && currentDeviceId === sdkDeviceId) await sdkPlayer.activateElement().catch(() => {});
-      await api().play(dev(), uri, pos);
+      try {
+        // Unlock audio on browsers that need a user gesture before the SDK can play.
+        if (sdkPlayer && currentDeviceId === sdkDeviceId) await sdkPlayer.activateElement().catch(() => {});
+        await api().play(dev(), uri, pos);
+      } catch (e) {
+        // Device/auth problems affect every song: stop instead of skipping through the list.
+        const status = (e as SpotifyError).status;
+        const msg = e instanceof Error ? e.message : String(e);
+        if (status === 401 || status === 403 || status === 429 || (status === 404 && /device|player/i.test(msg)) || /No Spotify device|Connect Spotify/i.test(msg))
+          throw Object.assign(e instanceof Error ? e : new Error(msg), { fatal: true });
+        throw e;
+      }
     },
     pause: async () => { await api().pause(dev()); },
     resume: async () => { await api().resume(dev()); },
@@ -92,6 +102,7 @@ export const useGame = create<GameStore>((set, get) => ({
   makePort: spotifyPort,
 
   async load(id) {
+    get().ctrl?.detach();
     const game = await getGame(id);
     if (!game) return false;
     const cardSet = (await getCardSet(game.cardSetId)) ?? null;
@@ -101,17 +112,27 @@ export const useGame = create<GameStore>((set, get) => ({
       onCall: (c) => {
         const g = get().game;
         if (!g) return;
-        const next = { ...g, status: 'live' as const, calls: [...g.calls, c] };
+        const next = { ...g, status: 'live' as const, calls: [...g.calls, c], callOrder: get().ctrl?.fullOrder() ?? g.callOrder };
         set({ game: next, revealed: false });
         void saveGame(next);
       },
       onError: (m) => set((s) => ({ errors: [...s.errors.slice(-3), m] })),
+      onOrder: (order) => {
+        const g = get().game;
+        if (!g) return;
+        const next = { ...g, callOrder: order };
+        set({ game: next });
+        void saveGame(next);
+      },
     }, Date.now, Math.random, game.calls.map((c) => c.songId));
     channel ??= openChannel();
     set({ game, cardSet, songs, ctrl, cs: ctrl.state, errors: [], revealed: false });
     return true;
   },
-  unload() { set({ game: null, cardSet: null, ctrl: null, cs: null }); },
+  unload() {
+    get().ctrl?.detach();
+    set({ game: null, cardSet: null, ctrl: null, cs: null });
+  },
   dismissError(i) { set((s) => ({ errors: s.errors.filter((_, j) => j !== i) })); },
   setReveal(v) { set({ revealed: v }); broadcast(); },
   setShowQr(v) { set({ showQr: v }); broadcast(); },

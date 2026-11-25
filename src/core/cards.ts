@@ -1,6 +1,8 @@
 import { hashSeed, mulberry32, shuffle, uid } from './rng';
 import type { Card, CardLayout, CardSet, Cell, Pool, Song } from './types';
 
+export const MAX_PRINTED = 4999;
+
 export class PoolTooSmallError extends Error {
   constructor(message: string) {
     super(message);
@@ -123,7 +125,10 @@ export function generateCardSet(
   const seen = new Set<string>();
   const cards: Card[] = [];
   let capped = false;
-  for (let i = 0; i < opts.count && !capped; i++) {
+  // Printed cards stop at 4999; 5000–9999 belong to phone cards.
+  const count = Math.max(0, Math.min(opts.count, MAX_PRINTED - opts.startNumber + 1));
+  const numberCapped = count < opts.count;
+  for (let i = 0; i < count && !capped; i++) {
     const number = opts.startNumber + i;
     let card = generateCard(pool, layout, opts.seed, number);
     let attempt = 0;
@@ -142,7 +147,7 @@ export function generateCardSet(
     id: uid(), name: opts.name ?? `${pool.name} — ${cards.length} cards`, poolId: pool.id,
     seed: opts.seed, layout, cards, createdAt: Date.now(), songs: active(pool),
   };
-  return capped
-    ? { set, capped, message: `Only ${cards.length} unique cards are possible with this playlist — add more songs for more cards.` }
-    : { set, capped };
+  if (capped) return { set, capped, message: `Only ${cards.length} unique cards are possible with this playlist — add more songs for more cards.` };
+  if (numberCapped) return { set, capped: true, message: `Printed card numbers stop at ${MAX_PRINTED} (higher numbers are for phone cards), so ${cards.length} cards were made.` };
+  return { set, capped };
 }

@@ -29,7 +29,13 @@ export interface ControllerEvents {
   onState(s: ControllerState): void;
   onCall(c: Call): void;
   onError(msg: string): void;
+  /** The call order changed (reorder, remove, insert, jump, skipped track) — persist it. */
+  onOrder?(order: string[]): void;
 }
+
+const NOOP_EVENTS: ControllerEvents = { onState() {}, onCall() {}, onError() {} };
+const MAX_SKIPS = 3;
+type PlayResult = 'ok' | 'skip' | 'fatal';
 
 export class GameController {
   private s: ControllerState = {
@@ -41,6 +47,9 @@ export class GameController {
   private gapElapsed = 0;
   private lastSentVolume = -1;
   private busy = false;
+  /** Order position of the song currently loaded (may be behind index after a replay/previous). */
+  private cursor = -1;
+  private detached = false;
 
   constructor(
     private port: PlaybackPort,
@@ -56,6 +65,7 @@ export class GameController {
     if (alreadyCalled.length) {
       // Resume an in-progress game: position after the last called song.
       this.s.index = Math.max(...alreadyCalled.map((id) => this.order.indexOf(id)));
+      this.cursor = this.s.index;
       this.s.currentId = this.order[this.s.index];
       this.s.phase = 'gap';
       this.s.gapRemainingMs = 0;
@@ -91,39 +101,68 @@ export class GameController {
     }
   }
 
-  private async playAt(index: number, record: boolean): Promise<boolean> {
+  private holdAfterFailure() {
+    this.s = { ...this.s, phase: 'paused', pausedFrom: 'gap', gapRemainingMs: 0 };
+    this.emit();
+  }
+
+  private orderChanged() { this.events.onOrder?.([...this.order]); }
+
+  /**
+   * Plays order[index]. With record=true this is a new call: it moves the game forward and is
+   * recorded. With record=false it's a one-off replay that never moves the game position.
+   */
+  private async playAt(index: number, record: boolean): Promise<PlayResult> {
     const id = this.order[index];
     const song = this.songs.get(id);
-    if (!song) return false;
-    const start = computeStartMs(song, this.settings, this.rand);
-    this.s = { ...this.s, phase: 'loading', index, currentId: id, clipStartMs: start, positionMs: start, clipElapsedMs: 0, gapRemainingMs: 0, pausedFrom: undefined };
+    if (!song) return 'skip';
+    const prev = { ...this.s };
+    const start = record || id !== this.s.currentId ? computeStartMs(song, this.settings, this.rand) : this.s.clipStartMs;
+    this.s = { ...this.s, phase: 'loading', currentId: id, clipStartMs: start, positionMs: start, clipElapsedMs: 0, gapRemainingMs: 0, pausedFrom: undefined };
     this.emit();
     try {
       if (this.settings.fadeSec > 0) { this.lastSentVolume = -1; await this.port.setVolume(Math.round(this.targetVolume() * 0.05)).catch(() => {}); }
       await this.port.play(song.uri, start);
     } catch (e) {
-      this.events.onError(`Couldn't play "${song.displayTitle ?? song.title}" — skipped. ${e instanceof Error ? e.message : ''}`.trim());
-      this.order.splice(index, 1);
-      this.s.index = index - 1;
-      return false;
+      if (this.detached) return 'fatal';
+      const msg = e instanceof Error ? e.message : String(e);
+      if ((e as { fatal?: boolean })?.fatal) {
+        this.events.onError(`Playback stopped: ${msg}`);
+        this.s = { ...prev, phase: 'paused', pausedFrom: 'gap', gapRemainingMs: 0 };
+        this.emit();
+        return 'fatal';
+      }
+      this.events.onError(`Couldn't play "${song.displayTitle ?? song.title}"${record ? ' — skipped' : ''}. ${msg}`.trim());
+      if (record) {
+        this.order.splice(index, 1);
+        this.orderChanged();
+      } else {
+        this.s = { ...prev, phase: 'paused', pausedFrom: 'gap', gapRemainingMs: 0 };
+        this.emit();
+      }
+      return 'skip';
     }
+    if (this.detached) return 'fatal';
     this.lastTick = this.now();
+    this.cursor = index;
     this.s.phase = 'playing';
-    if (record && !this.called.has(id)) {
-      this.called.add(id);
-      this.events.onCall({ songId: id, at: Date.now() });
+    if (record) {
+      this.s.index = index;
+      if (!this.called.has(id)) {
+        this.called.add(id);
+        this.events.onCall({ songId: id, at: Date.now() });
+      }
     }
     this.pushVolume(true);
     this.emit();
-    return true;
+    return 'ok';
   }
 
   private async advance(): Promise<void> {
-    if (this.busy) return;
+    if (this.busy || this.detached) return;
     this.busy = true;
     try {
-      let tries = 0;
-      while (tries++ < 10) {
+      for (let tries = 0; tries < MAX_SKIPS; tries++) {
         const i = this.s.index + 1;
         if (i >= this.order.length) {
           this.s = { ...this.s, phase: 'done', gapRemainingMs: 0 };
@@ -131,58 +170,53 @@ export class GameController {
           this.emit();
           return;
         }
-        if (await this.playAt(i, true)) return;
+        const r = await this.playAt(i, true);
+        if (r !== 'skip') return;
       }
+      this.events.onError('Several songs in a row would not play. Check your Spotify device, then press play.');
+      this.holdAfterFailure();
     } finally {
       this.busy = false;
     }
+  }
+
+  private async oneOff(index: number): Promise<void> {
+    if (this.busy || this.detached) return;
+    this.busy = true;
+    try { await this.playAt(index, false); } finally { this.busy = false; }
+  }
+
+  /** Stops playback and disconnects this controller from the game (used when leaving the console). */
+  detach() {
+    if (this.detached) return;
+    this.detached = true;
+    this.events = NOOP_EVENTS;
+    this.port.pause().catch(() => {});
   }
 
   start(): Promise<void> { return this.advance(); }
   next(): Promise<void> { return this.advance(); }
 
   async previous(): Promise<void> {
-    if (this.busy || this.s.index <= 0) return this.replayLast();
-    this.busy = true;
-    try { await this.playAt(this.s.index - 1, false); } finally { this.busy = false; }
+    const target = (this.cursor >= 0 ? this.cursor : this.s.index) - 1;
+    if (target < 0) return this.replayLast();
+    return this.oneOff(target);
   }
 
   async replayLast(): Promise<void> {
-    if (this.busy || this.s.index < 0 || !this.s.currentId) return;
-    this.busy = true;
-    try {
-      const song = this.songs.get(this.s.currentId)!;
-      const start = this.s.clipStartMs;
-      this.s = { ...this.s, phase: 'loading', positionMs: start, clipElapsedMs: 0, gapRemainingMs: 0, pausedFrom: undefined };
-      this.emit();
-      try {
-        await this.port.play(song.uri, start);
-      } catch (e) {
-        this.events.onError(`Couldn't replay: ${e instanceof Error ? e.message : ''}`);
-        this.s.phase = 'gap';
-        this.emit();
-        return;
-      }
-      this.lastTick = this.now();
-      this.s.phase = 'playing';
-      this.pushVolume(true);
-      this.emit();
-    } finally {
-      this.busy = false;
-    }
+    if (this.s.index < 0 || !this.s.currentId) return;
+    const at = this.order.indexOf(this.s.currentId);
+    if (at < 0) return;
+    return this.oneOff(at);
   }
 
   async jumpTo(songId: string): Promise<void> {
     const at = this.order.indexOf(songId);
     if (at < 0) return;
-    if (at <= this.s.index) {
-      if (this.busy) return;
-      this.busy = true;
-      try { await this.playAt(at, false); } finally { this.busy = false; }
-      return;
-    }
+    if (at <= this.s.index) return this.oneOff(at);
     this.order.splice(at, 1);
     this.order.splice(this.s.index + 1, 0, songId);
+    this.orderChanged();
     await this.advance();
   }
 
@@ -233,17 +267,19 @@ export class GameController {
   reorder(ids: string[]) {
     const head = this.order.slice(0, this.s.index + 1);
     this.order = [...head, ...ids.filter((id) => !head.includes(id))];
+    this.orderChanged();
     this.emit();
   }
   remove(id: string) {
     const i = this.order.indexOf(id);
-    if (i > this.s.index) this.order.splice(i, 1);
+    if (i > this.s.index) { this.order.splice(i, 1); this.orderChanged(); }
     this.emit();
   }
   insert(id: string, at = 0) {
     if (this.order.indexOf(id) >= 0 && this.order.indexOf(id) <= this.s.index) return;
     this.order = this.order.filter((x) => x !== id);
     this.order.splice(this.s.index + 1 + Math.max(0, at), 0, id);
+    this.orderChanged();
     this.emit();
   }
 
@@ -259,7 +295,7 @@ export class GameController {
     const t = this.now();
     const dt = Math.max(0, t - (this.lastTick ?? t));
     this.lastTick = t;
-    if (this.busy) return;
+    if (this.busy || this.detached) return;
     if (this.s.phase === 'playing') {
       this.s.clipElapsedMs += dt;
       this.s.positionMs += dt;

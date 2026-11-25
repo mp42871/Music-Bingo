@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Console from './Console';
@@ -80,4 +80,29 @@ test('ending a round and starting the next with a new pattern', async () => {
     expect(g.rounds[1].patternId).toBe('blackout');
   });
   await act(async () => {});
+});
+
+test('queue changes are saved right away so a reload resumes correctly', async () => {
+  await setup();
+  await userEvent.keyboard(' ');
+  await waitFor(() => expect(port.play).toHaveBeenCalledTimes(1));
+  const target = useGame.getState().ctrl!.upcoming()[10];
+  const label = useGame.getState().songs.get(target)!.title;
+  await userEvent.click(screen.getByRole('button', { name: `Play ${label} now` }));
+  await waitFor(async () => {
+    const saved = await repo.getGame('g1');
+    expect(saved!.callOrder[1]).toBe(target);
+    expect(saved!.calls.map((c) => c.songId)).toContain(target);
+  });
+});
+
+test('leaving the console pauses playback and detaches the game', async () => {
+  await setup();
+  await userEvent.keyboard(' ');
+  await waitFor(() => expect(port.play).toHaveBeenCalledTimes(1));
+  const ctrl = useGame.getState().ctrl!;
+  cleanup();
+  await waitFor(() => expect(port.pause).toHaveBeenCalled());
+  await ctrl.next();
+  expect(port.play).toHaveBeenCalledTimes(1);
 });
