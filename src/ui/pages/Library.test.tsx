@@ -48,3 +48,14 @@ test('make a playlist from files', async () => {
     expect(pools[0].songs.map((s) => s.id).sort()).toEqual(['file:id-Africa.mp3', 'file:id-Jolene.mp3']);
   });
 });
+
+test('storage-full errors wrapped by the database (AbortError) are reported as storage full', async () => {
+  const real = audio.saveAudio;
+  vi.spyOn(audio, 'saveAudio').mockImplementation(async (meta, blob) => {
+    if (meta.name === 'Africa.mp3') throw Object.assign(new Error('Transaction aborted'), { name: 'AbortError', inner: new DOMException('full', 'QuotaExceededError') });
+    return real(meta, blob);
+  });
+  render(<MemoryRouter><Library /></MemoryRouter>);
+  await userEvent.upload(screen.getByLabelText('Add music files'), files());
+  expect(await screen.findByRole('alert')).toHaveTextContent(/storage is full.*Africa\.mp3/i);
+});

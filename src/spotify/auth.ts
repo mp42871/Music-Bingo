@@ -98,7 +98,9 @@ export async function getAccessToken(clientId: string, force = false): Promise<s
       }
       saveTokens(await res.json());
       return readTokens()!.accessToken;
-    } catch {
+    } catch (e) {
+      // No connection: say so, instead of looking logged out.
+      if (e instanceof TypeError) throw e;
       return null;
     } finally {
       refreshing = null;

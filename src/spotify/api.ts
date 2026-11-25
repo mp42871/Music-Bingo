@@ -1,5 +1,6 @@
 import type { Song } from '../core/types';
 import { parsePlaylistId } from './query';
+import { reportNetworkSuccess } from '../app/online';
 
 export class SpotifyError extends Error {
   constructor(message: string, public status?: number) {
@@ -35,6 +36,7 @@ export class SpotifyApi {
       ...init,
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(init.headers ?? {}) },
     });
+    reportNetworkSuccess();
     if (res.status === 429) {
       if (attempt >= 3) throw new SpotifyError('Spotify is busy (rate limit reached). Wait a minute and try again.', 429);
       const wait = Math.min(30, Number(res.headers.get('Retry-After') ?? '1') || 1);

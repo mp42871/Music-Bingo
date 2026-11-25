@@ -36,3 +36,11 @@ test('getAccessToken returns null when not logged in', async () => {
   localStorage.removeItem(TOKENS_KEY);
   expect(await getAccessToken('cid')).toBeNull();
 });
+
+test('a refresh that fails for network reasons throws a network error instead of looking logged out', async () => {
+  localStorage.setItem(TOKENS_KEY, JSON.stringify({ accessToken: 'old', refreshToken: 'R', expiresAt: Date.now() - 1000 }));
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+  await expect(getAccessToken('cid')).rejects.toBeInstanceOf(TypeError);
+  expect(localStorage.getItem(TOKENS_KEY)).not.toBeNull();
+  vi.unstubAllGlobals();
+});

@@ -21,6 +21,9 @@ export function createFilePlayer(): FilePlayer {
     }
   };
 
+  /** resume() never settles while the browser blocks audio; don't wait on it forever. */
+  const wake = () => Promise.race([ctx?.resume().catch(() => {}), new Promise((r) => setTimeout(r, 300))]);
+
   const ready = () => new Promise<void>((resolve, reject) => {
     if (el.readyState >= 2) return resolve();
     const ok = () => { cleanup(); resolve(); };
@@ -34,7 +37,7 @@ export function createFilePlayer(): FilePlayer {
   return {
     async load(blob, positionMs) {
       ensureGraph();
-      await ctx?.resume().catch(() => {});
+      await wake();
       if (url) URL.revokeObjectURL(url);
       url = URL.createObjectURL(blob);
       el.src = url;
@@ -44,7 +47,7 @@ export function createFilePlayer(): FilePlayer {
       await el.play();
     },
     async pause() { el.pause(); },
-    async resume() { await ctx?.resume().catch(() => {}); await el.play(); },
+    async resume() { await wake(); await el.play(); },
     async seek(ms) { el.currentTime = Math.max(0, ms / 1000); },
     async setVolume(pct) {
       volume = Math.max(0, Math.min(1, pct / 100));

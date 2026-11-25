@@ -38,7 +38,9 @@ export default function Library() {
         const { blob, ...meta } = await readAudioMeta(picked[i]);
         await audio.saveAudio(meta, blob);
       } catch (e) {
-        if ((e as DOMException)?.name === 'QuotaExceededError') full.push(picked[i].name);
+        const err = e as { name?: string; inner?: { name?: string } };
+        // The database may wrap the quota error in an AbortError.
+        if (err?.name === 'QuotaExceededError' || err?.inner?.name === 'QuotaExceededError') full.push(picked[i].name);
         else unreadable.push(picked[i].name);
       }
       setBusy({ done: i + 1, total: picked.length });
