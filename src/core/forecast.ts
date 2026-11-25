@@ -42,3 +42,19 @@ export function tuneCallOrder(
   const at = b.forecast.firstWinCall ?? Infinity;
   return { order: b.order, seed: b.seed, forecast: b.forecast, hit: at >= window.min && at <= window.max };
 }
+
+/** Runs several random call orders to estimate when the first bingo lands. */
+export function estimate(pool: Pool, cards: Card[], masks: number[][], songsById: Map<string, Song>, runs = 15, seed = 1) {
+  const firsts: number[] = [];
+  const winners: number[] = [];
+  for (let r = 0; r < runs; r++) {
+    const f = forecast(cards, makeCallOrder(pool, hashSeed(seed, 'est', r)), masks, songsById);
+    if (f.firstWinCall) { firsts.push(f.firstWinCall); winners.push(f.winnersAtFirst); }
+  }
+  firsts.sort((a, b) => a - b);
+  const median = firsts.length ? firsts[Math.floor(firsts.length / 2)] : 0;
+  return {
+    median, min: firsts[0] ?? 0, max: firsts.at(-1) ?? 0,
+    avgWinners: winners.length ? winners.reduce((a, b) => a + b, 0) / winners.length : 0,
+  };
+}

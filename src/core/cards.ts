@@ -140,7 +140,7 @@ export function generateCardSet(
   }
   const set: CardSet = {
     id: uid(), name: opts.name ?? `${pool.name} — ${cards.length} cards`, poolId: pool.id,
-    seed: opts.seed, layout, cards, createdAt: Date.now(),
+    seed: opts.seed, layout, cards, createdAt: Date.now(), songs: active(pool),
   };
   return capped
     ? { set, capped, message: `Only ${cards.length} unique cards are possible with this playlist — add more songs for more cards.` }

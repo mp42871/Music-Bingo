@@ -1,4 +1,4 @@
-import { forecast, makeCallOrder, tuneCallOrder } from './forecast';
+import { estimate, forecast, makeCallOrder, tuneCallOrder } from './forecast';
 import { generateCardSet } from './cards';
 import { masksFor } from './patterns';
 import { catPool, layout } from '../test/fixtures';
@@ -32,4 +32,12 @@ test('tuneCallOrder hits a wide window', () => {
   expect(t.hit).toBe(true);
   expect(t.forecast.firstWinCall).toBeGreaterThanOrEqual(1);
   expect(t.order).toHaveLength(75);
+});
+
+test('estimate summarizes random orders', () => {
+  const { set } = generateCardSet(pool, layout(), { seed: 1, count: 40, startNumber: 1 });
+  const e = estimate(pool, set.cards, masksFor('line', 5), byId, 10, 1);
+  expect(e.median).toBeGreaterThan(0);
+  expect(e.min).toBeLessThanOrEqual(e.median);
+  expect(e.max).toBeGreaterThanOrEqual(e.median);
 });

@@ -1,0 +1,42 @@
+.bingo-card {
+  container-type: size;
+  display: flex; flex-direction: column; gap: 2.2cqmin;
+  padding: 4cqmin; border-radius: 3cqmin;
+  background: var(--c-bg); color: var(--c-ink);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  width: 100%; height: 100%; box-sizing: border-box; overflow: hidden;
+}
+.bingo-card .bc-top { display: flex; align-items: center; gap: 3cqmin; }
+.bingo-card .bc-logo { height: 9cqmin; max-width: 22cqmin; object-fit: contain; }
+.bingo-card .bc-title { font-family: var(--c-font); font-size: 7.2cqmin; line-height: 1; color: var(--c-ink); }
+.bingo-card .bc-sub { font-size: 2.8cqmin; opacity: .8; margin-top: .8cqmin; }
+.bingo-card .bc-num { margin-left: auto; text-align: right; font-family: var(--c-font); font-size: 4.2cqmin; color: var(--c-accent); white-space: nowrap; }
+.bingo-card .bc-qr { width: 9cqmin; height: 9cqmin; image-rendering: pixelated; }
+.bingo-card .bc-grid { display: grid; gap: 1cqmin; flex: 1; min-height: 0; }
+.bingo-card .bc-banner { grid-column: 1 / -1; }
+.bingo-card .bc-head {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--c-font); background: var(--c-accent); color: var(--c-head-ink);
+  border-radius: 1.6cqmin; padding: 1.4cqmin .6cqmin; line-height: 1.05; overflow: hidden;
+}
+.bingo-card .bc-head:nth-child(even) { background: var(--c-accent2); }
+.bingo-card .bc-cell {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; background: var(--c-cell); border: .45cqmin solid var(--c-line); border-radius: 1.6cqmin;
+  padding: .8cqmin; line-height: 1.12; overflow: hidden; overflow-wrap: normal; word-break: normal; hyphens: manual;
+  font-weight: 700; color: var(--c-ink); background-size: cover; background-position: center;
+}
+.bingo-card .bc-cell .bc-artist { font-weight: 500; opacity: .75; margin-top: .5cqmin; }
+.bingo-card .bc-cell.bc-art { color: #fff; text-shadow: 0 0 .8cqmin #000, 0 0 .4cqmin #000; }
+.bingo-card .bc-cell.bc-art::before { content: ''; position: absolute; inset: 0; background: rgb(0 0 0 / .35); }
+.bingo-card .bc-cell.bc-art > * { position: relative; }
+.bingo-card .bc-free { font-family: var(--c-font); background: var(--c-accent); color: var(--c-head-ink); border-color: var(--c-accent); }
+.bingo-card .bc-free .bc-disc { width: 60%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle, var(--c-accent) 0 18%, #111 19% 21%, #1a1a1a 22% 100%); color: #fff; }
+.bingo-card .bc-bonus::after { content: '★'; position: absolute; top: .4cqmin; right: 1cqmin; color: var(--c-accent2); font-size: 3.4cqmin; }
+.bingo-card .bc-cell[data-marked='true'] { outline: .9cqmin solid var(--c-accent2); outline-offset: -.9cqmin; }
+.bingo-card .bc-cell[data-marked='true']::after { content: ''; position: absolute; inset: 14%; border-radius: 50%; background: var(--c-accent2); opacity: .45; }
+.bingo-card .bc-cell[data-hl='true'] { box-shadow: 0 0 0 .9cqmin var(--c-accent) inset; }
+.bingo-card .bc-cell[data-uncalled='true'] { opacity: .35; }
+.bingo-card button.bc-cell { cursor: pointer; font: inherit; font-weight: 700; }
+.bingo-card .bc-foot { display: flex; justify-content: space-between; font-size: 2.3cqmin; opacity: .7; }

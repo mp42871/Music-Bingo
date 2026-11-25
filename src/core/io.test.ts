@@ -1,4 +1,4 @@
-import { exportPoolCsv, exportPoolJson, ImportError, importPoolJson, mergeSongs, parseSongLines, parseTime, formatTime } from './io';
+import { cleanTitle, exportPoolCsv, exportPoolJson, ImportError, importPoolJson, mergeSongs, parseSongLines, parseTime, formatTime } from './io';
 import { catPool, song } from '../test/fixtures';
 
 test('pool JSON round-trips', () => {
@@ -45,4 +45,12 @@ test('time parse/format', () => {
   expect(parseTime('45')).toBe(45000);
   expect(parseTime('x')).toBeNull();
   expect(formatTime(65000)).toBe('1:05');
+});
+
+test('cleanTitle strips remaster/version noise but keeps real parentheses', () => {
+  expect(cleanTitle('Go Your Own Way - 2004 Remaster')).toBe('Go Your Own Way');
+  expect(cleanTitle('Dancing Queen (Remastered Extended Version)')).toBe('Dancing Queen');
+  expect(cleanTitle('Hotel California - Live')).toBe('Hotel California');
+  expect(cleanTitle('(I Can\'t Get No) Satisfaction')).toBe('(I Can\'t Get No) Satisfaction');
+  expect(cleanTitle('Lose Yourself - From "8 Mile" Soundtrack')).toBe('Lose Yourself');
 });

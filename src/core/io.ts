@@ -127,3 +127,12 @@ export function download(filename: string, text: string, type = 'application/jso
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+const NOISE = /(remaster|version|live|mono|stereo|edit|mix|from\b|soundtrack|anniversary|deluxe|single|bonus|demo|feat\.?|with\b)/i;
+
+/** Removes "- 2011 Remaster", "(Remastered…)" style noise from a Spotify title for display. */
+export function cleanTitle(title: string): string {
+  let t = title.replace(/\s+[-–—]\s+.*$/, (m) => (NOISE.test(m) ? '' : m));
+  t = t.replace(/\s*[([]([^)\]]*)[)\]]/g, (m, inner: string, offset: number) => (offset > 0 && NOISE.test(inner) ? '' : m));
+  return t.trim() || title;
+}

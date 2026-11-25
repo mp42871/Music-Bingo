@@ -23,6 +23,9 @@ export interface Card { number: number; cells: Cell[] }
 export interface CardSet {
   id: string; name: string; poolId: string; seed: number; layout: CardLayout;
   cards: Card[]; createdAt: number;
+  /** Snapshot of the pool's songs when the cards were made (so reprints/checks never drift). */
+  songs?: Song[];
+  style?: PrintStyle;
 }
 export interface PatternDef { id: string; name: string }
 export interface Call { songId: string; at: number }
