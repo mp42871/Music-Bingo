@@ -3,8 +3,12 @@ import { readiness } from '../../core/offline';
 import type { Song } from '../../core/types';
 import { songLabel } from '../../game/store';
 
-export function Readiness({ songs, fileIds, online, onSaveOrder, compact }: {
+export function Readiness({ songs, fileIds, online, onSaveOrder, compact, appCached, orderSaved }: {
   songs: Song[]; fileIds: Set<string>; online: boolean; onSaveOrder?: (uris: string[]) => Promise<string>; compact?: boolean;
+  /** Whether this browser has the app saved for offline use (undefined = don't show). */
+  appCached?: boolean;
+  /** Whether the call order has been saved to Spotify (undefined = don't show). */
+  orderSaved?: boolean;
 }) {
   const r = readiness(songs, fileIds);
   const [saved, setSaved] = useState<string | null>(null);
@@ -16,6 +20,12 @@ export function Readiness({ songs, fileIds, online, onSaveOrder, compact }: {
   return (
     <div className="grid gap-3 text-sm">
       <p className={r.manual === 0 ? 'text-ok' : 'text-ink'}>{verdict}</p>
+      {(appCached !== undefined || orderSaved !== undefined) && (
+        <ul className="grid gap-0.5 text-dim">
+          {appCached !== undefined && <li className={appCached ? 'text-ok' : 'text-peak'}>App saved for offline: {appCached ? '✓' : 'not yet — reload this page once while online'}</li>}
+          {orderSaved !== undefined && r.manual > 0 && <li className={orderSaved || saved ? 'text-ok' : 'text-dim'}>Call order saved to Spotify: {orderSaved || saved ? '✓' : 'not yet'}</li>}
+        </ul>
+      )}
       {r.manual > 0 && !compact && (
         <details className="text-dim">
           <summary className="cursor-pointer">Songs without a music file ({r.manual})</summary>

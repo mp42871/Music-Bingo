@@ -24,3 +24,12 @@ test('all files present', () => {
   render(<Readiness songs={songs.slice(0, 3)} fileIds={new Set(['a', 'b', 'c'])} online onSaveOrder={async () => ''} />);
   expect(screen.getByText(/Offline ready: all 3 songs play automatically/)).toBeInTheDocument();
 });
+
+test('shows whether the app is saved for offline and whether the call order was saved', () => {
+  const { rerender } = render(<Readiness songs={songs} fileIds={new Set()} online appCached={false} orderSaved={false} onSaveOrder={async () => ''} />);
+  expect(screen.getByText(/App saved for offline: not yet/)).toBeInTheDocument();
+  expect(screen.getByText(/Call order saved to Spotify: not yet/)).toBeInTheDocument();
+  rerender(<Readiness songs={songs} fileIds={new Set()} online appCached orderSaved onSaveOrder={async () => ''} />);
+  expect(screen.getByText(/App saved for offline: ✓/)).toBeInTheDocument();
+  expect(screen.getByText(/Call order saved to Spotify: ✓/)).toBeInTheDocument();
+});

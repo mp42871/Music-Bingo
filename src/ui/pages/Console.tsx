@@ -132,7 +132,13 @@ export default function Console() {
             <h2 className="mb-2 font-bold">Offline</h2>
             <Readiness compact songs={[...(cur && cs.phase !== 'done' ? [cur] : []), ...upcoming.map((id) => songs.get(id)!).filter(Boolean)]}
               fileIds={fileIds} online={online}
-              onSaveOrder={(uris) => useSpotify.getState().api.createPlaylist(`${game.name} — call order`, uris)} />
+              appCached={typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller}
+              orderSaved={!!game.orderSavedAt}
+              onSaveOrder={async (uris) => {
+                const url = await useSpotify.getState().api.createPlaylist(`${game.name} — call order`, uris);
+                await g.markOrderSaved();
+                return url;
+              }} />
           </div>
           <div className="panel p-4">
             <button type="button" className="mb-2 flex w-full items-center justify-between font-bold" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(!settingsOpen)}>

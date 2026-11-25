@@ -314,10 +314,15 @@ export class GameController {
   }
 
   updateSettings(p: Partial<ClipSettings>) {
-    const oldGap = this.settings.gapSec;
+    const old = this.settings;
     this.settings = { ...this.settings, ...p };
-    if (this.s.phase === 'gap' && p.gapSec !== undefined && p.gapSec !== oldGap)
-      this.s.gapRemainingMs = this.settings.autoAdvance ? Math.max(0, p.gapSec * 1000 - this.gapElapsed) : 0;
+    const gapChanged = p.gapSec !== undefined && p.gapSec !== old.gapSec;
+    const autoChanged = p.autoAdvance !== undefined && p.autoAdvance !== old.autoAdvance;
+    if (this.s.phase === 'gap' && (gapChanged || autoChanged)) {
+      if (!this.settings.autoAdvance) this.s.gapRemainingMs = 0;
+      else if (autoChanged) { this.gapElapsed = 0; this.s.gapRemainingMs = this.settings.gapSec * 1000; }
+      else this.s.gapRemainingMs = Math.max(0, this.settings.gapSec * 1000 - this.gapElapsed);
+    }
     this.emit();
   }
 

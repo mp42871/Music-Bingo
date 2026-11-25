@@ -1,7 +1,7 @@
 import type { FilePlayer } from '../game/hybridPort';
 
 /** Plays music files from this computer through an <audio> element, with Web Audio gain for smooth volume. */
-export function createFilePlayer(): FilePlayer {
+export function createFilePlayer(): FilePlayer & { position(): number } {
   const el = new Audio();
   el.preload = 'auto';
   let url: string | null = null;
@@ -35,7 +35,7 @@ export function createFilePlayer(): FilePlayer {
   });
 
   return {
-    async load(blob, positionMs) {
+    async load(blob, positionMs, clipMs) {
       ensureGraph();
       await wake();
       if (url) URL.revokeObjectURL(url);
@@ -43,17 +43,24 @@ export function createFilePlayer(): FilePlayer {
       el.src = url;
       el.load();
       await ready();
-      el.currentTime = Math.max(0, Math.min(positionMs / 1000, (el.duration || 0) - 1));
+      const dur = el.duration || 0;
+      // A start past the end of a shorter file would play silence: move back so the clip has music.
+      const latest = Math.max(0, dur - clipMs / 1000);
+      el.currentTime = Math.max(0, Math.min(positionMs / 1000, latest));
       await el.play();
     },
     async pause() { el.pause(); },
     async resume() { await wake(); await el.play(); },
-    async seek(ms) { el.currentTime = Math.max(0, ms / 1000); },
+    async seek(ms) { el.currentTime = Math.max(0, Math.min(ms / 1000, Math.max(0, (el.duration || 0) - 0.5))); },
+    position: () => Math.round(el.currentTime * 1000),
     async setVolume(pct) {
       volume = Math.max(0, Math.min(1, pct / 100));
       if (gain && ctx) gain.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
       else el.volume = volume;
     },
-    stop() { el.pause(); },
+    stop() {
+      el.pause();
+      if (url) { URL.revokeObjectURL(url); url = null; el.removeAttribute('src'); }
+    },
   };
 }

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { phoneUrl, poolToPhoneDef } from '../../core/phone';
+import { phoneUrl } from '../../core/phone';
+import { setPhoneDef } from '../../game/phoneLink';
 import { DEFAULT_STYLE } from '../../core/style';
-import type { CardSet, Game, Pool, Song } from '../../core/types';
+import type { CardSet, Game, Song } from '../../core/types';
 import { getCardSet, getGame } from '../../db/repo';
 import { CardGrid } from '../components/CardGrid';
 import { QR } from '../components/QR';
@@ -39,8 +40,7 @@ export default function Print() {
   const pages: CardSet['cards'][] = [];
   for (let i = 0; i < set.cards.length; i += perPage) pages.push(set.cards.slice(i, i + perPage));
 
-  const phonePool: Pool = { id: set.poolId, name: style.title, songs, categories: [], createdAt: 0, updatedAt: 0 };
-  const url = phoneUrl(poolToPhoneDef(phonePool, set.seed, set.layout, style.title || 'Music Bingo'));
+  const url = phoneUrl(setPhoneDef(set.songs ? set : { ...set, songs }));
 
   const tabs = [['cards', 'Cards'], ['master', 'Host call sheet'], ['poster', 'Phone QR poster']] as const;
 

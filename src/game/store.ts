@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { useSpotify } from '../app/spotifyStore';
 import { cleanTitle } from '../core/io';
 import { masksFor, patternName } from '../core/patterns';
-import { phoneUrl, poolToPhoneDef } from '../core/phone';
+import { phoneUrl } from '../core/phone';
+import { setPhoneDef } from './phoneLink';
+import { throttleVolume } from './spotifyVolume';
 import { DEFAULT_STYLE } from '../core/style';
 import type { CardSet, ClipSettings, Game, Song } from '../core/types';
 import { getCardSet, getGame, getPool, saveGame } from '../db/repo';
@@ -41,6 +43,8 @@ export function browserDeviceId() { return sdkDeviceId; }
 
 export const spotifyPort = (): PlaybackPort => {
   const api = () => useSpotify.getState().api;
+  // External speakers are controlled over the internet: limit fade steps to avoid Spotify rate limits.
+  const remoteVolume = throttleVolume((v) => (currentDeviceId ? api().volume(currentDeviceId, v) : Promise.resolve()), 500);
   const dev = () => {
     if (!currentDeviceId) throw new Error('No Spotify device selected. Pick a device in the console.');
     return currentDeviceId;
@@ -65,7 +69,7 @@ export const spotifyPort = (): PlaybackPort => {
     seek: async (ms) => { await api().seek(dev(), ms); },
     setVolume: async (v) => {
       if (sdkPlayer && currentDeviceId === sdkDeviceId) await sdkPlayer.setVolume(Math.max(0, Math.min(1, v / 100)));
-      else await api().volume(dev(), v);
+      else await remoteVolume(v);
     },
   };
 };
@@ -79,6 +83,7 @@ export const hybridPort = (): PlaybackPort => createHybridPort({
   getSong: (uri) => [...useGame.getState().songs.values()].find((s) => s.uri === uri),
   getBlob: getAudioBlob,
   policy: () => useGame.getState().game?.settings.source ?? 'auto',
+  clipMs: () => (useGame.getState().game?.settings.clipSec ?? 30) * 1000,
   online: () => useNet.getState().online,
   spotifyReady: () => useSpotify.getState().connected && !!getDevice(),
   onSource: (source) => useGame.setState({ source }),
@@ -107,6 +112,7 @@ interface GameStore {
   startRound(patternId: string, customMask?: number[]): Promise<void>;
   recordWinner(w: { cardNumber: number; name?: string; prize?: string; atCall: number }): Promise<void>;
   finish(): Promise<void>;
+  markOrderSaved(): Promise<void>;
   persist(): Promise<void>;
 }
 
@@ -126,6 +132,7 @@ export const useGame = create<GameStore>((set, get) => ({
 
   async load(id) {
     get().ctrl?.detach();
+    set({ source: null });
     const stored = await getGame(id);
     if (!stored) return false;
     // Pick up music files linked in the playlist since the cards were made.
@@ -153,12 +160,12 @@ export const useGame = create<GameStore>((set, get) => ({
       },
     }, Date.now, Math.random, game.calls.map((c) => c.songId));
     channel ??= openChannel();
-    set({ game, cardSet, songs, ctrl, cs: ctrl.state, errors: [], revealed: false });
+    set({ game, cardSet, songs, ctrl, cs: ctrl.state, errors: [], revealed: false, source: null });
     return true;
   },
   unload() {
     get().ctrl?.detach();
-    set({ game: null, cardSet: null, ctrl: null, cs: null });
+    set({ game: null, cardSet: null, ctrl: null, cs: null, source: null });
   },
   dismissError(i) { set((s) => ({ errors: s.errors.filter((_, j) => j !== i) })); },
   setReveal(v) { set({ revealed: v }); broadcast(); },
@@ -201,6 +208,13 @@ export const useGame = create<GameStore>((set, get) => ({
     set({ game: next });
     await saveGame(next);
   },
+  async markOrderSaved() {
+    const g = get().game;
+    if (!g) return;
+    const next = { ...g, orderSavedAt: Date.now() };
+    set({ game: next });
+    await saveGame(next);
+  },
   async persist() {
     const { game, ctrl } = get();
     if (game && ctrl) await saveGame({ ...game, callOrder: ctrl.fullOrder() });
@@ -223,8 +237,7 @@ function broadcast() {
     phase: cs.phase, gapRemainingMs: cs.gapRemainingMs, clipElapsedMs: cs.clipElapsedMs, clipMs: game.settings.clipSec * 1000,
     pattern: r ? patternName(r.patternId) : '', round: game.rounds.length,
     revealed: revealed && cur ? { title: songLabel(cur), artist: cur.artist, art: cur.artUrl } : null,
-    recent: [],
-    phoneUrl: showQr && cardSet ? phoneUrl(poolToPhoneDef({ ...game.pool, songs: cardSet.songs ?? game.pool.songs }, cardSet.seed, cardSet.layout, style.title || game.name)) : undefined,
+    phoneUrl: showQr && cardSet ? phoneUrl(setPhoneDef(cardSet)) : undefined,
     showQr, winners: r?.winners.length ?? 0,
   };
   try { channel.postMessage(msg); } catch { /* window closed */ }

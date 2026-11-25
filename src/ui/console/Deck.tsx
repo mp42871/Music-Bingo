@@ -38,7 +38,7 @@ export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, cl
           </div>
           {manual && song ? (
             <div className="mt-3 rounded-2xl border-2 border-peak bg-peak/10 p-4">
-              <div className="text-sm font-semibold text-peak">Play now in Spotify</div>
+              <div className="text-sm font-semibold text-peak">{song.id.startsWith('file:') ? 'This song’s music file is missing — play it from another source' : 'Play now in Spotify'}</div>
               <div className="font-display text-3xl leading-tight">{songLabel(song)}</div>
               <div className="text-lg text-dim">{song.artist}</div>
               <div className="mt-3 flex flex-wrap items-center gap-3">

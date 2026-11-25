@@ -3,7 +3,8 @@ import type { ClipSettings, Song } from '../core/types';
 import type { PlaybackPort } from './controller';
 
 export interface FilePlayer {
-  load(blob: Blob, positionMs: number): Promise<void>;
+  /** Starts the file at positionMs, moved earlier if needed so clipMs of music remains. */
+  load(blob: Blob, positionMs: number, clipMs: number): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;
   seek(ms: number): Promise<void>;
@@ -17,6 +18,7 @@ export interface HybridDeps {
   getSong(uri: string): Song | undefined;
   getBlob(fileId: string): Promise<Blob | undefined>;
   policy(): ClipSettings['source'];
+  clipMs(): number;
   online(): boolean;
   spotifyReady(): boolean;
   onSource(s: Source): void;
@@ -30,6 +32,7 @@ const isNetworkError = (e: unknown) =>
 /** Plays each song from the best source it has right now: Spotify, a music file, or "manual" (host plays it). */
 export function createHybridPort(d: HybridDeps): PlaybackPort & { current(): Source | null } {
   let active: Source | null = null;
+  let volume: number | null = null;
   const name = (s: Song) => s.displayTitle ?? s.title;
 
   const use = (s: Source) => {
@@ -48,7 +51,8 @@ export function createHybridPort(d: HybridDeps): PlaybackPort & { current(): Sou
     }
     try {
       if (active === 'spotify') d.spotify.pause().catch(() => {});
-      await d.file.load(blob, pos);
+      if (volume !== null) await d.file.setVolume(volume);
+      await d.file.load(blob, pos, d.clipMs());
       use('file');
     } catch {
       d.onNotice(`Couldn't play the music file for "${name(song)}" — play it from the Spotify app.`);
@@ -80,6 +84,6 @@ export function createHybridPort(d: HybridDeps): PlaybackPort & { current(): Sou
     pause: async () => { if (active === 'spotify') await d.spotify.pause(); else if (active === 'file') await d.file.pause(); },
     resume: async () => { if (active === 'spotify') await d.spotify.resume(); else if (active === 'file') await d.file.resume(); },
     seek: async (ms) => { if (active === 'spotify') await d.spotify.seek(ms); else if (active === 'file') await d.file.seek(ms); },
-    setVolume: async (v) => { if (active === 'spotify') await d.spotify.setVolume(v); else if (active === 'file') await d.file.setVolume(v); },
+    setVolume: async (v) => { volume = v; if (active === 'spotify') await d.spotify.setVolume(v); else if (active === 'file') await d.file.setVolume(v); },
   };
 }

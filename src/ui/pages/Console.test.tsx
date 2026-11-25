@@ -133,3 +133,9 @@ test('music source can be switched live', async () => {
   await userEvent.click(screen.getByRole('radio', { name: 'Manual only' }));
   expect(useGame.getState().game!.settings.source).toBe('manual');
 });
+
+test('opening a game clears the previous game\'s source badge', async () => {
+  useGame.setState({ source: 'spotify' });
+  await setup();
+  expect(useGame.getState().source).toBeNull();
+});

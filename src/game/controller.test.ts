@@ -248,3 +248,31 @@ test('manual songs never auto-advance', async () => {
   await h.advance(60_000);
   expect(h.calls).toHaveLength(1);
 });
+
+test('turning auto-play off during a break clears the countdown; turning it on restarts it', async () => {
+  const h = setup({ clipSec: 5, gapSec: 10 });
+  await h.c.start();
+  await h.advance(5_000);
+  await h.advance(2_000);
+  h.c.updateSettings({ autoAdvance: false });
+  expect(h.state.gapRemainingMs).toBe(0);
+  await h.advance(20_000);
+  expect(h.calls).toHaveLength(1);
+  h.c.updateSettings({ autoAdvance: true });
+  expect(h.state.gapRemainingMs).toBe(10_000);
+  await h.advance(9_000);
+  expect(h.calls).toHaveLength(1);
+  await h.advance(1_250);
+  expect(h.calls).toHaveLength(2);
+});
+
+test('previous during a manual song keeps it pending; Next records it once', async () => {
+  const h = setup({}, [], false, ['s1']);
+  await h.c.start();
+  await h.c.next();
+  expect(h.state.phase).toBe('manual');
+  await h.c.previous();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0']);
+  await h.c.next();
+  expect(h.calls.map((x) => x.songId)).toEqual(['s0', 's1', 's2']);
+});

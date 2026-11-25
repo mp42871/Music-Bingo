@@ -55,6 +55,8 @@ export interface Game {
   id: string; name: string; createdAt: number; pool: Pool; cardSetId: string;
   settings: ClipSettings; callOrder: string[]; calls: Call[]; rounds: Round[];
   status: 'setup' | 'live' | 'finished';
+  /** When the call order was last saved as a Spotify playlist (for manual offline play). */
+  orderSavedAt?: number;
 }
 export interface AudioFile {
   id: string; name: string; title: string; artist: string; album?: string;

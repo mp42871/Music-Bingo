@@ -12,7 +12,7 @@ function setup(opts: { policy?: ClipSettings['source']; online?: boolean; spotif
   const port = createHybridPort({
     spotify, file, getSong: (uri) => songs.find((s) => s.uri === uri),
     getBlob: async (id) => (opts.blob === false ? undefined : new Blob([id])),
-    policy: () => opts.policy ?? 'auto', online: () => opts.online ?? true, spotifyReady: () => true,
+    policy: () => opts.policy ?? 'auto', online: () => opts.online ?? true, spotifyReady: () => true, clipMs: () => 30_000,
     onSource: (s) => sources.push(s), onNotice: (m) => notices.push(m), onNetworkFailure: () => notices.push('NET'),
   });
   return { port, spotify, file, sources, notices };
@@ -30,7 +30,7 @@ test('online auto plays through Spotify; controls go to Spotify', async () => {
 test('offline auto plays the file and routes controls to it', async () => {
   const h = setup({ online: false });
   await h.port.play('spotify:track:s1', 5000);
-  expect(h.file.load).toHaveBeenCalledWith(expect.any(Blob), 5000);
+  expect(h.file.load).toHaveBeenCalledWith(expect.any(Blob), 5000, 30_000);
   await h.port.seek(9000);
   await h.port.setVolume(40);
   expect(h.file.seek).toHaveBeenCalledWith(9000);
@@ -76,4 +76,19 @@ test('file-only songs use the file even online', async () => {
   await h.port.play('file:f3', 0);
   expect(h.file.load).toHaveBeenCalled();
   expect(h.spotify.play).not.toHaveBeenCalled();
+});
+
+test('switching to a music file applies the latest volume before it starts', async () => {
+  const h = setup();
+  await h.port.play('spotify:track:s1', 0);
+  await h.port.setVolume(35);
+  await h.port.play('file:f3', 0);
+  expect(h.file.setVolume).toHaveBeenCalledWith(35);
+  expect(h.file.setVolume.mock.invocationCallOrder[0]).toBeLessThan(h.file.load.mock.invocationCallOrder[0]);
+});
+
+test('file playback is told the clip length', async () => {
+  const h = setup();
+  await h.port.play('file:f3', 5000);
+  expect(h.file.load).toHaveBeenCalledWith(expect.any(Blob), 5000, 30_000);
 });

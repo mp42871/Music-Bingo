@@ -23,7 +23,11 @@ export const useSpotify = create<SpotifyStore>((set, get) => ({
   connected: isLoggedIn(),
   profile: null,
   error: null,
-  api: new SpotifyApi((force) => getAccessToken(get().clientId, force)),
+  api: new SpotifyApi(async (force) => {
+    const t = await getAccessToken(get().clientId, force);
+    if (!t && get().connected && !isLoggedIn()) set({ connected: false, profile: null });
+    return t;
+  }),
   async init() {
     const clientId = await getSetting('clientId', DEFAULT_CLIENT_ID);
     set({ clientId });

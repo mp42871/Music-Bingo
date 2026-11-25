@@ -10,7 +10,6 @@ export interface AudienceMessage {
   pattern: string;
   round: number;
   revealed: { title: string; artist: string; art?: string } | null;
-  recent: { title: string; artist: string }[];
   phoneUrl?: string;
   showQr: boolean;
   winners: number;
