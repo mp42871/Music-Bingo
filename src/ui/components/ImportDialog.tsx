@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOnline } from '../../app/online';
 import { useSpotify } from '../../app/spotifyStore';
 import { importPoolJson, parseSongLines } from '../../core/io';
 import type { Pool, Song } from '../../core/types';
@@ -16,6 +17,7 @@ export function ImportDialog({ currentPoolId, onImport, onClose }: {
   onClose: () => void;
 }) {
   const { api, connected } = useSpotify();
+  const online = useOnline();
   const [tab, setTab] = useState<Tab>('file');
   const [mode, setMode] = useState<Mode>('skip');
   const [ready, setReady] = useState<{ songs: Song[]; source: string } | null>(null);
@@ -33,6 +35,7 @@ export function ImportDialog({ currentPoolId, onImport, onClose }: {
 
   const runMatch = async (lines: ReturnType<typeof parseSongLines>) => {
     if (!lines.length) return setErr('No songs found in that text.');
+    if (!online) return setErr('You’re offline — looking up songs on Spotify needs internet. Bingo playlist (.json) files still import.');
     if (!connected) return setErr('Connect Spotify in Settings to look up songs.');
     setProgress({ done: 0, total: lines.length });
     const r = await matchLines(api, lines, (done) => setProgress({ done, total: lines.length }));
@@ -103,7 +106,8 @@ export function ImportDialog({ currentPoolId, onImport, onClose }: {
             <button type="button" className="btn btn-a self-start" disabled={!text.trim() || !!progress} onClick={() => { reset(); void runMatch(parseSongLines(text)); }}>Find songs</button>
           </div>
         )}
-        {tab === 'spotify' && (
+        {tab === 'spotify' && !online && <p className="text-peak">You’re offline — importing from Spotify needs internet.</p>}
+        {tab === 'spotify' && online && (
           <div className="flex flex-col gap-3">
             <div className="flex gap-2">
               <input aria-label="Spotify playlist link" placeholder="Paste a Spotify playlist link" value={link} onChange={(e) => setLink(e.target.value)} className="flex-1" />

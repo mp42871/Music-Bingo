@@ -85,6 +85,7 @@ export default function PoolEditor() {
                 ['Bingo playlist (.json)', () => download(`${pool.name}.json`, exportPoolJson(pool))],
                 ['Spreadsheet (.csv)', () => download(`${pool.name}.csv`, exportPoolCsv(pool), 'text/csv')],
                 ['Save to Spotify', async () => {
+                  if (!navigator.onLine) return flash('You’re offline — saving to Spotify needs internet.');
                   try { await api.createPlaylist(pool.name, pool.songs.filter((s) => !s.excluded).map((s) => s.uri)); flash('Saved to your Spotify as a private playlist.'); }
                   catch (e) { flash(e instanceof Error ? e.message : String(e)); }
                 }],

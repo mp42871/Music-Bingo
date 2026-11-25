@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useOnline } from '../../app/online';
 import { useSpotify } from '../../app/spotifyStore';
 import { PRESETS, type Preset } from '../../core/presets';
 import type { Song } from '../../core/types';
@@ -12,6 +13,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
   onPreset: (p: Preset) => void;
 }) {
   const { api, connected } = useSpotify();
+  const online = useOnline();
   const [f, setF] = useState<SearchFilters>({});
   const [results, setResults] = useState<Song[]>([]);
   const [total, setTotal] = useState(0);
@@ -42,7 +44,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
         <span className="label">Quick categories</span>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {PRESETS.map((p) => (
-            <button key={p.id} type="button" className="chip hover:border-deck-a" onClick={() => {
+            <button key={p.id} type="button" className="chip hover:border-deck-a" disabled={!online} onClick={() => {
               const nf = { ...p.query };
               setF(nf);
               onPreset(p);
@@ -61,12 +63,13 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
           <input aria-label="Genre" placeholder="Genre (e.g. country)" value={f.genre ?? ''} onChange={(e) => setF({ ...f, genre: e.target.value })} />
         </div>
         <div className="flex gap-2">
-          <button className="btn btn-a flex-1" disabled={busy || !buildSearchQuery(f)}>{busy ? 'Searching…' : 'Search Spotify'}</button>
+          <button className="btn btn-a flex-1" disabled={busy || !online || !buildSearchQuery(f)}>{busy ? 'Searching…' : 'Search Spotify'}</button>
           <button type="button" className="btn" onClick={() => { setF({}); setResults([]); setTotal(0); }}>Clear</button>
         </div>
         <p className="text-xs text-dim">Years: use 0 for “any”. Leave both years blank to search all time.</p>
       </form>
-      {!connected && <p className="text-sm text-peak">Connect Spotify in Settings to search.</p>}
+      {!online && <p className="text-sm text-peak">You're offline — Spotify search needs internet. Your saved playlists still work.</p>}
+      {online && !connected && <p className="text-sm text-peak">Connect Spotify in Settings to search.</p>}
       {err && <p role="alert" className="text-sm text-deck-b">{err}</p>}
       {results.length > 0 && (
         <div className="flex flex-col gap-2">

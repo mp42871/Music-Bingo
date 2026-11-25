@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useOnline } from '../../app/online';
 
 const LINKS = [
   { to: '/', label: 'Play', end: true },
@@ -10,6 +11,7 @@ const LINKS = [
 ];
 
 export function Nav() {
+  const online = useOnline();
   return (
     <header className="sticky top-0 z-30 border-b border-rail bg-night/85 backdrop-blur print:hidden">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
@@ -32,6 +34,9 @@ export function Nav() {
             </NavLink>
           ))}
         </nav>
+        <span className={`chip ml-auto ${online ? 'text-ok' : 'border-peak text-peak'}`} role="status" title={online ? 'Connected to the internet' : 'No internet — your saved playlists, cards and music files still work'}>
+          <span className={`size-2 rounded-full ${online ? 'bg-ok' : 'bg-peak'}`} />{online ? 'Online' : 'Offline'}
+        </span>
       </div>
     </header>
   );
