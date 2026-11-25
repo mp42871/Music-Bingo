@@ -118,6 +118,26 @@ polish first; live phones become an upgrade, not a dependency.
   per column / 50–75 total).
 - Optional: save the pool back to Spotify as a playlist.
 
+### 8.1a Playlist import / export
+- **Export** a pool as:
+  - **Bingo playlist file (`.json`)** — full fidelity: songs, Spotify IDs,
+    category tags, custom start points, display-title overrides, exclusions.
+    Re-importing restores it exactly (e.g. move to another computer or share
+    with another host).
+  - **CSV** — title, artist, album, year, Spotify link, categories, start point;
+    opens in Excel/Google Sheets.
+  - **Spotify playlist** — creates/updates a playlist in the host's account.
+  - **Printable song list** (PDF via print).
+- **Import** from:
+  - a bingo playlist `.json` file (exact restore; merge into an existing pool
+    or create a new one),
+  - **CSV / Excel-exported CSV / pasted text** ("Artist – Title" per line, or
+    columns) — each line is matched via Spotify search; the host reviews a
+    match list (confident / pick from candidates / not found) before saving,
+  - a Spotify playlist (own playlists or pasted link),
+  - another pool in the app (copy/merge).
+- Duplicate handling on import: skip, keep both, or replace.
+
 ### 8.2 Card layouts & themes
 - Grid sizes: **3×3, 4×4, 5×5**. Free space on/off with custom text or logo.
 - Header modes:
