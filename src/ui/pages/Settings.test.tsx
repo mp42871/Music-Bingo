@@ -35,3 +35,12 @@ test('clip defaults save', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save game defaults' }));
   await waitFor(async () => expect((await repo.getSetting<{ clipSec: number }>('clip', { clipSec: 0 })).clipSec).toBe(20));
 });
+
+test('warns when Spotify will soon ask to reconnect', async () => {
+  const { markAuthorized } = await import('../../spotify/auth');
+  const { useSpotify } = await import('../../app/spotifyStore');
+  markAuthorized(Date.now() - 172 * 86_400_000);
+  useSpotify.setState({ connected: true });
+  render(<MemoryRouter><Settings /></MemoryRouter>);
+  expect(await screen.findByText(/Spotify will ask you to reconnect in 8 days/)).toBeInTheDocument();
+});

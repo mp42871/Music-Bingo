@@ -5,6 +5,7 @@ import { download } from '../../core/io';
 import type { ClipSettings } from '../../core/types';
 import { exportBackup, getSetting, importBackup, setSetting } from '../../db/repo';
 import { redirectUri } from '../../spotify/config';
+import { daysUntilReconnect } from '../../spotify/auth';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Field, PageHeader, Section } from '../components/Field';
 
@@ -37,6 +38,7 @@ export default function Settings() {
             <p className="mb-3 text-peak">This account isn’t Premium — Spotify only allows in-app playback for Premium accounts.</p>
           )}
           {sp.error && <p className="mb-3 text-deck-b">{sp.error}</p>}
+          {sp.connected && <ReconnectNote />}
           <div className="grid gap-4">
             <Field label="Spotify Client ID" hint="From your app at developer.spotify.com/dashboard. It’s not a secret.">
               <div className="flex gap-2">
@@ -98,4 +100,13 @@ export default function Settings() {
       </div>
     </main>
   );
+}
+
+export function ReconnectNote() {
+  const days = daysUntilReconnect();
+  if (days === null) return <p className="mb-3 text-sm text-dim">Your sign-in renews itself. Spotify asks every app to reconnect every 6 months.</p>;
+  const when = new Date(Date.now() + days * 86_400_000).toLocaleDateString(undefined, { dateStyle: 'medium' });
+  if (days <= 14)
+    return <p className="mb-3 rounded-lg border border-peak/50 bg-peak/10 px-3 py-2 text-peak">{`Spotify will ask you to reconnect in ${Math.max(0, days)} days (${when}). Press Reconnect Spotify now so it doesn’t happen during a game.`}</p>;
+  return <p className="mb-3 text-sm text-dim">Your sign-in renews itself. Spotify asks every app to reconnect every 6 months — next by {when}.</p>;
 }

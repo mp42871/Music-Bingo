@@ -1,4 +1,4 @@
-import { challengeFor, createPkcePair, getAccessToken, saveTokens, TOKENS_KEY } from './auth';
+import { challengeFor, createPkcePair, daysUntilReconnect, getAccessToken, markAuthorized, saveTokens, TOKENS_KEY } from './auth';
 
 test('PKCE challenge matches RFC 7636 vector', async () => {
   expect(await challengeFor('dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk')).toBe('E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
@@ -43,4 +43,13 @@ test('a refresh that fails for network reasons throws a network error instead of
   await expect(getAccessToken('cid')).rejects.toBeInstanceOf(TypeError);
   expect(localStorage.getItem(TOKENS_KEY)).not.toBeNull();
   vi.unstubAllGlobals();
+});
+
+test('the 6-month sign-in clock starts at connect and is not reset by renewals', () => {
+  const day = 86_400_000;
+  markAuthorized(Date.now() - 170 * day);
+  saveTokens({ access_token: 'A', refresh_token: 'R2', expires_in: 3600 });
+  const left = daysUntilReconnect()!;
+  expect(left).toBeGreaterThanOrEqual(9);
+  expect(left).toBeLessThanOrEqual(10);
 });

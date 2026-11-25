@@ -76,6 +76,11 @@ export default function Console() {
   if (missing) return <main className="mx-auto max-w-7xl px-4 py-6">Game not found. <Link className="text-deck-a underline" to="/">Back</Link></main>;
   if (!game || !cs || !ctrl) return <main className="mx-auto max-w-7xl px-4 py-6 text-dim">Loading…</main>;
 
+  // Checking a claim pauses the music (and the break countdown); press play to carry on.
+  const openCheck = (n: number | 'open') => {
+    if (cs.phase === 'playing' || cs.phase === 'gap') void ctrl.togglePause();
+    setChecking(n);
+  };
   const round = currentRound(game);
   const cur = cs.currentId ? songs.get(cs.currentId) : undefined;
   const hidden = game.settings.hideTitles && !g.revealed && cs.phase !== 'done';
@@ -90,7 +95,7 @@ export default function Console() {
         <h1 className="mr-auto font-display text-2xl md:text-3xl">{game.name}</h1>
         {g.makePort === hybridPort && <DevicePicker onError={(m) => useGame.setState((s) => ({ errors: [...s.errors.slice(-3), m] }))} />}
         <button type="button" className="btn" onClick={() => window.open(`${window.location.pathname}#/audience`, 'mb-audience', 'width=1280,height=720')}>Open screen for players</button>
-        <button type="button" className="btn btn-b" onClick={() => setChecking('open')}>Check a card</button>
+        <button type="button" className="btn btn-b" onClick={() => openCheck('open')}>Check a card</button>
       </div>
 
       {g.errors.length > 0 && (
@@ -127,7 +132,7 @@ export default function Console() {
             onRestore={(id) => ctrl.insert(id, upcoming.length)} onReplayCalled={(id) => ctrl.jumpTo(id)} />
         </div>
         <div className="flex flex-col gap-5">
-          <WinnerTracker live={live} recorded={recorded} onCheck={(n) => setChecking(n)} />
+          <WinnerTracker live={live} recorded={recorded} onCheck={(n) => openCheck(n)} />
           <div className="panel p-4">
             <h2 className="mb-2 font-bold">Offline</h2>
             <Readiness compact songs={[...(cur && cs.phase !== 'done' ? [cur] : []), ...upcoming.map((id) => songs.get(id)!).filter(Boolean)]}

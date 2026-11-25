@@ -139,3 +139,13 @@ test('opening a game clears the previous game\'s source badge', async () => {
   await setup();
   expect(useGame.getState().source).toBeNull();
 });
+
+test('opening Check a card pauses the game', async () => {
+  await setup();
+  await userEvent.keyboard(' ');
+  await waitFor(() => expect(useGame.getState().cs?.phase).toBe('playing'));
+  await userEvent.click(screen.getByRole('button', { name: 'Check a card' }));
+  await waitFor(() => expect(useGame.getState().cs?.phase).toBe('paused'));
+  expect(port.pause).toHaveBeenCalled();
+  expect(screen.getByRole('dialog', { name: 'Check a card' })).toBeInTheDocument();
+});

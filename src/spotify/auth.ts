@@ -1,6 +1,20 @@
 import { redirectUri, SCOPES } from './config';
 
 export const TOKENS_KEY = 'mb.spotify.tokens';
+const AUTHORIZED_KEY = 'mb.spotify.authorizedAt';
+/** Spotify ends every sign-in this long after the user first connects; renewals don't extend it. */
+export const SIGN_IN_LIFETIME_DAYS = 180;
+
+export function markAuthorized(at = Date.now()) {
+  localStorage.setItem(AUTHORIZED_KEY, String(at));
+}
+
+/** Days until Spotify requires connecting again (null if unknown). */
+export function daysUntilReconnect(now = Date.now()): number | null {
+  const at = Number(localStorage.getItem(AUTHORIZED_KEY));
+  if (!at) return null;
+  return Math.ceil((at + SIGN_IN_LIFETIME_DAYS * 86_400_000 - now) / 86_400_000);
+}
 const VERIFIER_KEY = 'mb.spotify.verifier';
 const STATE_KEY = 'mb.spotify.state';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
@@ -75,6 +89,7 @@ export async function completeLogin(url: URL, clientId: string): Promise<boolean
   sessionStorage.removeItem(VERIFIER_KEY);
   if (!res.ok) return false;
   saveTokens(await res.json());
+  markAuthorized();
   return true;
 }
 
@@ -115,4 +130,5 @@ export function isLoggedIn(): boolean {
 
 export function logout() {
   localStorage.removeItem(TOKENS_KEY);
+  localStorage.removeItem(AUTHORIZED_KEY);
 }

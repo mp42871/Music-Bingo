@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { openChannel, type AudienceMessage } from '../../game/broadcast';
 import { QR } from '../components/QR';
+import { formatTime } from '../../core/io';
 
 export default function Audience() {
   const [m, setM] = useState<AudienceMessage | null>(null);
@@ -33,6 +34,12 @@ export default function Audience() {
           </div>
           <div className="font-display text-[9rem] leading-none tabular-nums md:text-[12rem]">{m.callNumber || '–'}</div>
           <div className="text-2xl text-dim">song {m.callNumber} of {m.total}</div>
+          {playing && (
+            <div data-testid="audience-countdown" className="flex items-baseline gap-3">
+              <span className="font-display text-6xl tabular-nums text-deck-a">{formatTime(Math.max(0, m.clipMs - m.clipElapsedMs))}</span>
+              <span className="text-2xl text-dim">left in this song</span>
+            </div>
+          )}
           {gap && <div className="font-display text-4xl text-peak">Next song in {Math.ceil(m.gapRemainingMs / 1000)}</div>}
           {m.revealed && (
             <div className="flex items-center gap-6 rounded-2xl border border-rail bg-booth/80 px-8 py-5">

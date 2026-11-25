@@ -90,9 +90,11 @@ export default function Designer() {
     setLayout((l) => ({ ...l, headerMode: 'categories', columnCategories: Array.from({ length: l.size }, (_, i) => decades[i] ?? decades[decades.length - 1] ?? '') }));
   };
 
-  const generate = async () => {
+  const [saved, setSaved] = useState<string | null>(null);
+  const generate = async (thenPrint = true) => {
     if (!pool) return;
     setErr(null);
+    setSaved(null);
     try {
       const res = generateCardSet(pool, layout, { seed, count, startNumber, name: `${style.title || pool.name} · ${pool.name}` });
       const cs: CardSet = { ...res.set, style };
@@ -100,7 +102,12 @@ export default function Designer() {
       await setSetting('printStyle', style);
       await setSetting('layout', layout);
       if (res.capped) alert(res.message);
-      nav(`/print/${cs.id}`);
+      if (thenPrint) nav(`/print/${cs.id}`);
+      else {
+        setSets(await listCardSets());
+        setSeed(randomSeed()); // the next save makes a different set
+        setSaved(`Saved ${cs.cards.length} cards as “${cs.name}”. Print them any time from Saved card sets.`);
+      }
     } catch (e) {
       setErr(e instanceof PoolTooSmallError ? e.message : String(e));
     }
@@ -116,9 +123,11 @@ export default function Designer() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
       <PageHeader title="Cards">
-        <button type="button" className="btn btn-b" disabled={!validation?.ok} onClick={generate}>Make {count} cards &amp; print</button>
+        <button type="button" className="btn" disabled={!validation?.ok} onClick={() => generate(false)}>Save cards</button>
+        <button type="button" className="btn btn-b" disabled={!validation?.ok} onClick={() => generate(true)}>Make {count} cards &amp; print</button>
       </PageHeader>
       {err && <p role="alert" className="mb-4 text-deck-b">{err}</p>}
+      {saved && <p role="status" className="mb-4 rounded-lg border border-ok/40 bg-ok/10 px-3 py-2 text-ok">{saved}</p>}
       <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
           <Section title="Playlist and layout">

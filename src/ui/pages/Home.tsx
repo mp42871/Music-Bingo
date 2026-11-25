@@ -9,6 +9,9 @@ import { getPool, getSetting, listCardSets, listGames, saveGame } from '../../db
 import { withLatestFiles } from '../../core/offline';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Field } from '../components/Field';
+import { daysUntilReconnect } from '../../spotify/auth';
+import { useSpotify } from '../../app/spotifyStore';
+import { ReconnectNote } from './Settings';
 import { NumberInput } from '../components/NumberInput';
 import { PatternPicker } from '../components/PatternPicker';
 import { Readiness } from '../components/Readiness';
@@ -61,8 +64,11 @@ export default function Home() {
     void saveGame(game).then(() => nav(`/console/${game.id}`));
   };
 
+  const connected = useSpotify((s) => s.connected);
+  const reconnectSoon = connected && (daysUntilReconnect() ?? 999) <= 14;
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
+      {reconnectSoon && <ReconnectNote />}
       <section className="relative mb-8 overflow-hidden rounded-3xl border border-rail p-8 md:p-12">
         <div className="pointer-events-none absolute -right-20 -top-28 size-96 rounded-full" style={{ background: 'repeating-radial-gradient(circle, #1a1238 0 3px, #120b2a 3px 6px)', boxShadow: '0 0 120px -20px var(--color-deck-b)' }} />
         <h1 className="relative font-display text-5xl leading-none md:text-7xl"><span className="text-deck-a glow-a">Drop</span><br /><span className="text-deck-b glow-b">the beat.</span></h1>

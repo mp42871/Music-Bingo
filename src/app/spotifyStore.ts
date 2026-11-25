@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getSetting, setSetting } from '../db/repo';
-import { beginLogin, completeLogin, getAccessToken, isLoggedIn, logout } from '../spotify/auth';
+import { beginLogin, completeLogin, daysUntilReconnect, getAccessToken, isLoggedIn, logout, markAuthorized } from '../spotify/auth';
 import { SpotifyApi } from '../spotify/api';
 import { DEFAULT_CLIENT_ID } from '../spotify/config';
 
@@ -37,6 +37,8 @@ export const useSpotify = create<SpotifyStore>((set, get) => ({
       set({ error: 'Spotify sign-in failed. Try connecting again.' });
     }
     if (!isLoggedIn()) return set({ connected: false });
+    // Sign-ins made before the app tracked the date: start the 6-month clock now.
+    if (daysUntilReconnect() === null) markAuthorized();
     try {
       const me = await get().api.me();
       set({ connected: true, profile: { name: me.display_name, product: me.product, image: me.images?.[0]?.url }, error: null });

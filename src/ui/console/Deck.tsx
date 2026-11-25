@@ -60,6 +60,15 @@ export function Deck({ cs, song, callNumber, total, hidden, onReveal, onSeek, cl
               </div>
             )
           ) : <div className="mt-3 font-display text-3xl text-dim">Press play to start</div>}
+          {(cs.phase === 'playing' || cs.phase === 'gap' || (cs.phase === 'paused' && cs.pausedFrom === 'playing')) && (
+            <div data-testid="countdown" className="mt-4 flex items-baseline justify-center gap-2 sm:justify-start" aria-live="off">
+              {cs.phase === 'gap'
+                ? (cs.gapRemainingMs > 0
+                  ? <><span className="text-dim">Next song in</span> <span className="font-display text-4xl text-peak tabular-nums">{Math.ceil(cs.gapRemainingMs / 1000)}</span></>
+                  : <span className="text-dim">Press Next (→) when you’re ready</span>)
+                : <><span className="font-display text-4xl text-deck-a tabular-nums">{formatTime(Math.max(0, clipMs - cs.clipElapsedMs))}</span> <span className="text-dim">left</span></>}
+            </div>
+          )}
           <div className="mt-5 grid gap-2">
             <div className="h-2 overflow-hidden rounded-full bg-rail" aria-label="Clip progress">
               <div className="h-full rounded-full bg-gradient-to-r from-deck-a to-deck-b" style={{ width: `${clipPct}%` }} />
