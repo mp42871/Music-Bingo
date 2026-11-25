@@ -83,7 +83,8 @@ export interface ClipSettings { clipSec: number; gapSec: number;
   randomMinSec: number; randomMaxSec: number; autoAdvance: boolean; fadeSec: number; hideTitles: boolean }
 export interface PrintStyle { theme: 'neon'|'vinyl'|'minimal'|'cassette'|'festival'|'holiday';
   accent: string; background: string; inkSaver: boolean; paper: 'letter'|'a4'; perPage: 1|2|4|6;
-  title: string; subtitle: string; logoDataUrl?: string; cutLines: boolean }
+  title: string; subtitle: string; logoDataUrl?: string; cutLines: boolean;
+  showArt: boolean; bonusCorners: boolean; mysteryColumn: number | null }
 export interface Game { id: string; name: string; createdAt: number; pool: Pool; cardSetId: string;
   settings: ClipSettings; callOrder: string[]; calls: Call[]; rounds: Round[];
   status: 'setup' | 'live' | 'finished' }
@@ -225,7 +226,7 @@ export interface Game { id: string; name: string; createdAt: number; pool: Pool;
 **Interfaces:** `CardGrid({ card, layout, songsById, style, marked?, highlightMask?, size: 'print'|'screen'|'phone', onToggle? })` reused by Print, Check, Phone.
 
 - [ ] Step 1: Tests: 5×5 categories layout renders 5 headers equal to `columnCategories`; free cell shows `freeText`; card number renders zero-padded `#0042`; `cellContent:'artist'` shows artist names; marked cells get `data-marked="true"`.
-- [ ] Step 2: FAIL. Step 3: implement Designer (pick pool, layout options incl. variants Decade Dash preset for column categories, count, seed reroll, validation panel, forecast panel for chosen pattern with "Tune call order" window, style pickers, live preview) → "Generate & save" stores CardSet → Print route renders sheets with `@page` size per paper, per-page grid, cut lines, logo, small QR of card number, plus "Host master sheet" and "Phone QR poster" print modes. Step 4: PASS; also screenshot `/print/:id` via Playwright at Letter size and visually check. Step 5: Commit.
+- [ ] Step 2: FAIL. Step 3: implement Designer (pick pool, layout options incl. variants: Decade Dash preset for column categories, Mixtape (`PrintStyle.showArt` adds album art behind cell text), Two-for-One (`PrintStyle.bonusCorners` stars the 4 corners), Mystery Column (`PrintStyle.mysteryColumn: number | null` prints "?" for that header), count, seed reroll, validation panel, forecast panel for chosen pattern with "Tune call order" window, style pickers, live preview) → "Generate & save" stores CardSet → Print route renders sheets with `@page` size per paper, per-page grid, cut lines, logo, small QR of card number, plus "Host master sheet" and "Phone QR poster" print modes. Step 4: PASS; also screenshot `/print/:id` via Playwright at Letter size and visually check. Step 5: Commit.
 
 ### Task 13: Game setup, console, audience display, rounds, live winners
 
@@ -239,7 +240,7 @@ export interface Game { id: string; name: string; createdAt: number; pool: Pool;
 **Files:** `src/ui/pages/Check.tsx`, `src/ui/pages/History.tsx`, tests for both.
 
 - [ ] Step 1: Tests: entering `42` for an active game shows the card with called cells marked and verdict "VALID" with "Bingo on call 17"; incomplete card shows "NOT YET" and count of marked/needed; phone number 5xxx regenerates via `generateCard`; History lists games newest first, opening one shows call order with timestamps and winners; CSV export of a game contains each call.
-- [ ] Step 2: FAIL. Step 3: implement (Check also reachable as a slide-over from Console; "Record winner" form). Step 4: PASS. Step 5: Commit.
+- [ ] Step 2: FAIL. Step 3: implement (Check also reachable as a slide-over from Console; "Record winner" form; History has "Reprint cards" → `/print/:setId` and "Export CSV/JSON"). Step 4: PASS. Step 5: Commit.
 
 ### Task 15: Phone card page
 
