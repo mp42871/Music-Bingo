@@ -13,6 +13,7 @@ import Check from './ui/pages/Check';
 import History from './ui/pages/History';
 import Settings from './ui/pages/Settings';
 import Phone from './ui/pages/Phone';
+import Library from './ui/pages/Library';
 
 const BARE = ['/audience', '/phone', '/print'];
 
@@ -26,6 +27,7 @@ function Shell() {
         <Route path="/" element={<Home />} />
         <Route path="/pools" element={<Pools />} />
         <Route path="/pools/:id" element={<PoolEditor />} />
+        <Route path="/library" element={<Library />} />
         <Route path="/designer" element={<Designer />} />
         <Route path="/print/:setId" element={<Print />} />
         <Route path="/console/:gameId" element={<Console />} />

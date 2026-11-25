@@ -6,6 +6,9 @@ import type { Preset } from '../../core/presets';
 import type { Pool, Song } from '../../core/types';
 import { getPool, savePool } from '../../db/repo';
 import { ImportDialog } from '../components/ImportDialog';
+import { LinkFilesDialog } from '../components/LinkFilesDialog';
+import { listAudio } from '../../db/audio';
+import type { AudioFile } from '../../core/types';
 import { SearchPanel } from '../components/SearchPanel';
 import { SongRow } from '../components/SongRow';
 
@@ -31,6 +34,7 @@ export default function PoolEditor() {
   const [view, setView] = useState<string>('__all');
   const [newCat, setNewCat] = useState('');
   const [importing, setImporting] = useState(false);
+  const [linking, setLinking] = useState<AudioFile[] | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => { getPool(id!).then((p) => (p ? setPool(p) : setMissing(true))); }, [id]);
@@ -78,6 +82,7 @@ export default function PoolEditor() {
           className="min-w-0 flex-1 border-transparent bg-transparent font-display text-2xl md:text-3xl hover:border-rail" />
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn" onClick={() => setImporting(true)}>Import</button>
+          <button type="button" className="btn" onClick={async () => setLinking(await listAudio())}>Link music files</button>
           <details className="relative">
             <summary className="btn list-none cursor-pointer">Export</summary>
             <div className="panel absolute right-0 z-20 mt-1 flex w-56 flex-col p-1">
@@ -172,6 +177,19 @@ export default function PoolEditor() {
         </section>
       </div>
 
+      {linking && (
+        <LinkFilesDialog songs={pool.songs.filter((s) => !s.id.startsWith('file:'))} files={linking} onClose={() => setLinking(null)}
+          onApply={(links) => {
+            update((p) => ({ ...p, songs: p.songs.map((s) => {
+              if (!(s.id in links)) return s;
+              const f = links[s.id];
+              if (f) return { ...s, fileId: f };
+              const { fileId: _x, ...rest } = s; void _x; return rest;
+            }) }));
+            const n = Object.values(links).filter(Boolean).length;
+            flash(`${n} song${n === 1 ? '' : 's'} linked to music files.`);
+          }} />
+      )}
       {importing && (
         <ImportDialog currentPoolId={pool.id} onClose={() => setImporting(false)}
           onImport={(songs, mode) => {

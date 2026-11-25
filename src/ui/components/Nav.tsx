@@ -4,6 +4,7 @@ import { useOnline } from '../../app/online';
 const LINKS = [
   { to: '/', label: 'Play', end: true },
   { to: '/pools', label: 'Playlists' },
+  { to: '/library', label: 'Music files' },
   { to: '/designer', label: 'Cards' },
   { to: '/check', label: 'Check' },
   { to: '/history', label: 'History' },

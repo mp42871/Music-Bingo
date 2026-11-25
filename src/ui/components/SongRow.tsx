@@ -31,7 +31,7 @@ export function SongRow({ song, categories, onChange, onRemove }: {
       <div className="min-w-[12rem] flex-1">
         <input aria-label={`Card title for ${song.title}`} value={title} onChange={(e) => setTitle(e.target.value)} onBlur={commitTitle}
           className="w-full border-transparent bg-transparent px-1 py-0.5 font-semibold hover:border-rail" />
-        <div className="truncate px-1 text-sm text-dim">{song.artist}{song.year ? ` · ${song.year}` : ''}{song.durationMs ? ` · ${formatTime(song.durationMs)}` : ''}</div>
+        <div className="truncate px-1 text-sm text-dim">{song.fileId && <span className="mr-1.5 rounded bg-ok/15 px-1.5 py-0.5 text-xs font-semibold text-ok" title="Plays from a music file on this computer">File</span>}{song.artist}{song.year ? ` · ${song.year}` : ''}{song.durationMs ? ` · ${formatTime(song.durationMs)}` : ''}</div>
       </div>
       <div className="flex flex-wrap gap-1">
         {categories.map((c) => {
