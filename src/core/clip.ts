@@ -2,7 +2,7 @@ import type { ClipSettings, Song } from './types';
 
 export const DEFAULT_CLIP: ClipSettings = {
   clipSec: 30, gapSec: 5, startMode: 'random', fixedStartSec: 30,
-  randomMinSec: 30, randomMaxSec: 75, autoAdvance: true, fadeSec: 1.5, hideTitles: false,
+  randomMinSec: 30, randomMaxSec: 75, autoAdvance: true, fadeSec: 1.5, hideTitles: false, source: 'auto',
 };
 
 export function computeStartMs(song: Song, s: ClipSettings, rand: () => number): number {

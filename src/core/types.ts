@@ -2,6 +2,8 @@ export interface Song {
   id: string; uri: string; title: string; artist: string; album: string;
   year?: number; durationMs: number; artUrl?: string; displayTitle?: string;
   startMs?: number; categories: string[]; excluded?: boolean;
+  /** Linked music file in this browser's library (offline playback). */
+  fileId?: string;
 }
 export interface Pool {
   id: string; name: string; songs: Song[]; categories: string[];
@@ -39,6 +41,8 @@ export interface ClipSettings {
   startMode: 'beginning' | 'fixed' | 'random' | 'marker';
   fixedStartSec: number; randomMinSec: number; randomMaxSec: number;
   autoAdvance: boolean; fadeSec: number; hideTitles: boolean;
+  /** Where music comes from: Spotify when possible, your files first, or you play it yourself. */
+  source: 'auto' | 'files' | 'manual';
 }
 export type PrintTheme = 'neon' | 'vinyl' | 'minimal' | 'cassette' | 'festival' | 'holiday';
 export interface PrintStyle {
@@ -51,4 +55,8 @@ export interface Game {
   id: string; name: string; createdAt: number; pool: Pool; cardSetId: string;
   settings: ClipSettings; callOrder: string[]; calls: Call[]; rounds: Round[];
   status: 'setup' | 'live' | 'finished';
+}
+export interface AudioFile {
+  id: string; name: string; title: string; artist: string; album?: string;
+  durationMs: number; size: number; type: string; addedAt: number;
 }
