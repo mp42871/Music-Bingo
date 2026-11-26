@@ -137,7 +137,7 @@ export const useGame = create<GameStore>((set, get) => ({
       onCall: (c) => {
         const g = get().game;
         if (!g) return;
-        const next = { ...g, status: 'live' as const, calls: [...g.calls, c], callOrder: get().ctrl?.fullOrder() ?? g.callOrder };
+        const next = { ...g, status: 'live' as const, calls: [...g.calls, c], callOrder: get().ctrl?.fullOrder() ?? g.callOrder, resumeAt: undefined };
         set({ game: next, revealed: false });
         void saveGame(next);
       },
@@ -149,7 +149,7 @@ export const useGame = create<GameStore>((set, get) => ({
         set({ game: next });
         void saveGame(next);
       },
-    }, Date.now, Math.random, game.calls.map((c) => c.songId));
+    }, Date.now, Math.random, game.calls.map((c) => c.songId), game.status === 'finished' ? undefined : game.resumeAt);
     if (!channel) {
       channel = openChannel();
       // A players' screen opened later asks for the current state.
@@ -264,7 +264,10 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   async persist() {
     const { game, ctrl } = get();
-    if (game && ctrl) await saveGame({ ...game, callOrder: ctrl.fullOrder() });
+    if (!game || !ctrl) return;
+    const next = { ...game, callOrder: ctrl.fullOrder(), resumeAt: ctrl.resumePoint() ?? undefined };
+    set({ game: next });
+    await saveGame(next);
   },
 }));
 

@@ -71,7 +71,10 @@ export interface Game {
   orderSavedAt?: number;
   /** Live play join code while phones can join. */
   liveCode?: string;
+  /** Where the current song was when the host left the console, so it picks up there. */
+  resumeAt?: ResumePoint;
 }
+export interface ResumePoint { songId: string; positionMs: number; clipElapsedMs: number; clipStartMs: number }
 export interface AudioFile {
   id: string; name: string; title: string; artist: string; album?: string;
   durationMs: number; size: number; type: string; addedAt: number;

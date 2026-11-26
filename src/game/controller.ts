@@ -1,6 +1,6 @@
 import { computeStartMs } from '../core/clip';
 import { trimFactor } from '../audio/loudness';
-import type { Call, ClipSettings, Song } from '../core/types';
+import type { Call, ClipSettings, ResumePoint, Song } from '../core/types';
 
 export interface PlaybackPort {
   /** Resolves 'manual' when the host must play this song themselves (e.g. in the Spotify app). */
@@ -56,6 +56,8 @@ export class GameController {
   private detached = false;
   /** A manual song waiting for the host to confirm it was played. */
   private pendingManual: string | null = null;
+  /** Resumed mid-song after leaving the console: the player has nothing loaded, so play must restart it at the saved spot. */
+  private reloadOnResume = false;
 
   constructor(
     private port: PlaybackPort,
@@ -66,6 +68,7 @@ export class GameController {
     private now: () => number = Date.now,
     private rand: () => number = Math.random,
     alreadyCalled: string[] = [],
+    resumeAt?: ResumePoint,
   ) {
     this.called = new Set(alreadyCalled);
     if (alreadyCalled.length) {
@@ -77,7 +80,22 @@ export class GameController {
       this.s.gapRemainingMs = 0;
       this.s.pausedFrom = 'gap';
       this.s.phase = 'paused';
+      // Left mid-song: pick up that song where it was, not the next one.
+      if (resumeAt && resumeAt.songId === this.s.currentId && resumeAt.clipElapsedMs < this.settings.clipSec * 1000) {
+        this.s.pausedFrom = 'playing';
+        this.s.positionMs = resumeAt.positionMs;
+        this.s.clipElapsedMs = resumeAt.clipElapsedMs;
+        this.s.clipStartMs = resumeAt.clipStartMs;
+        this.reloadOnResume = true;
+      }
     }
+  }
+
+  /** The spot in the current song to come back to, or null when no called song is part-way through. */
+  resumePoint(): ResumePoint | null {
+    const midSong = this.s.phase === 'playing' || (this.s.phase === 'paused' && this.s.pausedFrom === 'playing');
+    if (!midSong || !this.s.currentId || this.cursor !== this.s.index || this.s.currentId !== this.order[this.s.index]) return null;
+    return { songId: this.s.currentId, positionMs: Math.round(this.s.positionMs), clipElapsedMs: Math.round(this.s.clipElapsedMs), clipStartMs: this.s.clipStartMs };
   }
 
   get state(): ControllerState { return { ...this.s }; }
@@ -124,6 +142,7 @@ export class GameController {
     const song = this.songs.get(id);
     if (!song) return 'skip';
     const prev = { ...this.s };
+    this.reloadOnResume = false;
     const start = record || id !== this.s.currentId ? computeStartMs(song, this.settings, this.rand) : this.s.clipStartMs;
     this.s = { ...this.s, phase: 'loading', currentId: id, clipStartMs: start, positionMs: start, clipElapsedMs: 0, gapRemainingMs: 0, pausedFrom: undefined };
     this.emit();
@@ -269,7 +288,9 @@ export class GameController {
       this.s.pausedFrom = 'gap';
       this.emit();
     } else if (this.s.phase === 'paused') {
-      if (this.s.pausedFrom === 'playing') {
+      if (this.s.pausedFrom === 'playing' && this.reloadOnResume) {
+        return this.reloadSong();
+      } else if (this.s.pausedFrom === 'playing') {
         await this.port.resume().catch((e) => this.events.onError(String(e?.message ?? e)));
         this.lastTick = this.now();
         this.s.phase = 'playing';
@@ -285,6 +306,29 @@ export class GameController {
       this.emit();
     } else if (this.s.phase === 'idle') {
       return this.start();
+    }
+  }
+
+  /** Starts the current song again at the saved spot (after coming back to the console). */
+  private async reloadSong(): Promise<void> {
+    const id = this.s.currentId;
+    const song = id ? this.songs.get(id) : undefined;
+    if (!song || this.busy || this.detached) return;
+    this.busy = true;
+    try {
+      const keep = { positionMs: this.s.positionMs, clipElapsedMs: this.s.clipElapsedMs };
+      const r = await this.port.play(song.uri, keep.positionMs);
+      if (this.detached) return;
+      this.reloadOnResume = false;
+      this.lastTick = this.now();
+      this.s = { ...this.s, ...keep, phase: r === 'manual' ? 'manual' : 'playing', pausedFrom: undefined };
+      this.lastSentVolume = -1;
+      this.pushVolume(true);
+      this.emit();
+    } catch (e) {
+      this.events.onError(`Couldn't restart "${song.displayTitle ?? song.title}". ${e instanceof Error ? e.message : String(e)}`.trim());
+    } finally {
+      this.busy = false;
     }
   }
 

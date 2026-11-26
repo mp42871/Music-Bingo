@@ -312,3 +312,48 @@ test("a song's volume adjustment scales the volume it plays at", async () => {
   songsMap.get('s0')!.volumeDb = undefined;
   songsMap.get('s1')!.volumeDb = undefined;
 });
+
+describe('leaving the console mid-song and coming back', () => {
+  const make = (resumeAt?: { songId: string; positionMs: number; clipElapsedMs: number; clipStartMs: number }) => {
+    let t = 0;
+    const plays: { uri: string; pos: number }[] = [];
+    const port: PlaybackPort = {
+      play: vi.fn(async (uri: string, pos: number) => { plays.push({ uri, pos }); }),
+      pause: vi.fn(async () => {}), resume: vi.fn(async () => {}), seek: vi.fn(async () => {}), setVolume: vi.fn(async () => {}),
+    };
+    const calls: Call[] = [];
+    let state!: ControllerState;
+    const c = new GameController(port, [...order], byId, { ...DEFAULT_CLIP, clipSec: 30, startMode: 'beginning', fadeSec: 0 }, {
+      onState: (s) => (state = s), onCall: (x) => calls.push(x), onError() {},
+    }, () => t, () => 0.5, ['s0', 's1'], resumeAt);
+    const advance = async (ms: number) => { for (let x = 0; x < ms; x += 250) { t += 250; c.tick(); await Promise.resolve(); } };
+    return { c, port, plays, calls, advance, get state() { return state ?? c.state; } };
+  };
+
+  test('the controller reports the spot in the song while playing', async () => {
+    const h = setup({ clipSec: 30 });
+    await h.c.start();
+    await h.advance(12_000);
+    expect(h.c.resumePoint()).toEqual({ songId: 's0', positionMs: 12_000, clipElapsedMs: 12_000, clipStartMs: 0 });
+    await h.advance(20_000); // clip over → between songs: nothing to resume
+    expect(h.c.resumePoint()).toBeNull();
+  });
+
+  test('play picks up the same song at the saved spot, without a new call', async () => {
+    const h = make({ songId: 's1', positionMs: 52_000, clipElapsedMs: 12_000, clipStartMs: 40_000 });
+    expect(h.state.phase).toBe('paused');
+    expect(h.state.currentId).toBe('s1');
+    await h.c.togglePause();
+    expect(h.plays).toEqual([{ uri: 'spotify:track:s1', pos: 52_000 }]);
+    expect(h.calls).toEqual([]);
+    expect(h.c.state.phase).toBe('playing');
+    await h.advance(18_250); // the rest of the 30 s clip
+    expect(h.c.state.phase).toBe('gap');
+  });
+
+  test('without a saved spot (or a different song), play moves on to the next song as before', async () => {
+    const h = make({ songId: 's0', positionMs: 1000, clipElapsedMs: 1000, clipStartMs: 0 });
+    await h.c.togglePause();
+    expect(h.plays[0].uri).toBe('spotify:track:s2');
+  });
+});

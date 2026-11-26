@@ -48,8 +48,12 @@ export default function Console() {
       if (!ok) return setMissing(true);
       if (fresh) useGame.getState().setShowQr(true); // quick game: phone cards straight away
     });
+    // Closing or reloading the tab: remember the spot in the current song too.
+    const onHide = () => { void useGame.getState().persist(); };
+    window.addEventListener('pagehide', onHide);
     return () => {
       alive = false;
+      window.removeEventListener('pagehide', onHide);
       // Save, stop the music and drop this controller — but only if a newer console hasn't loaded one already.
       const st = useGame.getState();
       const mine = st.ctrl;

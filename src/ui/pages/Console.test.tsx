@@ -271,3 +271,22 @@ test('the players’ screen shows the join QR before the game starts, even if op
   render(<Audience />);
   expect(await screen.findByText(/Scan to get your card|Play on your phone/)).toBeInTheDocument();
 });
+
+test('leaving the console mid-song and coming back picks up that song where it was', async () => {
+  await setup();
+  await userEvent.keyboard(' '); // start the first song
+  await waitFor(() => expect(port.play).toHaveBeenCalledTimes(1));
+  const [uri] = (port.play as ReturnType<typeof vi.fn>).mock.calls[0];
+  await new Promise((r) => setTimeout(r, 800));
+  cleanup(); // leave the DJ screen
+  await waitFor(async () => expect((await repo.getGame('g1'))!.resumeAt?.songId).toBeTruthy());
+  render(<MemoryRouter initialEntries={['/console/g1']}><Routes><Route path="/console/:gameId" element={<Console />} /></Routes></MemoryRouter>);
+  await screen.findByText('Friday');
+  (port.play as ReturnType<typeof vi.fn>).mockClear();
+  await userEvent.keyboard(' '); // play again
+  await waitFor(() => expect(port.play).toHaveBeenCalledTimes(1));
+  const [again, pos] = (port.play as ReturnType<typeof vi.fn>).mock.calls[0];
+  expect(again).toBe(uri);
+  expect(pos).toBeGreaterThanOrEqual(500);
+  expect((await repo.getGame('g1'))!.calls).toHaveLength(1);
+});
