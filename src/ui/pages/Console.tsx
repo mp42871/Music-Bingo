@@ -5,6 +5,7 @@ import { JoinQr } from '../components/JoinQr';
 import { phoneUrl } from '../../core/phone';
 import { setPhoneDef } from '../../game/phoneLink';
 import { liveWinners } from '../../core/check';
+import { findCard } from '../../core/claim';
 import { patternName } from '../../core/patterns';
 import { currentRound, hybridPort, roundMasks, useGame } from '../../game/store';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
@@ -86,7 +87,14 @@ export default function Console() {
   const { game, cs, ctrl, songs, cardSet } = g;
   const size = cardSet?.layout.size ?? 5;
   const masks = useMemo(() => (game ? roundMasks(game, size) : []), [game, size]);
-  const live = useMemo(() => (game && cardSet ? liveWinners(cardSet.cards, game.calls, masks, songs) : []), [game, cardSet, masks, songs]);
+  const phoneCards = g.live.phoneCards;
+  // Printed cards plus every phone card in play (live play tells us which numbers phones hold).
+  const live = useMemo(() => {
+    if (!game || !cardSet) return [];
+    const printed = new Set(cardSet.cards.map((c) => c.number));
+    const extra = phoneCards.filter((n) => !printed.has(n)).map((n) => findCard(cardSet, n)?.card).filter((c) => !!c);
+    return liveWinners([...cardSet.cards, ...extra], game.calls, masks, songs).sort((a, b) => a - b);
+  }, [game, cardSet, masks, songs, phoneCards]);
 
   if (missing) return <main className="mx-auto max-w-7xl px-4 py-6">Game not found. <Link className="text-deck-a underline" to="/">Back</Link></main>;
   if (!game || !cs || !ctrl) return <main className="mx-auto max-w-7xl px-4 py-6 text-dim">Loading…</main>;
@@ -184,7 +192,7 @@ export default function Console() {
             onRestore={(id) => ctrl.insert(id, upcoming.length)} onReplayCalled={(id) => ctrl.jumpTo(id)} />
         </div>
         <div className="flex flex-col gap-5">
-          <WinnerTracker live={live} recorded={recorded} onCheck={(n) => openCheck(n)} />
+          <WinnerTracker live={live} recorded={recorded} onPhone={phoneCards} onCheck={(n) => openCheck(n)} />
           <div className="panel p-4">
             <h2 className="mb-2 font-bold">Offline</h2>
             <Readiness compact songs={[...(cur && cs.phase !== 'done' ? [cur] : []), ...upcoming.map((id) => songs.get(id)!).filter(Boolean)]}

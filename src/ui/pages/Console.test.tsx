@@ -197,6 +197,23 @@ describe('live play', () => {
     expect(screen.getAllByText(/NOT YET/).length).toBeGreaterThan(0);
   });
 
+  test('phone cards with bingo show in "Cards with bingo", marked as on a phone', async () => {
+    const { createFakeBackend } = await import('../../live/fake');
+    const { setLiveBackend } = await import('../../live/config');
+    const { findCard } = await import('../../core/claim');
+    const fake = createFakeBackend();
+    setLiveBackend(fake);
+    const { set } = generateCardSet(pool, layout(), { seed: 1, count: 10, startNumber: 1 });
+    const phone = findCard(set, 7777)!.card;
+    const row = phone.cells.slice(0, 5).map((c) => (c.kind === 'song' ? c.songId : ''));
+    await setup(row); // phone card #7777 has a full top row
+    const code = (await screen.findByText(/Live: \d{4}/)).textContent!.match(/\d{4}/)![0];
+    const tracker = screen.getByTestId('winner-tracker');
+    expect(within(tracker).queryByText('#7777')).toBeNull();
+    await act(async () => { await fake.join(code, 7777, 'Ann', 'phoneA'); });
+    expect(await within(tracker).findByRole('button', { name: '#7777 (on a phone)' })).toBeInTheDocument();
+  });
+
   test('ending the game closes it for phones', async () => {
     const { createFakeBackend } = await import('../../live/fake');
     const { setLiveBackend } = await import('../../live/config');

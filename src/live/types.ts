@@ -8,7 +8,8 @@ export interface LiveBackend {
   // host
   publish(title: string, def: PhoneDef, reuseCode?: string): Promise<string>;
   close(code: string): Promise<void>;
-  watch(code: string, on: { players(count: number): void; claim(c: LiveClaim): void }): () => void;
+  /** `players` gets the card numbers held on phones (one per phone card). */
+  watch(code: string, on: { players(cards: number[]): void; claim(c: LiveClaim): void }): () => void;
   // players
   getGame(code: string): Promise<LiveGame | null>;
   takenNumbers(code: string): Promise<number[]>;

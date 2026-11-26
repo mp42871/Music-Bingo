@@ -1,6 +1,6 @@
 import { cardNo } from '../components/CardGrid';
 
-export function WinnerTracker({ live, recorded, onCheck }: { live: number[]; recorded: number[]; onCheck(n: number): void }) {
+export function WinnerTracker({ live, recorded, onPhone = [], onCheck }: { live: number[]; recorded: number[]; onPhone?: number[]; onCheck(n: number): void }) {
   return (
     <div className="panel p-4" data-testid="winner-tracker">
       <div className="mb-2 flex items-center justify-between">
@@ -12,11 +12,12 @@ export function WinnerTracker({ live, recorded, onCheck }: { live: number[]; rec
         : (
           <ul className="flex flex-wrap gap-1.5">
             {live.slice(0, 60).map((n) => (
-              <li key={n}><button type="button" onClick={() => onCheck(n)} className={`chip font-mono ${recorded.includes(n) ? 'border-peak text-peak' : 'border-ok text-ok'}`}>{cardNo(n)}</button></li>
+              <li key={n}><button type="button" onClick={() => onCheck(n)} className={`chip font-mono ${recorded.includes(n) ? 'border-peak text-peak' : 'border-ok text-ok'}`}
+                aria-label={`${cardNo(n)}${onPhone.includes(n) ? ' (on a phone)' : ''}`}>{onPhone.includes(n) && <span aria-hidden>📱 </span>}{cardNo(n)}</button></li>
             ))}
           </ul>
         )}
-      <p className="mt-2 text-xs text-dim">Includes cards nobody may be holding. Wait for a shout, then check the card.</p>
+      <p className="mt-2 text-xs text-dim">Includes printed cards nobody may be holding, and every card on a phone (📱). Wait for a shout, then check the card.</p>
     </div>
   );
 }

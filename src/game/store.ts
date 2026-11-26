@@ -74,8 +74,8 @@ export const hybridPort = (): PlaybackPort => createHybridPort({
 });
 
 export interface LiveClaimView extends LiveClaim { valid: boolean; atCall: number | null; missing: number | null }
-export interface LiveState { code: string | null; players: number; claims: LiveClaimView[]; error: string | null; joinUrl: string | null; site: string; typed: boolean }
-const NO_LIVE: LiveState = { code: null, players: 0, claims: [], error: null, joinUrl: null, site: '', typed: false };
+export interface LiveState { code: string | null; players: number; /** card numbers held on phones */ phoneCards: number[]; claims: LiveClaimView[]; error: string | null; joinUrl: string | null; site: string; typed: boolean }
+const NO_LIVE: LiveState = { code: null, players: 0, phoneCards: [], claims: [], error: null, joinUrl: null, site: '', typed: false };
 let unwatch: (() => void) | null = null;
 
 interface GameStore {
@@ -227,7 +227,7 @@ export const useGame = create<GameStore>((set, get) => ({
       set({ live: { ...NO_LIVE, code, joinUrl, site, typed: !!sp && sp.url === url } });
       unwatch?.();
       unwatch = backend.watch(code, {
-        players: (n) => set((st) => ({ live: { ...st.live, players: n } })),
+        players: (cards) => set((st) => ({ live: { ...st.live, players: cards.length, phoneCards: [...new Set(cards)].sort((a, b) => a - b) } })),
         claim: (c) => {
           const st = get();
           if (!st.game || !st.cardSet) return;

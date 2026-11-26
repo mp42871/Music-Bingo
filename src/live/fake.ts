@@ -5,9 +5,9 @@ import { LIVE_REFUSALS, randomCode, type LiveBackend, type LiveClaim } from './t
 export function createFakeBackend(): LiveBackend & { claims: LiveClaim[]; players: { code: string; cardNumber: number; name: string; device: string }[] } {
   const games = new Map<string, { title: string; def: PhoneDef; status: 'open' | 'closed' }>();
   const players: { code: string; cardNumber: number; name: string; device: string }[] = [];
-  const count = (code: string) => { for (const w of watchers) if (w.code === code) w.on.players(players.filter((p) => p.code === code).length); };
+  const count = (code: string) => { for (const w of watchers) if (w.code === code) w.on.players(players.filter((p) => p.code === code).map((p) => p.cardNumber)); };
   const claims: LiveClaim[] = [];
-  const watchers = new Set<{ code: string; on: { players(n: number): void; claim(c: LiveClaim): void } }>();
+  const watchers = new Set<{ code: string; on: { players(cards: number[]): void; claim(c: LiveClaim): void } }>();
   let id = 0;
   return {
     claims, players,
@@ -20,7 +20,7 @@ export function createFakeBackend(): LiveBackend & { claims: LiveClaim[]; player
     watch(code, on) {
       const w = { code, on };
       watchers.add(w);
-      on.players(players.filter((p) => p.code === code).length);
+      on.players(players.filter((p) => p.code === code).map((p) => p.cardNumber));
       return () => watchers.delete(w);
     },
     async getGame(code) { const g = games.get(code); return g ? { code, ...g } : null; },

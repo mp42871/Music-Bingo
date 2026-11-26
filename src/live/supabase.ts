@@ -45,8 +45,8 @@ export function createSupabaseBackend(url: string, key: string): LiveBackend {
     },
     watch(code, on) {
       const count = async () => {
-        const { count: n } = await sb.from('live_players').select('id', { count: 'exact', head: true }).eq('code', code);
-        on.players(n ?? 0);
+        const { data } = await sb.from('live_players').select('card_number').eq('code', code);
+        on.players((data ?? []).map((r: { card_number: number }) => r.card_number));
       };
       void count();
       const ch = sb.channel(`live-${code}`)
