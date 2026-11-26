@@ -60,10 +60,13 @@ export function withLatestFiles(snapshot: Song[], live: Song[] | undefined): Son
   if (!live) return snapshot;
   const byId = new Map(live.map((s) => [s.id, s]));
   return snapshot.map((s) => {
-    if (s.id.startsWith('file:')) return s;
     const l = byId.get(s.id);
     if (!l) return s;
-    if (l.fileId) return { ...s, fileId: l.fileId };
-    const { fileId: _x, ...rest } = s; void _x; return rest;
+    const { fileId: _f, volumeDb: _v, ...rest } = s; void _f; void _v;
+    return {
+      ...rest,
+      ...(!s.id.startsWith('file:') && l.fileId ? { fileId: l.fileId } : s.id.startsWith('file:') && s.fileId ? { fileId: s.fileId } : {}),
+      ...(l.volumeDb ? { volumeDb: l.volumeDb } : {}),
+    };
   });
 }

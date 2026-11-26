@@ -5,13 +5,14 @@ import { song } from '../test/fixtures';
 
 function setup(opts: { policy?: ClipSettings['source']; online?: boolean; spotifyFails?: Error; fileFails?: boolean; blob?: boolean } = {}) {
   const spotify = { play: vi.fn(async () => { if (opts.spotifyFails) throw opts.spotifyFails; }), pause: vi.fn(async () => {}), resume: vi.fn(async () => {}), seek: vi.fn(async () => {}), setVolume: vi.fn(async () => {}) } satisfies PlaybackPort;
-  const file = { load: vi.fn(async () => { if (opts.fileFails) throw new Error('decode'); }), pause: vi.fn(async () => {}), resume: vi.fn(async () => {}), seek: vi.fn(async () => {}), setVolume: vi.fn(async () => {}), stop: vi.fn() } satisfies FilePlayer;
+  const file = { setTrimDb: vi.fn(), load: vi.fn(async () => { if (opts.fileFails) throw new Error('decode'); }), pause: vi.fn(async () => {}), resume: vi.fn(async () => {}), seek: vi.fn(async () => {}), setVolume: vi.fn(async () => {}), stop: vi.fn() } satisfies FilePlayer;
   const songs: Song[] = [song(1, { fileId: 'f1' }), song(2), song(3, { id: 'file:f3', uri: 'file:f3', fileId: 'f3' })];
   const sources: string[] = [];
   const notices: string[] = [];
   const port = createHybridPort({
     spotify, file, getSong: (uri) => songs.find((s) => s.uri === uri),
     getBlob: async (id) => (opts.blob === false ? undefined : new Blob([id])),
+    getFileGain: async () => 4,
     policy: () => opts.policy ?? 'auto', online: () => opts.online ?? true, spotifyReady: () => true, clipMs: () => 30_000,
     onSource: (s) => sources.push(s), onNotice: (m) => notices.push(m), onNetworkFailure: () => notices.push('NET'),
   });
@@ -91,4 +92,10 @@ test('file playback is told the clip length', async () => {
   const h = setup();
   await h.port.play('file:f3', 5000);
   expect(h.file.load).toHaveBeenCalledWith(expect.any(Blob), 5000, 30_000);
+});
+
+test('music files play with their measured levelling gain', async () => {
+  const h = setup({ online: false });
+  await h.port.play('spotify:track:s1', 0);
+  expect(h.file.setTrimDb).toHaveBeenCalledWith(4);
 });

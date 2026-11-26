@@ -10,6 +10,8 @@ export interface FilePlayer {
   seek(ms: number): Promise<void>;
   setVolume(pct: number): Promise<void>;
   stop(): void;
+  /** Levelling gain for the file about to play (dB). */
+  setTrimDb?(db: number): void;
   /** Called inside the host's click so the browser lets audio start. */
   prime?(): void;
 }
@@ -19,6 +21,7 @@ export interface HybridDeps {
   file: FilePlayer;
   getSong(uri: string): Song | undefined;
   getBlob(fileId: string): Promise<Blob | undefined>;
+  getFileGain?(fileId: string): Promise<number>;
   policy(): ClipSettings['source'];
   clipMs(): number;
   online(): boolean;
@@ -54,6 +57,7 @@ export function createHybridPort(d: HybridDeps): PlaybackPort & { current(): Sou
     try {
       if (active === 'spotify') d.spotify.pause().catch(() => {});
       if (volume !== null) await d.file.setVolume(volume);
+      d.file.setTrimDb?.(song.fileId && d.getFileGain ? await d.getFileGain(song.fileId).catch(() => 0) : 0);
       await d.file.load(blob, pos, d.clipMs());
       use('file');
     } catch {

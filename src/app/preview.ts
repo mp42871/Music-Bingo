@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createFilePlayer } from '../audio/filePlayer';
 import type { Song } from '../core/types';
-import { getAudioBlob } from '../db/audio';
+import { getAudioBlob, getAudioGain } from '../db/audio';
 import type { PlaybackPort } from '../game/controller';
 import { createHybridPort } from '../game/hybridPort';
 import { connectBrowserPlayer, getDevice, spotifyPort, useGame } from '../game/store';
@@ -21,6 +21,7 @@ export function previewPort(): PlaybackPort {
     file: (filePlayer ??= createFilePlayer()),
     getSong: (uri) => (usePreview.getState().current?.uri === uri ? usePreview.getState().current! : undefined),
     getBlob: getAudioBlob,
+    getFileGain: getAudioGain,
     policy: () => 'auto',
     clipMs: () => PREVIEW_MS,
     online: () => useNet.getState().online,

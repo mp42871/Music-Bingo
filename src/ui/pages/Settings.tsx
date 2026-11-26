@@ -75,6 +75,10 @@ export default function Settings() {
           </div>
         </Section>
 
+        <Section title="Even volume">
+          <p className="text-sm text-dim">Music files you add are levelled automatically. For Spotify songs, turn on <strong className="text-ink">Normalize volume</strong> in your Spotify app (Settings → Audio quality / Playback) — Spotify does its own levelling where it supports it. Any song that still sounds too loud or quiet: set its <strong className="text-ink">Vol</strong> adjustment in the playlist.</p>
+        </Section>
+
         <Section title="Game defaults">
           <ClipSettingsPanel value={clip} onChange={setClip} />
           <div className="mt-4 flex gap-2">

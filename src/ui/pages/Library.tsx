@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { readAudioMeta } from '../../audio/ingest';
+import { measureGainDb } from '../../audio/loudness';
 import { formatTime } from '../../core/io';
 import { fileSong } from '../../core/offline';
 import { uid } from '../../core/rng';
@@ -36,7 +37,8 @@ export default function Library() {
     for (let i = 0; i < picked.length; i++) {
       try {
         const { blob, ...meta } = await readAudioMeta(picked[i]);
-        await audio.saveAudio(meta, blob);
+        const gainDb = await measureGainDb(blob).catch(() => undefined);
+        await audio.saveAudio(gainDb === undefined ? meta : { ...meta, gainDb }, blob);
       } catch (e) {
         const err = e as { name?: string; inner?: { name?: string } };
         // The database may wrap the quota error in an AbortError.
@@ -97,6 +99,18 @@ export default function Library() {
           <span className="font-semibold">{files.length} files · {mb(total)}</span>
           {quota && <span className="text-sm text-dim">{mb(quota.quota - quota.usage)} free in this browser</span>}
           <input aria-label="Search files" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} className="ml-auto w-48" />
+          {files.some((f) => f.gainDb === undefined) && (
+            <button type="button" className="btn" disabled={!!busy} onClick={async () => {
+              const todo = files.filter((f) => f.gainDb === undefined);
+              for (const [i, f] of todo.entries()) {
+                setBusy({ done: i, total: todo.length });
+                const blob = await audio.getAudioBlob(f.id);
+                if (blob) await audio.setAudioGain(f.id, await measureGainDb(blob).catch(() => 0));
+              }
+              setBusy(null);
+              await refresh();
+            }}>Level volume of older files</button>
+          )}
           <button type="button" className="btn btn-b" disabled={!files.length} onClick={makePlaylist}>
             Make a playlist from these files{selected.size ? ` (${selected.size})` : ''}
           </button>

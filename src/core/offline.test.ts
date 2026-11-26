@@ -64,3 +64,9 @@ test('withLatestFiles copies current file links onto a game snapshot', () => {
   expect(withLatestFiles(snap, live).map((s) => s.fileId)).toEqual(['a', 'b', undefined]);
   expect(withLatestFiles(snap, undefined)).toBe(snap);
 });
+
+test('withLatestFiles also brings in volume adjustments made after printing', () => {
+  const snap = [song(1), song(2, { volumeDb: 3 })];
+  const live = [song(1, { volumeDb: -2 }), song(2)];
+  expect(withLatestFiles(snap, live).map((s) => s.volumeDb)).toEqual([-2, undefined]);
+});

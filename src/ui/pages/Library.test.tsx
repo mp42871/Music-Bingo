@@ -6,6 +6,7 @@ import * as audio from '../../db/audio';
 import { listPools } from '../../db/repo';
 import Library from './Library';
 
+vi.mock('../../audio/loudness', async (orig) => ({ ...(await orig<object>()), measureGainDb: async () => -2.5 }));
 vi.mock('../../audio/ingest', () => ({
   readAudioMeta: async (f: File) => ({
     id: `id-${f.name}`, name: f.name, title: f.name.replace('.mp3', ''), artist: 'Band', durationMs: 180000,
@@ -58,4 +59,11 @@ test('storage-full errors wrapped by the database (AbortError) are reported as s
   render(<MemoryRouter><Library /></MemoryRouter>);
   await userEvent.upload(screen.getByLabelText('Add music files'), files());
   expect(await screen.findByRole('alert')).toHaveTextContent(/storage is full.*Africa\.mp3/i);
+});
+
+test('added files are measured for loudness levelling', async () => {
+  render(<MemoryRouter><Library /></MemoryRouter>);
+  await userEvent.upload(screen.getByLabelText('Add music files'), files());
+  await screen.findByText('Jolene');
+  await waitFor(async () => expect((await audio.listAudio()).every((f) => f.gainDb === -2.5)).toBe(true));
 });

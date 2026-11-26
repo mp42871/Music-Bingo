@@ -6,6 +6,8 @@ export interface Song {
   fileId?: string;
   /** Spotify playlists this song was imported from (songs added by hand have none). */
   sourceIds?: string[];
+  /** Host's volume adjustment for this song in dB (−9…+9). */
+  volumeDb?: number;
 }
 export interface Pool {
   id: string; name: string; songs: Song[]; categories: string[];
@@ -71,4 +73,6 @@ export interface Game {
 export interface AudioFile {
   id: string; name: string; title: string; artist: string; album?: string;
   durationMs: number; size: number; type: string; addedAt: number;
+  /** Levelling gain measured from the audio (dB). */
+  gainDb?: number;
 }

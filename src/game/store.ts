@@ -15,7 +15,7 @@ import { loadPlayer } from '../spotify/sdk';
 import { openChannel, type AudienceMessage } from './broadcast';
 import { createHybridPort } from './hybridPort';
 import { createFilePlayer } from '../audio/filePlayer';
-import { getAudioBlob } from '../db/audio';
+import { getAudioBlob, getAudioGain } from '../db/audio';
 import { reportNetworkFailure, useNet } from '../app/online';
 import type { Source } from '../core/offline';
 import { GameController, type ControllerState, type PlaybackPort } from './controller';
@@ -58,6 +58,7 @@ export const hybridPort = (): PlaybackPort => createHybridPort({
   file: (filePlayer ??= createFilePlayer()),
   getSong: (uri) => [...useGame.getState().songs.values()].find((s) => s.uri === uri),
   getBlob: getAudioBlob,
+  getFileGain: getAudioGain,
   policy: () => useGame.getState().game?.settings.source ?? 'auto',
   clipMs: () => (useGame.getState().game?.settings.clipSec ?? 30) * 1000,
   online: () => useNet.getState().online,

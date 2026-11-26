@@ -28,3 +28,11 @@ export async function audioUsage(): Promise<{ count: number; bytes: number }> {
   const all = await listAudio();
   return { count: all.length, bytes: all.reduce((a, f) => a + f.size, 0) };
 }
+
+export async function getAudioGain(id: string): Promise<number> {
+  return (await db.audio.get(id))?.gainDb ?? 0;
+}
+
+export async function setAudioGain(id: string, gainDb: number): Promise<void> {
+  await db.audio.update(id, { gainDb });
+}

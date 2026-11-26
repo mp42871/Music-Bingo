@@ -295,3 +295,20 @@ test('the clip fades all the way to silence before pausing', async () => {
   expect(zeroAt).toBeGreaterThanOrEqual(0);
   expect(vi.mocked(h.port.setVolume).mock.invocationCallOrder[zeroAt]).toBeLessThan(vi.mocked(h.port.pause).mock.invocationCallOrder.at(-1)!);
 });
+
+test("a song's volume adjustment scales the volume it plays at", async () => {
+  const loud = setup({ fadeSec: 0 });
+  // s1 gets +6 dB, s2 gets -6 dB
+  const songsMap = (loud.c as unknown as { songs: Map<string, { volumeDb?: number }> }).songs;
+  songsMap.get('s0')!.volumeDb = 6;
+  songsMap.get('s1')!.volumeDb = -6;
+  await loud.c.start();
+  loud.c.setVolume(50);
+  await loud.advance(250);
+  expect(loud.volumes.at(-1)).toBe(100);
+  await loud.c.next();
+  await loud.advance(250);
+  expect(loud.volumes.at(-1)).toBe(25);
+  songsMap.get('s0')!.volumeDb = undefined;
+  songsMap.get('s1')!.volumeDb = undefined;
+});

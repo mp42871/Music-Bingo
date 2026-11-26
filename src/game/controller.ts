@@ -1,4 +1,5 @@
 import { computeStartMs } from '../core/clip';
+import { trimFactor } from '../audio/loudness';
 import type { Call, ClipSettings, Song } from '../core/types';
 
 export interface PlaybackPort {
@@ -88,7 +89,8 @@ export class GameController {
 
   private targetVolume(): number {
     if (this.s.muted) return 0;
-    let v = this.s.volume * (this.s.ducked ? 0.25 : 1);
+    const trim = trimFactor(this.s.currentId ? this.songs.get(this.s.currentId)?.volumeDb : undefined);
+    let v = Math.min(100, this.s.volume * trim) * (this.s.ducked ? 0.25 : 1);
     const fade = this.settings.fadeSec * 1000;
     if (fade > 0 && this.s.phase === 'playing') {
       const e = this.s.clipElapsedMs, clip = this.settings.clipSec * 1000;

@@ -47,6 +47,13 @@ export function SongRow({ song, categories, onChange, onRemove }: {
       <input aria-label={`Start point for ${song.title}`} placeholder="start m:ss" value={start}
         onChange={(e) => setStart(e.target.value)} onBlur={commitStart} onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
         className="w-24 text-center font-mono text-sm" />
+      <label className="flex items-center gap-1 text-sm text-dim" title="Make this song louder or softer than the others">
+        Vol
+        <select aria-label={`Volume adjustment for ${song.title}`} value={song.volumeDb ?? 0} className="px-1 py-0.5 text-sm"
+          onChange={(e) => { const v = Number(e.target.value); const { volumeDb: _x, ...rest } = song; void _x; onChange(v ? { ...rest, volumeDb: v } : rest); }}>
+          {Array.from({ length: 19 }, (_, i) => i - 9).map((v) => <option key={v} value={v}>{v > 0 ? `+${v}` : v}</option>)}
+        </select>
+      </label>
       {song.startMs !== undefined && <PreviewButton song={song} from="marker" label={`Play ${song.title} from its start point`} />}
       <label className="flex items-center gap-1 text-sm text-dim">
         <input type="checkbox" checked={!song.excluded} onChange={(e) => onChange({ ...song, excluded: !e.target.checked })} aria-label={`Use ${song.title}`} /> Use

@@ -24,3 +24,11 @@ test('song rows offer preview and play-from-start-point', async () => {
   expect(screen.getByRole('button', { name: 'Preview Jolene' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Play Jolene from its start point' })).toBeInTheDocument();
 });
+
+test('song rows have a volume adjustment', async () => {
+  const { SongRow } = await import('./SongRow');
+  const onChange = vi.fn();
+  render(<ul><SongRow song={song(1, { title: 'Jolene' })} categories={[]} onChange={onChange} onRemove={() => {}} /></ul>);
+  await userEvent.selectOptions(screen.getByLabelText('Volume adjustment for Jolene'), '3');
+  expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ volumeDb: 3 }));
+});

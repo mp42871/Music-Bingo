@@ -8,6 +8,7 @@ export function createFilePlayer(): FilePlayer & { position(): number } {
   let ctx: AudioContext | null = null;
   let gain: GainNode | null = null;
   let volume = 0.7;
+  let trim = 1; // levelling gain for the current file
 
   const ensureGraph = () => {
     if (ctx) return;
@@ -23,6 +24,12 @@ export function createFilePlayer(): FilePlayer & { position(): number } {
 
   /** resume() never settles while the browser blocks audio; don't wait on it forever. */
   const wake = () => Promise.race([ctx?.resume().catch(() => {}), new Promise((r) => setTimeout(r, 300))]);
+
+  // Web Audio gain can go above 1 (boost quiet files); the plain element can only cut.
+  const apply = () => {
+    if (gain && ctx) gain.gain.setTargetAtTime(volume * trim, ctx.currentTime, 0.05);
+    else el.volume = Math.min(1, volume * trim);
+  };
 
   const ready = () => new Promise<void>((resolve, reject) => {
     if (el.readyState >= 2) return resolve();
@@ -55,9 +62,9 @@ export function createFilePlayer(): FilePlayer & { position(): number } {
     position: () => Math.round(el.currentTime * 1000),
     async setVolume(pct) {
       volume = Math.max(0, Math.min(1, pct / 100));
-      if (gain && ctx) gain.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
-      else el.volume = volume;
+      apply();
     },
+    setTrimDb(dbAdjust) { trim = Math.pow(10, dbAdjust / 20); apply(); },
     prime() { ensureGraph(); void ctx?.resume().catch(() => {}); },
     stop() {
       el.pause();
