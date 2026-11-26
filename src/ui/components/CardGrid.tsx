@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { cleanTitle } from '../../core/io';
 import { resolveColors } from '../../core/style';
 import type { Card, CardLayout, Cell, PrintStyle, Song } from '../../core/types';
@@ -29,6 +29,29 @@ export function fitSize(text: string, size: number, sub = false, display = false
   return `${Math.min(base * scale * (sub ? 0.78 : 1), wordCap).toFixed(2)}cqmin`;
 }
 
+/** Shrink the text in any cell whose words still spill out (fonts and phone sizes vary). */
+export function shrinkToFit(root: HTMLElement) {
+  for (const cell of root.querySelectorAll<HTMLElement>('.bc-cell, .bc-head')) {
+    const spans = [...cell.querySelectorAll<HTMLElement>(':scope > span')];
+    const parts = spans.length ? spans : [cell];
+    // React writes the planned size; anything else there is our own shrink from last time.
+    for (const el of parts) {
+      if (el.style.fontSize !== el.dataset.shrunk) el.dataset.fs = el.style.fontSize;
+      if (el.dataset.fs) el.style.fontSize = el.dataset.fs;
+      delete el.dataset.shrunk;
+    }
+    const over = () => cell.scrollHeight > cell.clientHeight + 1 || cell.scrollWidth > cell.clientWidth + 1;
+    for (let k = 0.9; k > 0.35 && over(); k *= 0.9) {
+      for (const el of parts) {
+        const m = /^([\d.]+)([a-z%]+)$/.exec(el.dataset.fs ?? '');
+        if (!m) continue;
+        el.style.fontSize = `${(Number(m[1]) * k).toFixed(2)}${m[2]}`;
+        el.dataset.shrunk = el.style.fontSize;
+      }
+    }
+  }
+}
+
 export function CardGrid({ card, layout, songsById, style, marked, highlightMask, uncalled, onToggle, showQr, className = '' }: {
   card: Card; layout: CardLayout; songsById: Map<string, Song>; style: PrintStyle;
   marked?: boolean[]; highlightMask?: number[] | null; uncalled?: boolean[];
@@ -36,6 +59,18 @@ export function CardGrid({ card, layout, songsById, style, marked, highlightMask
 }) {
   const n = layout.size;
   const c = resolveColors(style);
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    shrinkToFit(el);
+    let raf = 0;
+    const again = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => shrinkToFit(el)); };
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(again);
+    ro?.observe(el);
+    void document.fonts?.ready.then(again);
+    return () => { ro?.disconnect(); cancelAnimationFrame(raf); };
+  });
   const vars = {
     '--c-bg': c.bg, '--c-ink': c.ink, '--c-accent': c.accent, '--c-accent2': c.accent2,
     '--c-cell': c.cell, '--c-line': c.line, '--c-head-ink': c.headerInk, '--c-font': c.font,
@@ -50,7 +85,7 @@ export function CardGrid({ card, layout, songsById, style, marked, highlightMask
         : [];
 
   return (
-    <div className={`bingo-card ${className}`} style={vars} data-card={card.number}>
+    <div ref={ref} className={`bingo-card ${className}`} style={vars} data-card={card.number}>
       <div className="bc-top">
         {style.logoDataUrl && <img src={style.logoDataUrl} alt="" className="bc-logo" />}
         <div className="min-w-0">

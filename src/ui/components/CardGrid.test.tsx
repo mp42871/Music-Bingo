@@ -49,3 +49,21 @@ test('whole-playlist theme shows the playlist name across the top', () => {
   render(<CardGrid card={card} layout={layout({ headerMode: 'theme', themeCategory: undefined, themeLabel: 'Classic Rock' })} songsById={byId} style={DEFAULT_STYLE} />);
   expect(screen.getByRole('columnheader')).toHaveTextContent('Classic Rock');
 });
+
+describe('shrinkToFit', () => {
+  it('shrinks the text of a tile whose words spill out, and leaves fitting tiles alone', async () => {
+    const { shrinkToFit } = await import('./CardGrid');
+    const root = document.createElement('div');
+    root.innerHTML = '<div class="bc-cell" id="big"><span style="font-size: 4cqmin">Achy Breaky Heart</span></div><div class="bc-cell" id="ok"><span style="font-size: 4cqmin">Jolene</span></div>';
+    const big = root.querySelector<HTMLElement>('#big')!;
+    const span = big.querySelector('span')!;
+    // the big tile overflows until its text is under 70% of the planned size
+    Object.defineProperty(big, 'clientHeight', { value: 100 });
+    Object.defineProperty(big, 'scrollHeight', { get: () => (parseFloat(span.style.fontSize) < 2.8 ? 100 : 130) });
+    shrinkToFit(root);
+    expect(span.style.fontSize).toBe('2.62cqmin');
+    expect(root.querySelector<HTMLElement>('#ok span')!.style.fontSize).toBe('4cqmin');
+    shrinkToFit(root); // running again starts from the planned size, not the shrunk one
+    expect(span.style.fontSize).toBe('2.62cqmin');
+  });
+});
