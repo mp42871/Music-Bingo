@@ -85,6 +85,7 @@ export default function Home() {
         <p className="relative mt-4 max-w-md text-lg text-dim">Build a playlist, print the cards, and run the game from one screen.</p>
         <button type="button" className="btn btn-b relative mt-6 px-5 py-2.5 text-lg" onClick={() => setQuick(true)}>⚡ Quick game</button>
         <p className="relative mt-1 text-sm text-dim">Crowd request? Pick a theme or artist and play in under a minute.</p>
+        <Link to="/join" className="relative mt-3 inline-block text-sm text-deck-a underline">Playing along? Join a game →</Link>
         <div className="relative mt-6 flex flex-wrap gap-2 text-sm">
           <Link to="/pools" className="chip">1 · Make a playlist</Link>
           <Link to="/designer" className="chip">2 · Print cards</Link>

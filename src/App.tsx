@@ -16,10 +16,11 @@ import Check from './ui/pages/Check';
 import History from './ui/pages/History';
 import Settings from './ui/pages/Settings';
 import Phone from './ui/pages/Phone';
+import Join from './ui/pages/Join';
 import Library from './ui/pages/Library';
 import SetEditor from './ui/pages/SetEditor';
 
-const BARE = ['/audience', '/phone', '/print'];
+const BARE = ['/audience', '/phone', '/print', '/join'];
 
 function Shell() {
   const loc = useLocation();
@@ -41,6 +42,8 @@ function Shell() {
         <Route path="/history" element={<History />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/phone" element={<Phone />} />
+        <Route path="/join" element={<Join />} />
+        <Route path="/join/:code" element={<Join />} />
       </Routes>
     </>
   );

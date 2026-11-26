@@ -1,6 +1,7 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import { cleanTitle } from './io';
-import type { CardLayout, Pool } from './types';
+import { generateCard } from './cards';
+import type { Card, CardLayout, Pool } from './types';
 
 /**
  * Compact phone-card definition. Songs carry no Spotify ids (cards depend only on song order,
@@ -9,6 +10,17 @@ import type { CardLayout, Pool } from './types';
 export interface PhoneDef {
   v: 2; seed: number; layout: CardLayout; title: string; cats: string[];
   s: [title: string, artist?: string, cats?: number[]][];
+  /** Live play only: the exact printed cards (song index, artist name, or null = free) by card number. */
+  printed?: [number, (number | string | null)[]][];
+}
+
+/** The card a phone shows for a number: the exact printed card if known, else generated like the host does. */
+export function phoneCard(d: PhoneDef, number: number): Card {
+  const printed = d.printed?.find(([n]) => n === number);
+  if (printed) {
+    return { number, cells: printed[1].map((c) => (c === null ? { kind: 'free' } : typeof c === 'string' ? { kind: 'artist', artist: c } : { kind: 'song', songId: `p${c}` })) };
+  }
+  return generateCard(phoneDefToPool(d), d.layout, d.seed, number);
 }
 
 export function encodePhoneDef(d: PhoneDef): string {

@@ -43,3 +43,24 @@ test('warns when Spotify will soon ask to reconnect', async () => {
   render(<MemoryRouter><Settings /></MemoryRouter>);
   expect(await screen.findByText(/Spotify will ask you to reconnect in 8 days/)).toBeInTheDocument();
 });
+
+test('live play settings save the Supabase project and offer the setup script', async () => {
+  render(<MemoryRouter><Settings /></MemoryRouter>);
+  const url = await screen.findByLabelText('Supabase Project URL');
+  await userEvent.type(url, 'https://abcd.supabase.co');
+  await userEvent.type(screen.getByLabelText('Supabase publishable key'), 'sb_publishable_xyz');
+  await userEvent.click(screen.getByRole('button', { name: 'Save live play settings' }));
+  await waitFor(async () => {
+    expect(await repo.getSetting('supabaseUrl', '')).toBe('https://abcd.supabase.co');
+    expect(await repo.getSetting('supabaseKey', '')).toBe('sb_publishable_xyz');
+  });
+  expect(screen.getByRole('button', { name: 'Copy setup script' })).toBeInTheDocument();
+  expect(screen.getByText(/create table if not exists live_games/)).toBeInTheDocument();
+});
+
+test('a project URL must be https', async () => {
+  render(<MemoryRouter><Settings /></MemoryRouter>);
+  await userEvent.type(await screen.findByLabelText('Supabase Project URL'), 'abcd.supabase.co');
+  await userEvent.click(screen.getByRole('button', { name: 'Save live play settings' }));
+  expect(await screen.findByText(/should start with https:\/\//)).toBeInTheDocument();
+});

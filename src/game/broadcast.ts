@@ -12,6 +12,8 @@ export interface AudienceMessage {
   revealed: { title: string; artist: string; art?: string } | null;
   phoneUrl?: string;
   showQr: boolean;
+  /** Live play: how phones join. */
+  live?: { code: string; joinUrl: string; site: string };
   winners: number;
 }
 

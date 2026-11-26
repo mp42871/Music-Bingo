@@ -172,3 +172,40 @@ test('a quick game opens with the phone QR on and a print link ready', async () 
   expect(await screen.findByRole('link', { name: 'Print cards' })).toHaveAttribute('target', '_blank');
   await waitFor(() => expect(useGame.getState().showQr).toBe(true));
 });
+
+describe('live play', () => {
+  afterEach(async () => { (await import('../../live/config')).setLiveBackend(undefined); });
+
+  test('the game goes live, counts phones, and shows checked BINGO claims', async () => {
+    const { createFakeBackend } = await import('../../live/fake');
+    const { setLiveBackend } = await import('../../live/config');
+    const fake = createFakeBackend();
+    setLiveBackend(fake);
+    const { set } = generateCardSet(pool, layout(), { seed: 1, count: 10, startNumber: 1 });
+    const row = set.cards[0].cells.slice(0, 5).map((c) => (c.kind === 'song' ? c.songId : ''));
+    await setup(row); // card #0001 already has a full top row
+    const chip = await screen.findByText(/Live: \d{4}/);
+    const code = chip.textContent!.match(/\d{4}/)![0];
+    await fake.join(code, 5001, 'Ann');
+    expect(await screen.findByText(/1 phone/)).toBeInTheDocument();
+    await act(async () => { await fake.claim(code, 1, 'Sam'); });
+    const pop = await screen.findByRole('alert', { name: /BINGO claim/ });
+    expect(pop).toHaveTextContent(/Sam · card #0001/);
+    expect(pop).toHaveTextContent(/VALID/);
+    await act(async () => { await fake.claim(code, 2, 'Lee'); });
+    expect(await screen.findByText(/Lee · card #0002/)).toBeInTheDocument();
+    expect(screen.getAllByText(/NOT YET/).length).toBeGreaterThan(0);
+  });
+
+  test('ending the game closes it for phones', async () => {
+    const { createFakeBackend } = await import('../../live/fake');
+    const { setLiveBackend } = await import('../../live/config');
+    const fake = createFakeBackend();
+    setLiveBackend(fake);
+    await setup();
+    const code = (await screen.findByText(/Live: \d{4}/)).textContent!.match(/\d{4}/)![0];
+    await userEvent.click(screen.getByRole('button', { name: 'End round' }));
+    await userEvent.click(within(await screen.findByRole('dialog', { name: 'Next round' })).getByRole('button', { name: 'End game' }));
+    await waitFor(async () => expect((await fake.getGame(code))!.status).toBe('closed'));
+  });
+});

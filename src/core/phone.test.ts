@@ -40,3 +40,20 @@ test('a 75-song playlist fits in a scannable QR link', () => {
   const pool: Pool = { id: 'p', name: 'x', songs, categories: [], createdAt: 0, updatedAt: 0 };
   expect(encodePhoneDef(poolToPhoneDef(pool, 1, layout(), 'Music Bingo')).length).toBeLessThan(2000);
 });
+
+test('live defs carry printed cards so a paper card number shows the same card on a phone', async () => {
+  const { liveDef } = await import('../game/phoneLink');
+  const { generateCardSet } = await import('./cards');
+  const { swapSong } = await import('./cardEdit');
+  const { phoneCard } = await import('./phone');
+  const made = generateCardSet(catPoolLike(), layout(), { seed: 2, count: 5, startNumber: 1 }).set;
+  const id = (made.cards[0].cells[0] as { songId: string }).songId;
+  const edited = swapSong(made, id, null).set; // cards changed after printing
+  const def = liveDef(edited);
+  const pool = phoneDefToPool(def);
+  const title = (c: { kind: string; songId?: string }) => (c.kind === 'song' ? pool.songs.find((s) => s.id === c.songId)!.title : c.kind);
+  const hostTitle = (c: { kind: string; songId?: string }) => (c.kind === 'song' ? edited.songs!.find((s) => s.id === c.songId)!.title : c.kind);
+  expect(phoneCard(def, 1).cells.map(title)).toEqual(edited.cards[0].cells.map(hostTitle));
+  expect(phoneCard(def, 6000).number).toBe(6000);
+});
+function catPoolLike() { return { id: 'p', name: 'x', songs: Array.from({ length: 75 }, (_, i) => song(i, { title: `Song ${i}`, categories: [['70s', '80s', '90s', 'Country', 'Rock'][Math.floor(i / 15)]] })), categories: [], createdAt: 0, updatedAt: 0 }; }

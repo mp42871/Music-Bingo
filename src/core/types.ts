@@ -69,6 +69,8 @@ export interface Game {
   status: 'setup' | 'live' | 'finished';
   /** When the call order was last saved as a Spotify playlist (for manual offline play). */
   orderSavedAt?: number;
+  /** Live play join code while phones can join. */
+  liveCode?: string;
 }
 export interface AudioFile {
   id: string; name: string; title: string; artist: string; album?: string;

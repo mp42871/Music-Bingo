@@ -9,6 +9,7 @@ import { daysUntilReconnect } from '../../spotify/auth';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Field, PageHeader, Section } from '../components/Field';
 import { DriveSection } from '../components/DriveSection';
+import { LiveSection } from '../components/LiveSection';
 
 export default function Settings() {
   const sp = useSpotify();
@@ -86,6 +87,8 @@ export default function Settings() {
             <button type="button" className="btn" onClick={() => setClip(DEFAULT_CLIP)}>Reset</button>
           </div>
         </Section>
+
+        <LiveSection />
 
         <DriveSection />
 

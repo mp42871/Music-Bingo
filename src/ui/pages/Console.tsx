@@ -12,6 +12,7 @@ import { RoundDialog } from '../console/RoundDialog';
 import { Transport } from '../console/Transport';
 import { WinnerTracker } from '../console/WinnerTracker';
 import { ClaimPanel } from '../console/ClaimPanel';
+import { cardNo } from '../components/CardGrid';
 import { autoBackupOnClick } from '../../drive/backup';
 import { driveService } from '../../drive/service';
 import { Readiness } from '../components/Readiness';
@@ -105,9 +106,33 @@ export default function Console() {
         <h1 className="mr-auto font-display text-2xl md:text-3xl">{game.name}</h1>
         {g.makePort === hybridPort && <DevicePicker onError={(m) => useGame.setState((s) => ({ errors: [...s.errors.slice(-3), m] }))} />}
         <button type="button" className="btn" onClick={() => window.open(`${window.location.pathname}#/audience`, 'mb-audience', 'width=1280,height=720')}>Open screen for players</button>
+        {g.live.code && (
+          <span className="chip border-ok text-ok" title="Phones join with this code">
+            Live: {g.live.code} · {g.live.players} phone{g.live.players === 1 ? '' : 's'}
+            <button type="button" className="ml-1 text-dim underline" onClick={() => { if (confirm('Stop live play? Phones can no longer join or call BINGO.')) void g.stopLive(); }}>Stop</button>
+          </span>
+        )}
+        {!g.live.code && g.live.error && <span className="chip border-peak text-peak" title={g.live.error}>Live play unavailable</span>}
         <button type="button" className="btn" onClick={() => { if (cs.phase === 'playing' || cs.phase === 'gap') void ctrl.togglePause(); setQuick(true); }}>⚡ Quick game</button>
         <button type="button" className="btn btn-b" onClick={() => openCheck('open')}>Check a card</button>
       </div>
+      {g.live.claims.length > 0 && (
+        <div className="mb-4 grid gap-2">
+          {g.live.claims.map((c) => (
+            <div key={c.id} role="alert" aria-label="BINGO claim" className={`flex flex-wrap items-center gap-3 rounded-xl border-2 px-4 py-3 ${c.valid ? 'border-ok bg-ok/10' : 'border-deck-b bg-deck-b/10'}`}>
+              <span className="font-display text-xl">BINGO!</span>
+              <span className="flex-1">
+                {`${c.name || 'A player'} · card ${cardNo(c.cardNumber)} — `}
+                <strong className={c.valid ? 'text-ok' : 'text-deck-b'}>{c.valid ? 'VALID ✓' : 'NOT YET'}</strong>
+                <span className="text-dim">{c.valid ? ` (on song ${c.atCall})` : c.missing !== null ? ` (needs ${c.missing} more)` : ' (card not found)'}</span>
+              </span>
+              <button type="button" className="btn text-sm" onClick={() => openCheck(c.cardNumber)}>Check card</button>
+              {c.valid && <button type="button" className="btn btn-a text-sm" onClick={async () => { await g.recordWinner({ cardNumber: c.cardNumber, name: c.name || undefined, atCall: c.atCall ?? game.calls.length }); g.dismissClaim(c.id); }}>Record winner</button>}
+              <button type="button" className="btn text-sm" aria-label="Dismiss claim" onClick={() => g.dismissClaim(c.id)}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
       {fresh && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-ok/40 bg-ok/10 px-4 py-3">
           <p className="flex-1">Cards are ready. Phone-card QR is on the players’ screen — or print a stack.</p>
@@ -142,7 +167,7 @@ export default function Console() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-dim">
             <span>Space play/pause</span><span>→ next</span><span>← previous</span><span>R replay</span><span>M mute</span><span>T talk over</span><span>↑↓ volume</span>
             <label className="ml-auto flex items-center gap-2"><input type="checkbox" checked={g.revealed} onChange={(e) => g.setReveal(e.target.checked)} /> Show this song on the players’ screen</label>
-            <label className="flex items-center gap-2"><input type="checkbox" checked={g.showQr} onChange={(e) => g.setShowQr(e.target.checked)} /> Show phone-card QR</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={g.showQr} onChange={(e) => g.setShowQr(e.target.checked)} /> Show how to join on the players’ screen</label>
           </div>
           <Queue upcoming={upcoming} removed={removed} calls={game.calls} songs={songs}
             onReorder={(ids) => ctrl.reorder(ids)} onPlayNow={(id) => ctrl.jumpTo(id)} onRemove={(id) => ctrl.remove(id)}

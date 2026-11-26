@@ -47,7 +47,18 @@ export default function Audience() {
               <div className="text-left"><div className="text-4xl font-bold">{m.revealed.title}</div><div className="text-2xl text-dim">{m.revealed.artist}</div></div>
             </div>
           )}
-          {m.showQr && m.phoneUrl && (
+          {m.showQr && m.live && (
+            <div className="flex flex-wrap items-center justify-center gap-6 rounded-2xl bg-white p-5 text-night">
+              <QR text={m.live.joinUrl} size={500} className="size-48" />
+              <div className="text-left">
+                <div className="text-2xl font-bold">Play on your phone</div>
+                <div className="text-xl">{m.live.site ? <>Scan, or go to <strong>{m.live.site}</strong> → Join a game</> : 'Scan the code with your phone camera'}</div>
+                <div className="mt-1 text-lg">Game code</div>
+                <div className="font-display text-6xl tracking-widest">{m.live.code}</div>
+              </div>
+            </div>
+          )}
+          {m.showQr && !m.live && m.phoneUrl && (
             <div className="flex items-center gap-6 rounded-2xl bg-white p-5 text-night">
               {m.phoneUrl.length > 2500
                 ? <div className="max-w-xs text-left text-lg">This playlist is too large for one QR code — use printed cards.</div>

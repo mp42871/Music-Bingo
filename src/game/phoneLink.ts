@@ -8,3 +8,12 @@ export function setPhoneDef(set: CardSet): PhoneDef {
   const title = style.title || 'Music Bingo';
   return poolToPhoneDef({ id: set.poolId, name: title, songs: set.songs ?? [], categories: [], createdAt: 0, updatedAt: 0 }, set.seed, set.layout, title);
 }
+
+/** Live play: include the exact printed cards so a phone holding a paper card's number matches it. */
+export function liveDef(set: CardSet): PhoneDef {
+  const def = setPhoneDef(set);
+  const active = (set.songs ?? []).filter((s) => !s.excluded);
+  const index = new Map(active.map((s, i) => [s.id, i]));
+  def.printed = set.cards.map((c) => [c.number, c.cells.map((x) => (x.kind === 'free' ? null : x.kind === 'artist' ? x.artist : index.get(x.songId) ?? null))]);
+  return def;
+}
