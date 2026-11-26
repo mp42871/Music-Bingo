@@ -9,7 +9,7 @@ export function StyleControls({ style, onChange, layout }: { style: PrintStyle; 
     <>
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
       {THEMES.map((t) => (
-        <button key={t.id} type="button" onClick={() => st('theme', t.id)}
+        <button key={t.id} type="button" aria-pressed={style.theme === t.id} onClick={() => st('theme', t.id)}
           className={`flex items-center gap-3 rounded-xl border p-2.5 text-left ${style.theme === t.id ? 'border-deck-b' : 'border-rail hover:border-dim'}`}>
           <span className="flex h-8 w-12 overflow-hidden rounded" style={{ background: t.bg }}>
             <span className="m-1 w-3 rounded-sm" style={{ background: t.accent }} /><span className="my-1 w-3 rounded-sm" style={{ background: t.accent2 }} />

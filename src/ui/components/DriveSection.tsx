@@ -74,7 +74,10 @@ export function DriveSection() {
             })}>Back up now</button>
           <button type="button" className="btn" disabled={!ready || !!busy}
             onClick={() => run('Loading backups…', async () => { setBackups(await driveService().list()); setConnected(true); await noteDriveConnected(); setAuto(autoBackupEnabled()); })}>Restore from Drive</button>
-          {connected && <button type="button" className="btn text-dim" onClick={() => { disconnectGoogle(); setConnected(false); setBackups(null); }}>Disconnect Google</button>}
+          {connected && <button type="button" className="btn text-dim" onClick={() => {
+            if (!confirm('Disconnect Google Drive? Automatic backups stop until you connect again. Your backups stay in Drive.')) return;
+            disconnectGoogle(); setConnected(false); setBackups(null);
+          }}>Disconnect Google</button>}
         </div>
         {!online && <p className="text-sm text-peak">You’re offline — Drive backups need internet.</p>}
         <label className="flex items-center gap-2 text-sm">
@@ -97,11 +100,12 @@ export function DriveSection() {
                   <li key={b.id} className="flex flex-wrap items-center gap-2">
                     <span className="min-w-0 flex-1 truncate">{b.name} <span className="text-dim">· {(b.size / 1024).toFixed(0)} KB</span></span>
                     <button type="button" className="btn px-2 py-1 text-xs" aria-label={`Merge ${b.name}`}
-                      onClick={() => run('Restoring…', async () => { await importBackup(await driveService().download(b.id), 'merge'); setMsg(`Restored “${b.name}” (merged with what’s here).`); })}>Merge</button>
+                      onClick={() => run('Restoring…', async () => { await importBackup(await driveService().download(b.id), 'merge'); await refresh(); setMsg(`Restored “${b.name}” (merged with what’s here).`); })}>Merge</button>
                     <button type="button" className="btn px-2 py-1 text-xs" aria-label={`Replace with ${b.name}`}
                       onClick={() => run('Restoring…', async () => {
                         if (!confirm('Replace everything in this browser with this backup?')) return;
                         await importBackup(await driveService().download(b.id), 'replace');
+                        await refresh();
                         setMsg(`Restored “${b.name}” (replaced everything).`);
                       })}>Replace</button>
                   </li>

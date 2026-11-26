@@ -147,7 +147,11 @@ export default function Designer() {
       : `Rebuild all ${count} cards of “${editing.name}”? Every card changes and must be reprinted.`;
     if (!confirm(msg)) return;
     try {
-      const res = generateCardSet(pool, layout, { seed, count, startNumber, name: editing.name });
+      // Songs removed from this set earlier stay removed after a rebuild.
+      const removed = new Set(editing.songs?.filter((x) => x.excluded).map((x) => x.id));
+      const src = { ...pool, songs: pool.songs.map((x) => (removed.has(x.id) ? { ...x, excluded: true } : x)) };
+      const res = generateCardSet(src, layout, { seed, count, startNumber, name: editing.name });
+      res.set.songs = [...(res.set.songs ?? []), ...src.songs.filter((x) => x.excluded && removed.has(x.id))];
       const names = (await listCardSets()).map((x) => x.name);
       const cs: CardSet = {
         ...res.set, style, ...(chosen.length > 1 ? { poolIds: chosen.map((p) => p.id) } : {}),

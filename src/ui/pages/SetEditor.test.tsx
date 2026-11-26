@@ -92,3 +92,28 @@ test('print can show only some cards', async () => {
   await screen.findByText(/Gala/);
   expect(document.querySelectorAll('[data-card]')).toHaveLength(2);
 });
+
+test('the "left out of future games" note only shows when it is true', async () => {
+  const set = base();
+  await saveCardSet({ ...set, songs: undefined });
+  open();
+  await screen.findByLabelText('Song to swap');
+  expect(screen.queryByText(/left out of future games/)).toBeNull();
+});
+
+test('the song checklist leaves out removed songs', async () => {
+  const set = base();
+  const gone = set.songs![0];
+  await saveCardSet({ ...set, songs: set.songs!.map((s) => (s.id === gone.id ? { ...s, excluded: true } : s)) });
+  render(<MemoryRouter initialEntries={['/print/cs?mode=master']}><Routes><Route path="/print/:setId" element={<Print />} /></Routes></MemoryRouter>);
+  await screen.findAllByText(/Song checklist/);
+  expect(screen.queryByText(gone.title)).toBeNull();
+  expect(screen.getByText(set.songs![1].title)).toBeInTheDocument();
+});
+
+test('theme buttons say which one is selected', async () => {
+  await saveCardSet(base());
+  open();
+  expect(await screen.findByRole('button', { name: /Neon club/ })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: /Retro vinyl/ })).toHaveAttribute('aria-pressed', 'false');
+});

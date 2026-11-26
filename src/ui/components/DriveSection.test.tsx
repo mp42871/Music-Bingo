@@ -49,3 +49,22 @@ test('opening Restore also turns automatic backup on the first time', async () =
   await screen.findByRole('button', { name: /Merge/ });
   expect(await repo.getSetting('driveAutoBackup', null)).toBe(true);
 });
+
+test('replacing from Drive refreshes the panel', async () => {
+  window.confirm = () => true;
+  fake.download.mockResolvedValueOnce(JSON.stringify({ format: 'music-bingo-backup', pools: [], cardSets: [], games: [], kv: [{ key: 'driveLastBackupAt', value: Date.UTC(2026, 0, 2, 12) }, { key: 'googleClientId', value: 'cid' }] }));
+  render(<DriveSection />);
+  expect(await screen.findByText(/No backups yet/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Restore from Drive' }));
+  await userEvent.click(await screen.findByRole('button', { name: /Replace with Music Bingo backup/ }));
+  expect(await screen.findByText(/Last backup:/)).toBeInTheDocument();
+});
+
+test('disconnecting Google asks first', async () => {
+  const ask = vi.fn(() => false);
+  window.confirm = ask;
+  render(<DriveSection />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Disconnect Google' }));
+  expect(ask).toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: 'Disconnect Google' })).toBeInTheDocument();
+});

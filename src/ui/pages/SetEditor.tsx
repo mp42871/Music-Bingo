@@ -166,7 +166,7 @@ export default function SetEditor() {
               <button type="button" className="btn" disabled={!target || !usedKnown} onClick={() => doSwap(false)}>Remove from cards</button>
               <button type="button" className="btn btn-a" disabled={!target || !replacement || !usedKnown} onClick={() => doSwap(true)}>Replace</button>
             </div>
-            <p className="mt-2 text-xs text-dim">Cards that change need reprinting. A removed song is also left out of future games with this set.</p>
+            <p className="mt-2 text-xs text-dim">Cards that change need reprinting.{set.songs && !artistMode ? ' A removed song is also left out of future games with this set.' : ''}</p>
             {swapMsg && (
               <p role="status" className="mt-3 text-sm">{swapMsg.text}{' '}
                 {swapMsg.link && <Link to={swapMsg.link} className="text-deck-a underline">Print only changed cards</Link>}

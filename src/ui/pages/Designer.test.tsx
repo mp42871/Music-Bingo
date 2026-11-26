@@ -72,3 +72,24 @@ test('change layout: designer opens filled in and rebuilds the same set', async 
   });
   expect(await listCardSets()).toHaveLength(1);
 });
+
+test('changing the layout keeps songs that were removed from the set out', async () => {
+  const { generateCardSet } = await import('../../core/cards');
+  const { saveCardSet, getCardSet } = await import('../../db/repo');
+  const { layout } = await import('../../test/fixtures');
+  const pool = catPool();
+  await savePool(pool);
+  const made = generateCardSet(pool, layout(), { seed: 3, count: 12, startNumber: 1 }).set;
+  const gone = pool.songs[0].id;
+  await saveCardSet({ ...made, id: 'cs', name: 'Gala', songs: made.songs!.map((s) => (s.id === gone ? { ...s, excluded: true } : s)) });
+  render(<MemoryRouter initialEntries={['/designer?edit=cs']}><Designer /></MemoryRouter>);
+  const rebuild = await screen.findByRole('button', { name: 'Rebuild cards' });
+  await waitFor(() => expect(rebuild).toBeEnabled());
+  window.confirm = () => true;
+  await userEvent.click(rebuild);
+  await waitFor(async () => {
+    const s = (await getCardSet('cs'))!;
+    expect(s.cards.some((c) => c.cells.some((x) => x.kind === 'song' && x.songId === gone))).toBe(false);
+    expect(s.songs!.find((x) => x.id === gone)!.excluded).toBe(true);
+  });
+});

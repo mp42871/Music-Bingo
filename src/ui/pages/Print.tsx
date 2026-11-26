@@ -99,7 +99,7 @@ export default function Print() {
 }
 
 function MasterSheet({ set, game, byId }: { set: CardSet; game: Game | null; byId: Map<string, Song>; paperW: string }) {
-  const ids = game ? game.callOrder : [...byId.keys()].sort((a, b) => (byId.get(a)!.title).localeCompare(byId.get(b)!.title));
+  const ids = game ? game.callOrder : [...byId.keys()].filter((id) => !byId.get(id)!.excluded).sort((a, b) => (byId.get(a)!.title).localeCompare(byId.get(b)!.title));
   const per = 40;
   const chunks: string[][] = [];
   for (let i = 0; i < ids.length; i += per) chunks.push(ids.slice(i, i + per));
