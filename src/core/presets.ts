@@ -8,13 +8,29 @@ export interface Preset {
   id: string; name: string; group: PresetGroup;
   /** One search with filters… */
   query?: SearchFilters;
-  /** …or several Spotify searches mixed together… */
+  /** …or several Spotify searches mixed together (used instead of `query` when both are set)… */
   queries?: string[];
   /** …or a hand-picked list ("Artist - Title" per line) looked up song by song. */
   songs?: string;
 }
 
-const dec = (id: string, name: string, from: number, to: number): Preset => ({ id, name, group: 'Decades', query: { yearFrom: from, yearTo: to } });
+const DEC_GENRES = ['pop', 'rock', 'hip-hop', 'dance', 'r-n-b', 'country', 'indie', 'soul'];
+const DEC_WORDS = ['love', 'night', 'baby', 'heart', 'dance', 'girl', 'time', 'world'];
+/**
+ * A span of years as many searches taken in turn — the span, each year, the big genres and common
+ * title words — so a 75-song game fills even when Spotify gives only a few results per search.
+ */
+function decadeQueries(from: number, to: number): string[] {
+  const span = `year:${from}-${to}`;
+  const years = Array.from({ length: to - from + 1 }, (_, i) => `year:${from + i}`);
+  const genres = DEC_GENRES.map((g) => `genre:"${g}" ${span}`);
+  const words = DEC_WORDS.map((w) => `${w} ${span}`);
+  const out = [span];
+  for (let i = 0; i < Math.max(years.length, genres.length, words.length); i++) out.push(...[years[i], genres[i], words[i]].filter(Boolean));
+  return [...new Set(out)];
+}
+const dec = (id: string, name: string, from: number, to: number): Preset =>
+  ({ id, name, group: 'Decades', query: { yearFrom: from, yearTo: to }, queries: decadeQueries(from, to) });
 const gen = (id: string, name: string, genre: string, years?: [number, number]): Preset =>
   ({ id, name, group: 'Genres', query: { genre, ...(years ? { yearFrom: years[0], yearTo: years[1] } : {}) } });
 const picked = (id: string, name: string, group: PresetGroup): Preset => ({ id, name, group, songs: CURATED[id] });
@@ -74,7 +90,7 @@ export const PRESETS: Preset[] = [
 ];
 
 export function presetQueries(p: Preset): string[] {
-  return p.query ? [buildSearchQuery(p.query)] : p.queries ?? [];
+  return p.queries ?? (p.query ? [buildSearchQuery(p.query)] : []);
 }
 
 /** Number of hand-picked songs, or null for search-based categories (no fixed limit). */

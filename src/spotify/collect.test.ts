@@ -46,3 +46,29 @@ test('drops remastered repeats of a song already found', async () => {
   const r = await collect(api, ['x'], 50, undefined, new Set());
   expect(r.songs.map((s) => s.id)).toEqual(['s1', 's3']);
 });
+
+test('keeps going when Spotify sends fewer songs per page than asked (no songs skipped)', async () => {
+  const api = {
+    searchTracks: vi.fn(async (_q: string, offset = 0) => ({
+      total: 1000, songs: Array.from({ length: 5 }, (_, i) => song(offset + i, { title: `t${offset + i}` })),
+    })),
+  };
+  const r = await collect(api, ['year:2005-2015'], 50);
+  expect(r.songs).toHaveLength(50);
+  expect(api.searchTracks.mock.calls.map((c) => c[1]).slice(0, 3)).toEqual([0, 5, 10]);
+});
+
+test('one failing search does not stop the others; all failing reports the error', async () => {
+  const ok = fakeApi({ good: 100 });
+  const api = { searchTracks: vi.fn(async (q: string, o?: number, l?: number) => { if (q === 'bad') throw new Error('Spotify said no'); return ok.searchTracks(q, o, l); }) };
+  const r = await collect(api, ['bad', 'good'], 30);
+  expect(r.songs).toHaveLength(30);
+  await expect(collect(api, ['bad'], 30)).rejects.toThrow('Spotify said no');
+});
+
+test('a search that keeps sending the same songs is dropped instead of asked 200 times', async () => {
+  const api = { searchTracks: vi.fn(async () => ({ total: 1000, songs: [song(1), song(2)] })) };
+  const r = await collect(api, ['stuck'], 50);
+  expect(r.songs).toHaveLength(2);
+  expect(api.searchTracks.mock.calls.length).toBeLessThanOrEqual(3);
+});

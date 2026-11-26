@@ -19,6 +19,16 @@ test('every Theme and Occasion is a hand-picked list of at least 30 songs, no re
 });
 
 test('decades and genres use Spotify filters', () => {
-  expect(presetQueries(PRESETS.find((p) => p.id === '80s')!)).toEqual(['year:1980-1989']);
+  const q80 = presetQueries(PRESETS.find((p) => p.id === '80s')!);
+  expect(q80[0]).toBe('year:1980-1989');
   for (const p of PRESETS.filter((x) => x.group === 'Decades' || x.group === 'Genres')) expect(presetQueries(p).length).toBeGreaterThan(0);
+});
+
+test('decades mix many searches (each year, genres, common words) so a big game always fills', () => {
+  const q = presetQueries(PRESETS.find((p) => p.id === '2005-2015')!);
+  for (let y = 2005; y <= 2015; y++) expect(q).toContain(`year:${y}`);
+  expect(q).toContain('genre:"pop" year:2005-2015');
+  expect(q).toContain('love year:2005-2015');
+  expect(new Set(q).size).toBe(q.length);
+  expect(q.length).toBeGreaterThanOrEqual(20);
 });

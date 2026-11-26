@@ -46,3 +46,12 @@ test('too few songs for the card size explains what to do', async () => {
   await expect(buildQuickGame(searchApi(12), { kind: 'text', text: 'obscure' }, { songs: 50, cards: 10, size: 5 }))
     .rejects.toThrow(/Only 12 songs found.*3×3/);
 });
+
+test('a 2005–2015 game fills up even when each Spotify search only gives 5 songs', async () => {
+  let i = 0;
+  const api = { searchTracks: vi.fn(async (_q: string, offset = 0) => ({
+    total: 5, songs: offset >= 5 ? [] : Array.from({ length: 5 }, () => song(i++, { title: `Hit ${i}`, artist: `Band ${i}` })),
+  })) };
+  const r = await buildQuickGame(api, { kind: 'preset', preset: PRESETS.find((p) => p.id === '2005-2015')! }, { songs: 50, cards: 10, size: 5 });
+  expect(r.pool.songs).toHaveLength(50);
+});
