@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { getSetting, setSetting } from '../db/repo';
 import { beginLogin, completeLogin, daysUntilReconnect, getAccessToken, isLoggedIn, logout, markAuthorized } from '../spotify/auth';
 import { SpotifyApi } from '../spotify/api';
-import { DEFAULT_CLIENT_ID } from '../spotify/config';
+import { migrateBuiltInIds } from './setupIds';
 
 interface Profile { name: string; product: string; image?: string }
 
@@ -19,7 +19,7 @@ interface SpotifyStore {
 }
 
 export const useSpotify = create<SpotifyStore>((set, get) => ({
-  clientId: DEFAULT_CLIENT_ID,
+  clientId: '',
   connected: isLoggedIn(),
   profile: null,
   error: null,
@@ -29,7 +29,8 @@ export const useSpotify = create<SpotifyStore>((set, get) => ({
     return t;
   }),
   async init() {
-    const clientId = await getSetting('clientId', DEFAULT_CLIENT_ID);
+    await migrateBuiltInIds();
+    const clientId = await getSetting('clientId', '');
     set({ clientId });
     try {
       if (await completeLogin(new URL(window.location.href), clientId)) set({ connected: true });

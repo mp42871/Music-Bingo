@@ -36,3 +36,11 @@ test('Clear all ends every unfinished game', async () => {
   await waitFor(() => expect(screen.queryByRole('region', { name: 'Pick up where you left off' })).toBeNull());
   expect((await repo.listGames()).every((g) => g.status === 'finished')).toBe(true);
 });
+
+test('without a Spotify Client ID, home points to setup', async () => {
+  const { useSpotify } = await import('../../app/spotifyStore');
+  useSpotify.setState({ clientId: '', connected: false });
+  render(<MemoryRouter><Home /></MemoryRouter>);
+  expect(await screen.findByText(/connect your own Spotify/i)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Set up Spotify' })).toHaveAttribute('href', '/settings');
+});

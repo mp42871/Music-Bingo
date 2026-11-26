@@ -46,7 +46,9 @@ You need Spotify **Premium**.
 3. Add these **Redirect URIs**:
    - `https://mp42871.github.io/Music-Bingo/`, for the hosted app
    - `http://127.0.0.1:5173/`, for running it on your own computer
-4. Your Client ID is already built into the app. Open **Settings** and press **Connect Spotify**.
+4. Copy your app's **Client ID**, open **Settings** in Music Bingo, paste it, press **Save**, then **Connect Spotify**.
+
+Each person who uses this site connects their own Spotify developer app. Nothing is shared between visitors. Your browser remembers your Client ID and sign-in, and Spotify asks you to sign in again every 6 months. Google Drive backups include your Client IDs, so restoring on a new computer only needs one press of **Connect Spotify**.
 
 Spotify development-mode apps allow up to 5 signed-in users, which is fine for a host-only tool. Spotify's own editorial playlists may not import, but your own playlists do.
 

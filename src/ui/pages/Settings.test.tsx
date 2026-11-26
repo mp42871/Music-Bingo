@@ -10,12 +10,11 @@ beforeEach(async () => { await Promise.all(db.tables.map((t) => t.clear())); });
 test('client id saves, redirect uri shows, connect needs a client id', async () => {
   render(<MemoryRouter><Settings /></MemoryRouter>);
   const input = await screen.findByLabelText('Spotify Client ID');
-  await waitFor(() => expect(input).toHaveValue('bbb45131b8a14409ad1cbe8d1c338d44'));
+  expect(input).toHaveValue('');
   expect(screen.getByText(window.location.origin + window.location.pathname)).toBeInTheDocument();
   const connect = screen.getByRole('button', { name: 'Connect Spotify' });
-  expect(connect).toBeEnabled();
-  await userEvent.clear(input);
   expect(connect).toBeDisabled();
+  expect(screen.getByText(/First-time Spotify setup/).closest('details')).toHaveAttribute('open');
   await userEvent.type(input, 'abc123');
   await userEvent.click(screen.getByRole('button', { name: 'Save Client ID' }));
   await waitFor(async () => expect(await repo.getSetting('clientId', '')).toBe('abc123'));

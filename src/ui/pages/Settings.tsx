@@ -22,6 +22,9 @@ export default function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The store may load a saved ID a moment after this page opens.
+  useEffect(() => { if (sp.clientId) setClientId((c) => c || sp.clientId); }, [sp.clientId]);
+
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(null), 3000); };
 
   return (
@@ -41,7 +44,7 @@ export default function Settings() {
           {sp.error && <p className="mb-3 text-deck-b">{sp.error}</p>}
           {sp.connected && <ReconnectNote />}
           <div className="grid gap-4">
-            <Field label="Spotify Client ID" hint="From your app at developer.spotify.com/dashboard. It’s not a secret.">
+            <Field label="Spotify Client ID" hint="Your own app’s ID from developer.spotify.com/dashboard (needs Spotify Premium). This browser remembers it.">
               <div className="flex gap-2">
                 <input id="client-id" aria-label="Spotify Client ID" value={clientId} onChange={(e) => setClientId(e.target.value)} className="flex-1 font-mono" />
                 <button type="button" className="btn" onClick={async () => { await sp.setClientId(clientId); flash('Client ID saved.'); }}>Save Client ID</button>
@@ -60,7 +63,7 @@ export default function Settings() {
                 {sp.connected ? 'Reconnect Spotify' : 'Connect Spotify'}
               </button>
             </div>
-            <details className="rounded-lg border border-rail p-3 text-sm text-dim">
+            <details open={!sp.clientId} className="rounded-lg border border-rail p-3 text-sm text-dim">
               <summary className="cursor-pointer font-semibold text-ink">First-time Spotify setup</summary>
               <ol className="mt-2 list-decimal space-y-1 pl-5">
                 <li>Go to developer.spotify.com/dashboard and sign in with your Premium account.</li>

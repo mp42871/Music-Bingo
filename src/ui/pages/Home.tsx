@@ -66,10 +66,17 @@ export default function Home() {
   };
 
   const connected = useSpotify((s) => s.connected);
+  const hasClientId = useSpotify((s) => !!s.clientId);
   const reconnectSoon = connected && (daysUntilReconnect() ?? 999) <= 14;
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
       {reconnectSoon && <ReconnectNote />}
+      {!connected && !hasClientId && (
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-deck-a/40 bg-deck-a/10 px-4 py-3">
+          <p className="flex-1">To play music, connect your own Spotify Premium account — it takes about 5 minutes the first time, then this browser remembers it.</p>
+          <Link to="/settings" className="btn btn-a">Set up Spotify</Link>
+        </div>
+      )}
       <section className="relative mb-8 overflow-hidden rounded-3xl border border-rail p-8 md:p-12">
         <div className="pointer-events-none absolute -right-20 -top-28 size-96 rounded-full" style={{ background: 'repeating-radial-gradient(circle, #1a1238 0 3px, #120b2a 3px 6px)', boxShadow: '0 0 120px -20px var(--color-deck-b)' }} />
         <h1 className="relative font-display text-5xl leading-none md:text-7xl"><span className="text-deck-a glow-a">Drop</span><br /><span className="text-deck-b glow-b">the beat.</span></h1>
