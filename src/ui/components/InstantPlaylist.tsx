@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSpotify } from '../../app/spotifyStore';
-import { PRESETS, presetQueries, type Preset } from '../../core/presets';
+import { PRESETS, presetQueries, presetSize, type Preset } from '../../core/presets';
 import { uid } from '../../core/rng';
 import type { Pool, Song } from '../../core/types';
 import { collect } from '../../spotify/collect';
@@ -19,17 +19,28 @@ export function InstantPlaylist({ onDone, onClose }: { onDone(p: Pool): void; on
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const chosen = picked.map((id) => PRESETS.find((p) => p.id === id)!).filter(Boolean);
+  // Hand-picked categories hold a fixed number of songs; search-based ones have no fixed limit.
+  const available = chosen.some((p) => presetSize(p) === null) ? Infinity : chosen.reduce((a, p) => a + (presetSize(p) ?? 0), 0);
+  const willGet = Math.min(size, available);
   const toggle = (p: Preset) => setPicked((ids) => (ids.includes(p.id) ? ids.filter((x) => x !== p.id) : [...ids, p.id]));
 
   const build = async () => {
     setErr(null);
-    const per = Math.ceil(size / chosen.length);
+    // Share the songs evenly; a hand-picked category that holds fewer gives its share to the others.
+    const target = new Map<string, number>();
+    let remaining = size;
+    const byCapacity = [...chosen].sort((a, b) => (presetSize(a) ?? Infinity) - (presetSize(b) ?? Infinity));
+    byCapacity.forEach((p, i) => {
+      const t = Math.min(presetSize(p) ?? Infinity, Math.ceil(remaining / (byCapacity.length - i)));
+      target.set(p.id, t);
+      remaining -= t;
+    });
     const seen = new Set<string>();
     const songs: Song[] = [];
     try {
       for (const [i, p] of chosen.entries()) {
         setBusy(`Finding ${p.name} songs (${i + 1} of ${chosen.length})…`);
-        const want = Math.min(per, size - songs.length);
+        const want = Math.min(target.get(p.id)!, size - songs.length);
         const r = p.songs
           ? await collectCurated(api, shuffle(parseCurated(p.songs), Math.random), want, 0, seen)
           : await collect(api, presetQueries(p), want, undefined, seen);
@@ -54,7 +65,7 @@ export function InstantPlaylist({ onDone, onClose }: { onDone(p: Pool): void; on
         </div>
         {!connected ? <p className="text-peak">Connect Spotify in Settings first.</p> : (
           <>
-            <p className="mb-3 text-sm text-dim">Pick one or more categories. Each one becomes a card column, with songs split evenly. Themes and Occasions are hand-picked song lists (about 30–45 songs each); Decades and Genres search Spotify. You can trim the list afterwards.</p>
+            <p className="mb-3 text-sm text-dim">Pick one or more categories. Each one becomes a card column, with songs split evenly. Themes and Occasions are hand-picked song lists (the number shows how many songs each holds); Decades and Genres search Spotify. You can trim the list afterwards.</p>
             <PresetPicker mode="multi" selected={picked} onPick={toggle} disabled={!!busy} />
             {chosen.length > 0 && <p className="mt-3 text-sm">Picked: <span className="text-deck-b">{chosen.map((p) => p.name).join(' · ')}</span></p>}
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -67,11 +78,16 @@ export function InstantPlaylist({ onDone, onClose }: { onDone(p: Pool): void; on
                 <input aria-label="Playlist name" value={name} placeholder={chosen.map((p) => p.name).join(' + ') || 'My instant playlist'} onChange={(e) => setName(e.target.value)} />
               </label>
             </div>
+            {chosen.length > 0 && available < size && (
+              <p className="mt-3 rounded-lg border border-peak/50 bg-peak/10 px-3 py-2 text-sm">
+                {`Your picks hold ${available} songs, so the playlist will have ${available}. Add another category to reach ${size}.`}
+              </p>
+            )}
             {err && <p role="alert" className="mt-3 text-deck-b">{err}</p>}
             {busy && <p role="status" className="mt-3 text-deck-a">{busy}</p>}
             <div className="mt-5 flex justify-end gap-2">
               <button type="button" className="btn" onClick={onClose}>Cancel</button>
-              <button type="button" className="btn btn-b" disabled={!chosen.length || !!busy} onClick={build}>Build playlist{chosen.length ? ` (${size} songs)` : ''}</button>
+              <button type="button" className="btn btn-b" disabled={!chosen.length || !!busy} onClick={build}>Build playlist{chosen.length ? ` (${willGet} songs)` : ''}</button>
             </div>
           </>
         )}

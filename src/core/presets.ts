@@ -76,3 +76,8 @@ export const PRESETS: Preset[] = [
 export function presetQueries(p: Preset): string[] {
   return p.query ? [buildSearchQuery(p.query)] : p.queries ?? [];
 }
+
+/** Number of hand-picked songs, or null for search-based categories (no fixed limit). */
+export function presetSize(p: Preset): number | null {
+  return p.songs ? p.songs.split('\n').filter((l) => l.trim()).length : null;
+}

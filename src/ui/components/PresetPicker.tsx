@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PRESET_GROUPS, PRESETS, type Preset, type PresetGroup } from '../../core/presets';
+import { PRESET_GROUPS, PRESETS, presetSize, type Preset, type PresetGroup } from '../../core/presets';
 
 /** Grouped quick categories. `mode="pick"` = one-click buttons; `mode="multi"` = checkboxes. */
 export function PresetPicker({ mode, selected = [], onPick, disabled }: {
@@ -17,11 +17,12 @@ export function PresetPicker({ mode, selected = [], onPick, disabled }: {
       </div>
       <div className="flex flex-wrap gap-1.5">
         {PRESETS.filter((p) => p.group === group).map((p) => mode === 'pick' ? (
-          <button key={p.id} type="button" className="chip hover:border-deck-a" disabled={disabled} onClick={() => onPick(p)}>{p.name}</button>
+          <button key={p.id} type="button" className="chip hover:border-deck-a" disabled={disabled} onClick={() => onPick(p)}
+            title={presetSize(p) ? `${presetSize(p)} hand-picked songs` : 'Spotify search'}>{p.name}</button>
         ) : (
           <label key={p.id} className={`chip cursor-pointer ${selected.includes(p.id) ? 'border-deck-b text-deck-b' : ''}`}>
             <input type="checkbox" className="sr-only" aria-label={p.name} checked={selected.includes(p.id)} disabled={disabled} onChange={() => onPick(p)} />
-            {selected.includes(p.id) ? '✓ ' : ''}{p.name}
+            {selected.includes(p.id) ? '✓ ' : ''}{presetSize(p) ? `${p.name} · ${presetSize(p)}` : p.name}
           </label>
         ))}
       </div>

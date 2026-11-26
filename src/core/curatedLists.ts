@@ -43,6 +43,49 @@ Chappell Roan - Pink Pony Club
 Taylor Swift - Red
 Shirley Bassey - Goldfinger
 Lana Del Rey - Blue Jeans
+Joni Mitchell - Blue
+LeAnn Rimes - Blue
+Elvis Presley - Blue Hawaii
+Willie Nelson - Blue Eyes Crying In the Rain
+Crystal Gayle - Don't It Make My Brown Eyes Blue
+Cream - White Room
+Taylor Swift - Lavender Haze
+Taylor Swift - Gold Rush
+Spandau Ballet - Gold
+Kanye West - Gold Digger
+Elvis Presley - Blue Moon
+The Marcels - Blue Moon
+Johnny Cash - Man in Black
+Pearl Jam - Black
+Metallica - Fade To Black
+O.C. Smith - Little Green Apples
+Tom Jones - Green, Green Grass of Home
+The Lemon Pipers - Green Tambourine
+The Beatles - Golden Slumbers
+Neil Young - Heart of Gold
+Fleetwood Mac - Silver Springs
+R.E.M. - Orange Crush
+Ram Jam - Black Betty
+The Cyrkle - Red Rubber Ball
+Dawn - Tie a Yellow Ribbon Round the Ole Oak Tree
+Mitch Miller - The Yellow Rose of Texas
+Elvis Presley - Blue Christmas
+Wiz Khalifa - Black and Yellow
+John Mellencamp - Pink Houses
+Sheb Wooley - The Purple People Eater
+JVKE - golden hour
+Electric Light Orchestra - Mr. Blue Sky
+Elton John - Blue Eyes
+Amy Winehouse - Back To Black
+Brooks & Dunn - Red Dirt Road
+Neil Diamond - Forever in Blue Jeans
+Elton John - Goodbye Yellow Brick Road
+Bing Crosby - White Christmas
+Jimi Hendrix - Red House
+The Doobie Brothers - Black Water
+Nick Drake - Pink Moon
+Keith Urban - Blue Ain't Your Color
+The Beatles - Blackbird
 `,
   numbers: `
 Tommy Tutone - 867-5309/Jenny
@@ -79,6 +122,48 @@ David Bowie - Five Years
 Five for Fighting - 100 Years
 Vanessa Carlton - A Thousand Miles
 Three Dog Night - One
+Metallica - One
+Phil Collins - Two Hearts
+The Amazing Rhythm Aces - Third Rate Romance
+The Vogues - Five O'Clock World
+Dave Dudley - Six Days on the Road
+Eagles - Seven Bridges Road
+The Byrds - Eight Miles High
+Led Zeppelin - Ten Years Gone
+Big Star - Thirteen
+Winger - Seventeen
+The Rolling Stones - 19th Nervous Breakdown
+Green Day - 21 Guns
+Bruno Mars - 24K Magic
+Bob Dylan - Highway 61 Revisited
+Nat King Cole Trio - (Get Your Kicks On) Route 66
+Goldfinger - 99 Red Balloons
+Eddie Money - Two Tickets to Paradise
+Def Leppard - Two Steps Behind
+McFly - Five Colours In Her Hair
+Fleetwood Mac - Seven Wonders
+Prince - 7
+The Doors - Love Me Two Times
+Blondie - One Way or Another
+Joan Osborne - One of Us
+Bob Marley & The Wailers - One Love
+The Beatles - Two of Us
+Boyz II Men - 4 Seasons of Loneliness
+Noah And The Whale - 5 Years Time
+Beyoncé - 7/11
+Zager & Evans - In the Year 2525
+Spice Girls - 2 Become 1
+Bowling For Soup - 1985
+Britney Spears - 3
+Feist - 1234
+Edwin Starr - Twenty-Five Miles
+Michael Learns To Rock - 25 Minutes
+Randy Travis - Three Wooden Crosses
+Johnny Cash - One Piece at a Time
+Tennessee Ernie Ford - Sixteen Tons
+Coolio - 1, 2, 3, 4 (Sumpin' New)
+Garth Brooks - Two Piña Coladas
+Rihanna - FourFiveSeconds
 `,
   places: `
 Lynyrd Skynyrd - Sweet Home Alabama
@@ -121,6 +206,46 @@ Will Smith - Miami
 Beyoncé - TEXAS HOLD 'EM
 Glen Campbell - Wichita Lineman
 Arlo Guthrie - City of New Orleans
+Glenn Miller - Chattanooga Choo Choo
+Billy Joel - New York State of Mind
+Billy Joel - Allentown
+Dionne Warwick - Do You Know the Way to San Jose
+Scott McKenzie - San Francisco (Be Sure to Wear Flowers in Your Hair)
+Tony Bennett - I Left My Heart In San Francisco
+Bee Gees - Massachusetts
+James Taylor - Carolina in My Mind
+Waylon Jennings - Luckenbach, Texas (Back to the Basics of Love)
+Marty Robbins - El Paso
+George Hamilton IV - Abilene
+Dean Martin - Houston
+Glen Campbell - By the Time I Get to Phoenix
+Don Williams - Tulsa Time
+Bobby Bloom - Montego Bay
+Harry Belafonte - Jamaica Farewell
+UB40 - Kingston Town
+Freddie Mercury - Barcelona
+Billy Joel - Vienna
+Murray Head - One Night in Bangkok
+James Taylor - Mexico
+Ed Sheeran - Galway Girl
+Dropkick Murphys - I'm Shipping Up to Boston
+Stereophonics - Dakota
+Neil Diamond - Kentucky Woman
+Elvis Presley - Kentucky Rain
+Crosby, Stills, Nash & Young - Ohio
+Sheryl Crow - Leaving Las Vegas
+Bobby Bare - Detroit City
+Frank Sinatra - Chicago
+The Blues Brothers - Sweet Home Chicago
+The Doors - L.A. Woman
+Kool & The Gang - Hollywood Swinging
+Miley Cyrus - Malibu
+Johnny Horton - The Battle of New Orleans
+Johnny Cash - Jackson
+Paul Simon - Graceland
+Fergie - London Bridge
+The Kinks - Waterloo Sunset
+Neil Diamond - America
 `,
   names: `
 Dolly Parton - Jolene
@@ -162,6 +287,42 @@ KISS - Beth
 Marillion - Kayleigh
 The Zombies - Time of the Season
 Bobbie Gentry - Ode to Billie Joe
+Them - Gloria
+Kaiser Chiefs - Ruby
+Kenny Rogers - Lucille
+Kenny Rogers - Ruby, Don't Take Your Love To Town
+John Denver - Annie's Song
+The Velvet Underground - Sweet Jane
+Tom Petty and the Heartbreakers - Mary Jane's Last Dance
+Tommy Tutone - 867-5309/Jenny
+Frankie Valli & The Four Seasons - Sherry
+Dion - Runaround Sue
+The Everly Brothers - Wake Up Little Susie
+Neil Sedaka - Oh! Carol
+Paul Anka - Diana
+Ritchie Valens - Donna
+Bruce Springsteen - Rosalita (Come Out Tonight)
+Elvis Costello - Veronica
+The Beatles - Julia
+The Beatles - Martha My Dear
+The Beatles - Lady Madonna
+The Beatles - Lucy In The Sky With Diamonds
+Leonard Cohen - Suzanne
+Nat King Cole - Ramblin' Rose
+Don McLean - Vincent
+Counting Crows - Mr. Jones
+Pearl Jam - Jeremy
+Janis Joplin - Me and Bobby McGee
+The Jimi Hendrix Experience - Hey Joe
+Michael Jackson - Ben
+Neil Diamond - Desiree
+Neil Diamond - Cracklin' Rosie
+Boston - Amanda
+Europe - Carrie
+Dr. Hook - Sylvia's Mother
+Tom Jones - Delilah
+Four Tops - Bernadette
+Fleetwood Mac - Sara
 `,
   weather: `
 The Beatles - Here Comes the Sun
@@ -203,6 +364,39 @@ Etta James - Stormy Weather
 Kate Bush - Cloudbusting
 Milli Vanilli - Blame It on the Rain
 Eddie Rabbitt - I Love a Rainy Night
+John Denver - Sunshine On My Shoulders
+Lesley Gore - Sunshine, Lollipops and Rainbows
+Johnny Cash - You Are My Sunshine
+Donovan - Sunshine Superman
+Shawn Colvin - Sunny Came Home
+The Walker Brothers - The Sun Ain't Gonna Shine Anymore
+The Ronettes - Walking in the Rain
+The Beatles - Rain
+Prince - Purple Rain
+Bob Dylan - Rainy Day Women #12 & 35
+Lady Gaga - Rain On Me
+Bruce Springsteen - Thunder Road
+Garth Brooks - The Thunder Rolls
+John Travolta - Greased Lightnin'
+Bob Dylan - Shelter from the Storm
+Bette Midler - Wind Beneath My Wings
+Bob Seger - Against the Wind
+Christopher Cross - Ride Like the Wind
+Vanessa Williams - Colors of the Wind
+Anne Murray - Snowbird
+Simon & Garfunkel - A Hazy Shade of Winter
+Michael Bublé - Winter Wonderland
+Flatt & Scruggs - Foggy Mountain Breakdown
+Buddy Holly - Raining in My Heart
+Buster Poindexter - Hot Hot Hot
+Belinda Carlisle - Summer Rain
+Classics IV - Stormy
+Kermit the Frog - Rainbow Connection
+Judy Garland - Over the Rainbow
+Mumford & Sons - After The Storm
+Vanilla Ice - Ice Ice Baby
+The Lovin' Spoonful - Summer in the City
+Katy Perry - Hot N Cold
 `,
   animals: `
 Survivor - Eye of the Tiger
@@ -241,6 +435,39 @@ Neon Trees - Animal
 Katy Perry - Roar
 Florence + The Machine - Dog Days Are Over
 Bob Marley & The Wailers - Buffalo Soldier
+George Clinton - Atomic Dog
+Rufus Thomas - Walking the Dog
+Janet Jackson - Black Cat
+Harry Chapin - Cat's in the Cradle
+The Everly Brothers - Bird Dog
+Steve Miller Band - Fly Like an Eagle
+ABBA - Eagle
+The Beatles - Free As A Bird
+Leonard Cohen - Bird on the Wire
+Bob Marley & The Wailers - Three Little Birds
+Al Wilson - The Snake
+Toots & The Maytals - Monkey Man
+Rufus Thomas - Do the Funky Chicken
+Zac Brown Band - Chicken Fried
+Pinkfong - Baby Shark
+The Beatles - Hey Bulldog
+Lobo - Me and You and a Dog Named Boo
+Patti Page - (How Much Is) That Doggie in the Window
+Taylor Swift - White Horse
+Mud - Tiger Feet
+The Boomtown Rats - Rat Trap
+Michael Jackson - Ben
+Jim Stafford - Spiders & Snakes
+Crazy Town - Butterfly
+Michael Jackson - Butterflies
+Meat Loaf - Bat Out of Hell
+Ylvis - The Fox (What Does the Fox Say?)
+Elvis Presley - (Let Me Be Your) Teddy Bear
+The Irish Rovers - The Unicorn
+Duran Duran - Union of the Snake
+Iggy Azalea - Black Widow
+Ugly Kid Joe - Cats in the Cradle
+Paul McCartney - Blackbird
 `,
   food: `
 The Archies - Sugar, Sugar
@@ -279,6 +506,38 @@ Neil Diamond - Cherry, Cherry
 Toby Keith - Red Solo Cup
 The Andrews Sisters - Rum and Coca-Cola
 Alan Jackson - It's Five O'Clock Somewhere
+Harry Belafonte - Day-O (The Banana Boat Song)
+112 - Peaches & Cream
+Sarah McLachlan - Ice Cream
+Mandy Moore - Candy
+New Edition - Candy Girl
+Sammy Davis Jr. - The Candy Man
+Montrose - Rock Candy
+Four Tops - I Can't Help Myself (Sugar Pie Honey Bunch)
+The Beatles - Honey Pie
+Grateful Dead - Sugar Magnolia
+Jimmy Gilmer & The Fireballs - Sugar Shack
+Harry McClintock - Big Rock Candy Mountain
+O.C. Smith - Little Green Apples
+Deana Carter - Strawberry Wine
+The Brothers Johnson - Strawberry Letter 23
+Herbie Hancock - Watermelon Man
+Dee Dee Sharp - Mashed Potato Time
+Booker T. & the M.G.'s - Green Onions
+Peggy Lee - Black Coffee
+The Ink Spots - Java Jive
+Doris Day - Tea for Two
+Fool's Garden - Lemon Tree
+Eric Burdon & War - Spill the Wine
+Willie Nelson - Whiskey River
+Morgan Wallen - Whiskey Glasses
+Toby Keith - Beer For My Horses
+Eric Church - Drink In My Hand
+Garth Brooks - Two Piña Coladas
+Mtume - Juicy Fruit
+Bow Wow Wow - I Want Candy
+Kenny Chesney - Beer in Mexico
+Billy Currington - Pretty Good at Drinkin' Beer
 `,
   cars: `
 Prince - Little Red Corvette
@@ -319,6 +578,39 @@ The Beach Boys - 409
 Jan & Dean - Dead Man's Curve
 Chuck Berry - Maybellene
 Bruce Springsteen - Racing in the Street
+Incubus - Drive
+Daddy Yankee - Gasolina
+Chuck Berry - No Particular Place To Go
+The Clash - Brand New Cadillac
+Bruce Springsteen - Cadillac Ranch
+Bruce Springsteen - Thunder Road
+Bruce Springsteen - Pink Cadillac
+Ronny & The Daytonas - G.T.O.
+The Beach Boys - Shut Down
+The Beach Boys - I Get Around
+Dave Dudley - Six Days on the Road
+Jerry Reed - East Bound and Down
+C.W. McCall - Convoy
+Jason Aldean - Big Green Tractor
+Jason Aldean - Dirt Road Anthem
+Eagles - Life in the Fast Lane
+Madness - Driving in My Car
+Red Hot Chili Peppers - Road Trippin'
+Jason Derulo - Ridin' Solo
+Dwight Yoakam - Fast as You
+Harry Chapin - Taxi
+Joni Mitchell - Big Yellow Taxi
+Twenty One Pilots - Car Radio
+The Rip Chords - Hey Little Cobra
+Talking Heads - Road to Nowhere
+Jackson Browne - Running on Empty
+George Ezra - Shotgun
+Tim McGraw - Truck Yeah
+Billy Ocean - Get Outta My Dreams, Get into My Car
+Chuck Berry - Route 66
+Bob Seger - Roll Me Away
+The Who - Going Mobile
+Tom Petty and the Heartbreakers - Runnin' Down A Dream
 `,
   night: `
 Elton John - Saturday Night's Alright for Fighting
@@ -357,6 +649,38 @@ Black Eyed Peas - I Gotta Feeling
 Eagles - Tequila Sunrise
 The Kinks - Sunny Afternoon
 Bruce Springsteen - Dancing in the Dark
+Rod Stewart - Tonight's the Night (Gonna Be Alright)
+The Beatles - Good Night
+Creedence Clearwater Revival - Midnight Special
+The Allman Brothers Band - Midnight Rider
+The Grass Roots - Midnight Confessions
+Lynyrd Skynyrd - Saturday Night Special
+Johnny Cash - Sunday Mornin' Comin' Down
+The Easybeats - Friday on My Mind
+Fleetwood Mac - Monday Morning
+Blondie - Sunday Girl
+Paul Simon - Late In The Evening
+Eric Clapton - After Midnight
+Neil Young - Harvest Moon
+Frank Sinatra - Fly Me To The Moon
+The Marcels - Blue Moon
+Starbuck - Moonlight Feels Right
+Mike Oldfield - Moonlight Shadow
+Creedence Clearwater Revival - Bad Moon Rising
+Sheena Easton - Morning Train (Nine to Five)
+Oliver - Good Morning Starshine
+The Monkees - Daydream Believer
+Mary Hopkin - Those Were The Days
+Bruce Springsteen - Glory Days
+Pratt & McClain - Happy Days
+James Brown - Night Train
+Bee Gees - Nights on Broadway
+Hot Chelle Rae - Tonight Tonight
+One Direction - Night Changes
+Morgan Wallen - Last Night
+The Beatles - Eight Days a Week
+Harry Belafonte - Day-O (The Banana Boat Song)
+Commodores - Easy
 `,
   dance: `
 ABBA - Dancing Queen
@@ -398,6 +722,40 @@ PSY - Gangnam Style
 Silentó - Watch Me (Whip / Nae Nae)
 KC and the Sunshine Band - Get Down Tonight
 Michael Jackson - Don't Stop 'Til You Get Enough
+Dee Dee Sharp - Mashed Potato Time
+Chubby Checker - Limbo Rock
+Chubby Checker - Let's Twist Again
+Johnny Otis - Willie and the Hand Jive
+The Cars - Shake It Up
+Bill Haley & His Comets - Shake, Rattle and Roll
+Peaches & Herb - Shake Your Groove Thing
+KC and the Sunshine Band - (Shake, Shake, Shake) Shake Your Booty
+Sly & The Family Stone - Dance to the Music
+Lionel Richie - Dancing On The Ceiling
+Wang Chung - Dance Hall Days
+Orleans - Dance with Me
+Luther Vandross - Dance With My Father
+Irene Cara - Flashdance...What a Feeling
+The Trammps - Disco Inferno
+Heatwave - Boogie Nights
+A Taste Of Honey - Boogie Oogie Oogie
+Brooks & Dunn - Boot Scootin' Boogie
+Rednex - Cotton Eye Joe
+Village People - Y.M.C.A.
+Maroon 5 - Moves Like Jagger
+Jennifer Lopez - Dance Again
+Jennifer Lopez - On The Floor
+Shakira - Hips Don't Lie
+Enrique Iglesias - Bailando
+Soulja Boy - Crank That (Soulja Boy)
+Cali Swag District - Teach Me How To Dougie
+V.I.C. - Wobble
+LMFAO - Party Rock Anthem
+SNAP! - Rhythm Is a Dancer
+King Harvest - Dancing in the Moonlight
+Kool & The Gang - Get Down On It
+Wild Cherry - Play That Funky Music
+Madonna - Into the Groove
 `,
   onehit: `
 Dexys Midnight Runners - Come On Eileen
@@ -440,6 +798,39 @@ Sixpence None The Richer - Kiss Me
 Natalie Imbruglia - Torn
 Semisonic - Closing Time
 Haddaway - What Is Love
+Zager & Evans - In the Year 2525
+Steam - Na Na Hey Hey Kiss Him Goodbye
+Shocking Blue - Venus
+Wild Cherry - Play That Funky Music
+Starland Vocal Band - Afternoon Delight
+A Flock Of Seagulls - I Ran (So Far Away)
+Thomas Dolby - She Blinded Me With Science
+After The Fire - Der Kommissar
+Peter Schilling - Major Tom (Coming Home)
+Bobby McFerrin - Don't Worry Be Happy
+Alannah Myles - Black Velvet
+EMF - Unbelievable
+The La's - There She Goes
+House of Pain - Jump Around
+Snow - Informer
+Blind Melon - No Rain
+Aqua - Barbie Girl
+Crazy Town - Butterfly
+Daniel Powter - Bad Day
+PSY - Gangnam Style
+The Sugarhill Gang - Rapper's Delight
+Musical Youth - Pass The Dutchie
+Taco - Puttin' On The Ritz
+Hanson - MMMBop
+The Proclaimers - I'm Gonna Be (500 Miles)
+Tom Cochrane - Life Is a Highway
+Mungo Jerry - In the Summertime
+The Knack - My Sharona
+Sir Mix-A-Lot - Baby Got Back
+Tag Team - Whoomp! (There It Is)
+Gerardo - Rico Suave
+Mark Morrison - Return of the Mack
+Corona - The Rhythm of the Night
 `,
   movies: `
 Céline Dion - My Heart Will Go On
@@ -482,6 +873,41 @@ Harold Faltermeyer - Axel F
 Kenny Loggins - I'm Alright
 Glenn Frey - The Heat Is On
 Aerosmith - I Don't Want to Miss a Thing
+Ben E. King - Stand by Me
+Yello - Oh Yeah
+Michael Sembello - Maniac
+Simon & Garfunkel - Mrs. Robinson
+B.J. Thomas - Raindrops Keep Fallin' on My Head
+Audrey Hepburn - Moon River
+Judy Garland - Over the Rainbow
+Gene Kelly - Singin' in the Rain
+Eric Carmen - Hungry Eyes
+Patrick Swayze - She's Like the Wind
+Coolio - Gangsta's Paradise
+Chad Kroeger - Hero
+Counting Crows - Accidentally In Love
+Harry Nilsson - Everybody's Talkin'
+Isaac Hayes - Theme From Shaft
+Curtis Mayfield - Superfly
+Carly Simon - Nobody Does It Better
+Duran Duran - A View To A Kill
+Sam Smith - Writing's On The Wall
+Billie Eilish - No Time To Die
+The Beach Boys - Kokomo
+Sixpence None The Richer - Kiss Me
+Auliʻi Cravalho - How Far I'll Go
+Naomi Scott - Speechless
+Keala Settle - This Is Me
+Hugh Jackman - The Greatest Show
+Ryan Gosling - City of Stars
+Ryan Gosling - I'm Just Ken
+Billie Eilish - What Was I Made For?
+Justin Timberlake - CAN'T STOP THE FEELING!
+Wiz Khalifa - See You Again
+John Williams - Star Wars (Main Title)
+The Temptations - My Girl
+Bobby McFerrin - Don't Worry Be Happy
+Huey Lewis & The News - Back In Time
 `,
   tv: `
 The Rembrandts - I'll Be There for You
@@ -519,6 +945,27 @@ Mike Post - Theme from The A-Team
 Danny Elfman - The Simpsons Theme
 Mark Snow - The X-Files
 Waylon Jennings - Theme from The Dukes of Hazzard (Good Ol' Boys)
+Mike Post - Theme from Magnum P.I.
+Mike Post - Theme from Hill Street Blues
+Mike Post - The Rockford Files
+Julee Cruise - Falling
+Ramin Djawadi - Main Title (Game of Thrones)
+Kyle Dixon & Michael Stein - Stranger Things
+Psapp - Cosy in the Rocket
+Malvina Reynolds - Little Boxes
+Joe Cocker - With a Little Help from My Friends
+RJD2 - A Beautiful Mine
+Phantom Planet - California
+Gavin DeGraw - I Don't Want To Be
+The Dandy Warhols - We Used To Be Friends
+Massive Attack - Teardrop
+The Solids - Hey Beautiful
+The Friendly Indians - I Know You Know
+Jace Everett - Bad Things
+Hannah Montana - The Best of Both Worlds
+Miranda Cosgrove - Leave It All To Me
+Big Time Rush - Big Time Rush
+Puffy AmiYumi - Teen Titans Theme
 `,
   boybands: `
 Backstreet Boys - I Want It That Way
@@ -558,6 +1005,47 @@ Bell Biv DeVoe - Poison
 Backstreet Boys - Quit Playing Games (With My Heart)
 *NSYNC - Girlfriend
 One Direction - Drag Me Down
+Backstreet Boys - Shape Of My Heart
+Backstreet Boys - I'll Never Break Your Heart
+Backstreet Boys - Larger Than Life
+Backstreet Boys - The Call
+*NSYNC - This I Promise You
+*NSYNC - Pop
+*NSYNC - Gone
+New Kids On The Block - Please Don't Go Girl
+New Kids On The Block - Cover Girl
+Boyz II Men - Motownphilly
+Boyz II Men - Water Runs Dry
+Mariah Carey - One Sweet Day
+One Direction - Live While We're Young
+One Direction - Night Changes
+One Direction - Little Things
+Jonas Brothers - Year 3000
+Jonas Brothers - Only Human
+Jonas Brothers - S.O.S
+Hanson - Where's The Love
+Hanson - This Time Around
+98º - The Hardest Thing
+98º - Give Me Just One Night (Una Noche)
+Westlife - Flying Without Wings
+Westlife - You Raise Me Up
+Take That - Shine
+Take That - Patience
+New Edition - If It Isn't Love
+New Edition - Mr. Telephone Man
+BTS - Boy With Luv
+BTS - Permission to Dance
+The Wanted - Chasing The Sun
+5 Seconds of Summer - Youngblood
+Big Time Rush - Windows Down
+The Jackson 5 - I'll Be There
+The Jackson 5 - The Love You Save
+All-4-One - I Can Love You Like That
+Color Me Badd - All 4 Love
+B2K - Bump, Bump, Bump
+Why Don't We - 8 Letters
+O-Town - Liquid Dreams
+LFO - Girl On TV
 `,
   divas: `
 Whitney Houston - I Wanna Dance with Somebody (Who Loves Me)
@@ -596,6 +1084,46 @@ Dua Lipa - Levitating
 Céline Dion - Because You Loved Me
 Mariah Carey - Always Be My Baby
 Janet Jackson - That's the Way Love Goes
+Whitney Houston - How Will I Know
+Whitney Houston - I'm Every Woman
+Whitney Houston - Saving All My Love for You
+Mariah Carey - Vision of Love
+Mariah Carey - We Belong Together
+Mariah Carey - Emotions
+Céline Dion - My Heart Will Go On
+Céline Dion - The Power Of Love
+Madonna - Vogue
+Madonna - Holiday
+Madonna - Into the Groove
+Beyoncé - Irreplaceable
+Beyoncé - Love On Top
+Adele - Hello
+Adele - Set Fire to the Rain
+Aretha Franklin - Think
+Aretha Franklin - Chain of Fools
+Tina Turner - Private Dancer
+Cher - Strong Enough
+Donna Summer - Last Dance
+Donna Summer - Bad Girls
+Diana Ross - Upside Down
+Diana Ross - Ain't No Mountain High Enough
+Barbra Streisand - Woman In Love
+Janet Jackson - Escapade
+Janet Jackson - All For You
+Christina Aguilera - Genie in a Bottle
+Christina Aguilera - Fighter
+Lady Gaga - Poker Face
+Rihanna - Umbrella
+Kelly Clarkson - Stronger (What Doesn't Kill You)
+Lizzo - Juice
+Shania Twain - You're Still The One
+Toni Braxton - Breathe Again
+Ariana Grande - 7 rings
+Dua Lipa - Don't Start Now
+Gloria Estefan - Rhythm Is Gonna Get You
+Bette Midler - Wind Beneath My Wings
+LaBelle - Lady Marmalade
+Chaka Khan - I'm Every Woman
 `,
   duets: `
 Elton John - Don't Go Breaking My Heart
@@ -632,6 +1160,34 @@ Lady A - Need You Now
 Jason Mraz - Lucky
 George Michael - Don't Let the Sun Go Down on Me
 Post Malone - Sunflower
+Kenny Rogers - We've Got Tonight
+Marvin Gaye - You're All I Need To Get By
+Marvin Gaye - Ain't Nothing Like The Real Thing
+Peaches & Herb - Reunited
+Captain & Tennille - Love Will Keep Us Together
+Barbra Streisand - You Don't Bring Me Flowers
+Barbra Streisand - Guilty
+Roberta Flack - The Closer I Get To You
+Patti Austin - Baby, Come To Me
+Philip Bailey - Easy Lover
+Bryan Adams - It's Only Love
+Tim McGraw - It's Your Love
+George Jones - Golden Ring
+Conway Twitty - Louisiana Woman, Mississippi Man
+Willie Nelson - Pancho and Lefty
+Willie Nelson - To All the Girls I've Loved Before
+Gwen Stefani - Nobody But You
+Lady Gaga - Telephone
+Beyoncé - Crazy in Love
+Eminem - Love The Way You Lie
+Ed Sheeran - Perfect Duet
+Charlie Puth - We Don't Talk Anymore
+Lady Gaga - Die With A Smile
+Jason Aldean - Don't You Wanna Stay
+Robbie Williams - Somethin' Stupid
+Johnny Cash - It Ain't Me Babe
+Brad Paisley - Whiskey Lullaby
+Shawn Mendes - I Know What You Did Last Summer
 `,
   karaoke: `
 Queen - Bohemian Rhapsody
@@ -673,6 +1229,39 @@ Whitney Houston - I Will Always Love You
 Tina Turner - What's Love Got to Do with It
 Elton John - Tiny Dancer
 Dolly Parton - 9 to 5
+OutKast - Hey Ya!
+Darius Rucker - Wagon Wheel
+Deana Carter - Strawberry Wine
+Reba McEntire - Fancy
+Shania Twain - Any Man of Mine
+Cheap Trick - I Want You to Want Me
+Rick Springfield - Jessie's Girl
+Alanis Morissette - You Oughta Know
+Mark Ronson - Valerie
+Kelly Clarkson - Since U Been Gone
+Ricky Martin - Livin' La Vida Loca
+Barry Manilow - Copacabana (At the Copa)
+Kenny Rogers - Islands in the Stream
+John Travolta - Summer Nights
+Whitney Houston - I Wanna Dance with Somebody (Who Loves Me)
+Madonna - Like a Virgin
+Pat Benatar - Hit Me With Your Best Shot
+Prince - Kiss
+Prince - Purple Rain
+Mark Ronson - Uptown Funk
+Taylor Swift - Shake It Off
+Taylor Swift - Love Story
+Lynyrd Skynyrd - Sweet Home Alabama
+Van Morrison - Brown Eyed Girl
+Frank Sinatra - My Way
+Beyoncé - Crazy in Love
+Beyoncé - Single Ladies (Put a Ring on It)
+Wheatus - Teenage Dirtbag
+Smash Mouth - All Star
+Johnny Cash - Ring of Fire
+Dolly Parton - Jolene
+Alannah Myles - Black Velvet
+Billy Joel - Uptown Girl
 `,
   anthems: `
 Queen - We Will Rock You
@@ -720,6 +1309,40 @@ The Troggs - Wild Thing
 KISS - Rock and Roll All Nite
 Bruce Springsteen - Born in the U.S.A.
 Europe - The Final Countdown
+Queen - Don't Stop Me Now
+Queen - Another One Bites The Dust
+LMFAO - Party Rock Anthem
+Darude - Sandstorm
+DJ Snake - Turn Down for What
+Van Halen - Jump
+AC/DC - You Shook Me All Night Long
+AC/DC - T.N.T.
+Def Leppard - Pour Some Sugar On Me
+Bon Jovi - It's My Life
+Bon Jovi - Bad Medicine
+Bob Seger - Old Time Rock & Roll
+Guns N' Roses - Paradise City
+Guns N' Roses - Sweet Child O' Mine
+Nirvana - Smells Like Teen Spirit
+Joan Jett & the Blackhearts - I Love Rock 'N Roll
+C+C Music Factory - Gonna Make You Sweat (Everybody Dance Now)
+T.I. - Bring Em Out
+Kanye West - Power
+Kanye West - Stronger
+DMX - X Gon' Give It To Ya
+DMX - Party Up (Up in Here)
+Kris Kross - Jump
+Imagine Dragons - Radioactive
+Fall Out Boy - Centuries
+The Script - Hall of Fame
+Led Zeppelin - Rock and Roll
+Ram Jam - Black Betty
+Twisted Sister - We're Not Gonna Take It
+Survivor - Burning Heart
+Starship - We Built This City
+Black Eyed Peas - I Gotta Feeling
+Pitbull - Fireball
+Kool & The Gang - Celebration
 `,
   covers: `
 Whitney Houston - I Will Always Love You
@@ -760,6 +1383,35 @@ The Bangles - Hazy Shade of Winter
 Gloria Estefan - Turn the Beat Around
 Kygo - Higher Love
 Disturbed - The Sound of Silence
+Janis Joplin - Me and Bobby McGee
+Janis Joplin - Piece of My Heart
+The Kingsmen - Louie Louie
+Marvin Gaye - I Heard It Through The Grapevine
+Kim Wilde - You Keep Me Hangin' On
+Bananarama - Venus
+Kylie Minogue - The Loco-Motion
+Christina Aguilera - Lady Marmalade
+The White Stripes - Jolene
+Lorde - Everybody Wants To Rule The World
+Ryan Adams - Wonderwall
+Chris Stapleton - Tennessee Whiskey
+Eric Clapton - After Midnight
+Elvis Presley - Blue Suede Shoes
+Van Halen - You Really Got Me
+Van Halen - (Oh) Pretty Woman
+Eric Clapton - I Shot The Sheriff
+George Harrison - Got My Mind Set on You
+Joan Jett & the Blackhearts - Crimson and Clover
+Billy Idol - Mony Mony
+Thelma Houston - Don't Leave Me This Way
+Nazareth - Love Hurts
+Johnny Cash - Personal Jesus
+Tori Amos - Smells Like Teen Spirit
+Sheryl Crow - The First Cut Is The Deepest
+Rod Stewart - The First Cut Is The Deepest
+Cyndi Lauper - Money Changes Everything
+Jimi Hendrix - Hey Joe
+UB40 - Can't Help Falling In Love
 `,
   kids: `
 Spice Girls - Wannabe
@@ -800,6 +1452,44 @@ Will Smith - Men in Black
 Mariah Carey - Fantasy
 Green Day - Good Riddance (Time of Your Life)
 Shania Twain - You're Still The One
+C+C Music Factory - Gonna Make You Sweat (Everybody Dance Now)
+Kris Kross - Jump
+Tag Team - Whoomp! (There It Is)
+Sir Mix-A-Lot - Baby Got Back
+Madonna - Vogue
+R.E.M. - Losing My Religion
+Michael Jackson - Black or White
+Red Hot Chili Peppers - Under the Bridge
+Radiohead - Creep
+Green Day - Basket Case
+Spice Girls - Spice Up Your Life
+Blackstreet - No Diggity
+The Verve - Bitter Sweet Symphony
+Backstreet Boys - Larger Than Life
+Santana - Smooth
+The Notorious B.I.G. - Mo Money Mo Problems
+The Notorious B.I.G. - Hypnotize
+Boyz II Men - I'll Make Love to You
+Wilson Phillips - Hold On
+Mariah Carey - Vision of Love
+Mariah Carey - Always Be My Baby
+Toni Braxton - Un-Break My Heart
+Lauryn Hill - Doo Wop (That Thing)
+Fugees - Killing Me Softly With His Song
+Mark Morrison - Return of the Mack
+*NSYNC - Tearin' Up My Heart
+Britney Spears - (You Drive Me) Crazy
+Len - Steal My Sunshine
+R.E.M. - Everybody Hurts
+Ace of Base - The Sign
+Ace of Base - All That She Wants
+Corona - The Rhythm of the Night
+Haddaway - What Is Love
+Hootie & The Blowfish - Only Wanna Be with You
+Goo Goo Dolls - Iris
+Matchbox Twenty - 3AM
+Sugar Ray - Every Morning
+Jewel - You Were Meant for Me
 `,
   christmas: `
 Mariah Carey - All I Want for Christmas Is You
@@ -840,6 +1530,44 @@ Taylor Swift - Christmas Tree Farm
 Sia - Snowman
 Bruce Springsteen - Santa Claus Is Comin' to Town
 Thurl Ravenscroft - You're A Mean One, Mr. Grinch
+Trans-Siberian Orchestra - Christmas Eve / Sarajevo 12/24
+Pentatonix - Carol of the Bells
+Pentatonix - Mary, Did You Know?
+Bing Crosby - Peace On Earth / Little Drummer Boy
+Mariah Carey - O Holy Night
+Bing Crosby - Silent Night
+Frank Sinatra - Jingle Bells
+Dean Martin - Baby, It's Cold Outside
+Bing Crosby - I'll Be Home For Christmas
+Vince Guaraldi Trio - Christmas Time Is Here
+Carpenters - Merry Christmas Darling
+Perry Como - (There's No Place Like) Home for the Holidays
+Run–D.M.C. - Christmas In Hollis
+Coldplay - Christmas Lights
+Destiny's Child - 8 Days of Christmas
+Kelly Clarkson - Wrapped in Red
+The Jackson 5 - Santa Claus Is Coming To Town
+The Jackson 5 - I Saw Mommy Kissing Santa Claus
+Stevie Wonder - Someday at Christmas
+Stevie Wonder - What Christmas Means to Me
+Donny Hathaway - This Christmas
+Eagles - Please Come Home for Christmas
+Tom Petty and the Heartbreakers - Christmas All Over Again
+Dolly Parton - Hard Candy Christmas
+Roy Orbison - Pretty Paper
+Elmo & Patsy - Grandma Got Run Over By A Reindeer
+Bing Crosby - Mele Kalikimaka
+Katy Perry - Cozy Little Christmas
+Gwen Stefani - You Make It Feel Like Christmas
+Straight No Chaser - Text Me Merry Christmas
+Sia - Santa's Coming For Us
+Chris Rea - Driving Home For Christmas
+Andy Williams - Happy Holiday / The Holiday Season
+Burl Ives - Silver and Gold
+Nat King Cole - Deck The Hall
+Elvis Presley - Here Comes Santa Claus (Right Down Santa Claus Lane)
+Mariah Carey - Christmas (Baby Please Come Home)
+Ariana Grande - Last Christmas
 `,
   halloween: `
 Michael Jackson - Thriller
@@ -878,6 +1606,36 @@ Yeah Yeah Yeahs - Heads Will Roll
 Concrete Blonde - Bloodletting (The Vampire Song)
 Siouxsie and the Banshees - Spellbound
 Rob Zombie - Dragula
+Bow Wow Wow - I Want Candy
+Andrew Gold - Spooky, Scary Skeletons
+Siouxsie and the Banshees - Halloween
+Skillet - Monster
+Kate Bush - Running Up That Hill (A Deal With God)
+Ministry - Every Day Is Halloween
+Rob Zombie - Living Dead Girl
+AC/DC - Hells Bells
+The Rolling Stones - Sympathy For The Devil
+The Charlie Daniels Band - The Devil Went Down to Georgia
+INXS - Devil Inside
+Nick Cave & The Bad Seeds - Red Right Hand
+Fleetwood Mac - Rhiannon
+Frank Sinatra - Witchcraft
+The Black Keys - Howlin' for You
+DJ Jazzy Jeff & The Fresh Prince - A Nightmare on My Street
+Ramones - Pet Sematary
+Lady Gaga - Bloody Mary
+The Rolling Stones - Paint It Black
+Heart - Magic Man
+Eurythmics - Sweet Dreams (Are Made of This)
+Eminem - The Monster
+Radiohead - Creep
+Michael Jackson - Ghosts
+The Police - Spirits in the Material World
+Duran Duran - Hungry Like the Wolf
+Echo & the Bunnymen - The Killing Moon
+Alice Cooper - Welcome to My Nightmare
+Billie Eilish - bury a friend
+Imagine Dragons - Demons
 `,
   wedding: `
 Etta James - At Last
@@ -918,6 +1676,43 @@ Bruno Mars - Just the Way You Are
 Dan + Shay - Speechless
 Thomas Rhett - Die A Happy Man
 Shania Twain - From This Moment On
+WALK THE MOON - Shut Up and Dance
+The Beatles - Twist and Shout
+Van Morrison - Brown Eyed Girl
+Journey - Don't Stop Believin'
+Bon Jovi - Livin' On A Prayer
+The Killers - Mr. Brightside
+OutKast - Hey Ya!
+Darius Rucker - Wagon Wheel
+Kenny Loggins - Footloose
+The Foundations - Build Me Up Buttercup
+Marvin Gaye - Ain't No Mountain High Enough
+The Temptations - My Girl
+James Taylor - How Sweet It Is (To Be Loved By You)
+Ray LaMontagne - You Are the Best Thing
+Jack Johnson - Better Together
+Jason Mraz - I'm Yours
+Michael Bublé - Everything
+Brad Paisley - Then
+Chris Stapleton - Tennessee Whiskey
+Dan + Shay - From the Ground Up
+Randy Travis - Forever and Ever, Amen
+George Strait - I Cross My Heart
+Alison Krauss - When You Say Nothing At All
+Frankie Valli - Can't Take My Eyes off You
+Pharrell Williams - Happy
+Village People - Y.M.C.A.
+DJ Casper - Cha Cha Slide
+V.I.C. - Wobble
+LMFAO - Party Rock Anthem
+King Harvest - Dancing in the Moonlight
+Nat King Cole - L-O-V-E
+Frank Sinatra - Fly Me To The Moon
+Nat King Cole - Unforgettable
+Bill Withers - Lovely Day
+Sixpence None The Richer - Kiss Me
+Etta James - A Sunday Kind of Love
+Michael Bublé - Haven't Met You Yet
 `,
   summer: `
 Bryan Adams - Summer of '69
@@ -958,6 +1753,41 @@ Owl City - Good Time
 Taylor Swift - Cruel Summer
 Will Smith - Miami
 Kenny Chesney - When the Sun Goes Down
+Eddie Cochran - Summertime Blues
+LFO - Summer Girls
+Sly & The Family Stone - Hot Fun in the Summertime
+The Beach Boys - Surfin' Safari
+The Beach Boys - California Girls
+The Beach Boys - Wouldn't It Be Nice
+Jan & Dean - Surf City
+The Chantays - Pipeline
+Dick Dale & His Del-Tones - Misirlou
+Zac Brown Band - Toes
+Zac Brown Band - Knee Deep
+Kenny Chesney - No Shoes, No Shirt, No Problems
+Kenny Chesney - Summertime
+Jake Owen - Barefoot Blue Jean Night
+Jake Owen - Beachin'
+Florida Georgia Line - Sun Daze
+Florida Georgia Line - Cruise
+Calvin Harris - Feels
+WALK THE MOON - Shut Up and Dance
+Dua Lipa - Levitating
+Miley Cyrus - Party In The U.S.A.
+Katy Perry - Teenage Dream
+Justin Timberlake - Summer Love
+Frank Sinatra - Summer Wind
+First Class - Beach Baby
+Ramones - Rockaway Beach
+Chicago - Saturday in the Park
+Nancy Sinatra - Summer Wine
+The Go-Go's - Vacation
+Kygo - Firestone
+OMI - Cheerleader
+Shaggy - Boombastic
+Bob Marley & The Wailers - Jamming
+Shakira - Hips Don't Lie
+Lana Del Rey - Summertime Sadness
 `,
   roadtrip: `
 Tom Cochrane - Life Is a Highway
@@ -998,6 +1828,40 @@ Tom Petty and the Heartbreakers - Learning To Fly
 The Doobie Brothers - Long Train Runnin'
 Bob Seger - Turn the Page
 Creedence Clearwater Revival - Travelin' Band
+Ray Charles - Hit the Road Jack
+Bruce Springsteen - Thunder Road
+Led Zeppelin - Ramble On
+Neil Diamond - Sweet Caroline
+The Killers - Mr. Brightside
+The Allman Brothers Band - Midnight Rider
+Lynyrd Skynyrd - Free Bird
+The Beach Boys - Kokomo
+Alabama - Mountain Music
+Red Hot Chili Peppers - Road Trippin'
+Joni Mitchell - Big Yellow Taxi
+Lynyrd Skynyrd - Gimme Three Steps
+Eagles - Hotel California
+Arlo Guthrie - City of New Orleans
+Simon & Garfunkel - Homeward Bound
+Simon & Garfunkel - America
+John Denver - Rocky Mountain High
+Bon Jovi - Wanted Dead Or Alive
+Eagles - Life in the Fast Lane
+Creedence Clearwater Revival - Proud Mary
+Ricky Nelson - Travelin' Man
+The Chicks - Wide Open Spaces
+Vance Joy - Riptide
+Rusted Root - Send Me On My Way
+The Lumineers - Ho Hey
+George Ezra - Budapest
+George Ezra - Shotgun
+Weezer - Island in the Sun
+Billy Ocean - Get Outta My Dreams, Get into My Car
+Steve Miller Band - Jet Airliner
+The Doobie Brothers - China Grove
+Tom Petty and the Heartbreakers - American Girl
+Steppenwolf - Magic Carpet Ride
+Fleetwood Mac - Dreams
 `,
   workout: `
 Survivor - Eye of the Tiger
@@ -1037,6 +1901,41 @@ Calvin Harris - Feel So Close
 Salt-N-Pepa - Push It
 Joan Jett & the Blackhearts - Bad Reputation
 Bill Conti - Gonna Fly Now
+Kanye West - Power
+Metallica - Enter Sandman
+Beastie Boys - Sabotage
+Rage Against The Machine - Killing In the Name
+Rage Against The Machine - Bulls On Parade
+The White Stripes - Seven Nation Army
+John Cafferty & The Beaver Brown Band - Hearts on Fire
+Robert Tepper - No Easy Way Out
+Joe Esposito - You're the Best
+Survivor - Burning Heart
+Kenny Loggins - Danger Zone
+Bonnie Tyler - Holding Out for a Hero
+DJ Snake - Turn Down for What
+Rihanna - Don't Stop The Music
+Britney Spears - Toxic
+Missy Elliott - Get Ur Freak On
+50 Cent - In Da Club
+The Notorious B.I.G. - Hypnotize
+LL COOL J - Mama Said Knock You Out
+Christina Aguilera - Fighter
+Fall Out Boy - Centuries
+Imagine Dragons - Thunder
+Imagine Dragons - Radioactive
+Darude - Sandstorm
+Swedish House Mafia - Don't You Worry Child
+Martin Garrix - Animals
+Zedd - Clarity
+Queen - We Will Rock You
+Europe - The Final Countdown
+Eminem - Not Afraid
+Drake - Started From the Bottom
+Jay-Z - Run This Town
+Lizzo - Good as Hell
+Dua Lipa - Physical
+Calvin Harris - This Is What You Came For
 `,
   july4: `
 Bruce Springsteen - Born in the U.S.A.
@@ -1072,6 +1971,35 @@ Whitney Houston - The Star Spangled Banner
 Bruce Springsteen - Glory Days
 Kid Rock - All Summer Long
 Charlie Daniels - In America
+Bruce Springsteen - 4th of July, Asbury Park (Sandy)
+Toby Keith - American Soldier
+Aaron Tippin - Where the Stars and Stripes and the Eagle Fly
+Toby Keith - Made In America
+Kate Smith - God Bless America
+Beyoncé - Freedom
+Lady A - American Honey
+Don Henley - The Boys of Summer
+Alan Jackson - Where Were You (When the World Stopped Turning)
+Darryl Worley - Have You Forgotten?
+Billy Ray Cyrus - Some Gave All
+Johnny Cash - Ragged Old Flag
+Merle Haggard - Okie From Muskogee
+Merle Haggard - The Fightin' Side of Me
+Kool & The Gang - Celebration
+Bruce Springsteen - Born to Run
+Justin Moore - Small Town USA
+Jason Aldean - Dirt Road Anthem
+Bob Seger - Night Moves
+Bob Seger - Old Time Rock & Roll
+Bachman-Turner Overdrive - Takin' Care of Business
+Lynyrd Skynyrd - Free Bird
+Brooks & Dunn - Boot Scootin' Boogie
+Kenny Chesney - Summertime
+The Beach Boys - Kokomo
+Zac Brown Band - Toes
+Jimi Hendrix - The Star Spangled Banner
+Simon & Garfunkel - America
+Neil Diamond - Coming To America
 `,
   stpats: `
 Thin Lizzy - Whiskey in the Jar
@@ -1107,6 +2035,31 @@ Flogging Molly - If I Ever Leave This World Alive
 The Dubliners - Seven Drunken Nights
 Dropkick Murphys - The State of Massachusetts
 U2 - Beautiful Day
+Metallica - Whiskey in the Jar
+The Dubliners - Rocky Road To Dublin
+The Dubliners - Molly Malone
+The Clancy Brothers & Tommy Makem - Finnegan's Wake
+Paddy Reilly - The Fields of Athenry
+The Dubliners - The Black Velvet Band
+The Clancy Brothers & Tommy Makem - Whiskey You're the Devil
+The Pogues - If I Should Fall from Grace with God
+The Pogues - Sally MacLennane
+The Pogues - The Body of an American
+The Pogues - Fiesta
+Flogging Molly - Devil's Dance Floor
+The Cranberries - Ode To My Family
+U2 - Pride (In The Name Of Love)
+U2 - I Still Haven't Found What I'm Looking For
+U2 - One
+Enya - Caribbean Blue
+Van Morrison - Into the Mystic
+Them - Gloria
+Thin Lizzy - Jailbreak
+The Pogues - Streams of Whiskey
+Dropkick Murphys - The Gang's All Here
+Hozier - Too Sweet
+Sinéad O'Connor - Mandinka
+The Script - Breakeven
 `,
   valentines: `
 Beyoncé - Crazy in Love
@@ -1146,6 +2099,43 @@ Jason Mraz - I'm Yours
 Lady A - Need You Now
 Leona Lewis - Bleeding Love
 Al Green - Let's Stay Together
+Eric Clapton - Wonderful Tonight
+Ray LaMontagne - You Are the Best Thing
+The Beatles - Something
+The Beatles - In My Life
+Kenny Rogers - Lady
+Commodores - Three Times a Lady
+Lionel Richie - Truly
+Lionel Richie - Hello
+Orleans - Still the One
+Shania Twain - You're Still The One
+Shania Twain - From This Moment On
+Lonestar - Amazed
+John Michael Montgomery - I Swear
+Ellie Goulding - Love Me Like You Do
+Harry Styles - Adore You
+Taylor Swift - Lover
+Beyoncé - XO
+Frank Sinatra - The Way You Look Tonight
+Nat King Cole - Unforgettable
+Louis Armstrong - La Vie En Rose
+Frankie Valli - Can't Take My Eyes off You
+Rod Stewart - Have I Told You Lately
+Grover Washington, Jr. - Just the Two of Us
+Chet Baker - My Funny Valentine
+The Cure - Lovesong
+Van Morrison - Crazy Love
+Sam Cooke - You Send Me
+The Penguins - Earth Angel
+The Platters - Only You (And You Alone)
+Whitney Houston - Saving All My Love for You
+Mariah Carey - We Belong Together
+Céline Dion - Because You Loved Me
+Kenny G - Songbird
+Sade - By Your Side
+Alicia Keys - If I Ain't Got You
+Bruno Mars - Marry You
+Etta James - A Sunday Kind of Love
 `,
   newyear: `
 Guy Lombardo - Auld Lang Syne
@@ -1183,6 +2173,38 @@ Montell Jordan - This Is How We Do It
 Semisonic - Closing Time
 Alphaville - Forever Young
 Europe - The Final Countdown
+Dan Fogelberg - Same Old Lang Syne
+Eagles - Funky New Year
+Bing Crosby - Let's Start the New Year Right
+Eddie Murphy - Party All the Time
+Whitney Houston - I Wanna Dance with Somebody (Who Loves Me)
+Journey - Don't Stop Believin'
+Bon Jovi - Livin' On A Prayer
+Neil Diamond - Sweet Caroline
+Otis Day & The Knights - Shout
+Beyoncé - Crazy in Love
+Beyoncé - Single Ladies (Put a Ring on It)
+Taio Cruz - Dynamite
+Nicki Minaj - Starships
+Jennifer Lopez - On The Floor
+Avicii - Wake Me Up
+David Guetta - Titanium
+Pitbull - Feel This Moment
+Rihanna - Don't Stop The Music
+Lady Gaga - Just Dance
+ABBA - Gimme! Gimme! Gimme! (A Man After Midnight)
+Eric Clapton - After Midnight
+Kelly Clarkson - Since U Been Gone
+Avicii - Levels
+Daft Punk - One More Time
+Daft Punk - Get Lucky
+M83 - Midnight City
+Taylor Swift - New Year's Day
+Mariah Carey - Auld Lang Syne (The New Year's Anthem)
+Bruno Mars - 24K Magic
+Earth, Wind & Fire - September
+The Killers - Human
+Robyn - Dancing On My Own
 `,
   birthday: `
 The Beatles - Birthday
@@ -1220,6 +2242,42 @@ Katrina & The Waves - Walking on Sunshine
 American Authors - Best Day Of My Life
 The Turtles - Happy Together
 Bruno Mars - 24K Magic
+Neil Diamond - Sweet Caroline
+Journey - Don't Stop Believin'
+Whitney Houston - I Wanna Dance with Somebody (Who Loves Me)
+DNCE - Cake by the Ocean
+fun. - We Are Young
+Black Eyed Peas - Let's Get It Started
+WALK THE MOON - Shut Up and Dance
+Owl City - Good Time
+Katy Perry - Firework
+Katy Perry - Roar
+Daft Punk - Get Lucky
+BTS - Dynamite
+BTS - Butter
+Dua Lipa - Levitating
+Hanson - MMMBop
+Kim Wilde - Kids in America
+ABBA - Mamma Mia
+Village People - Y.M.C.A.
+Los Del Rio - Macarena
+DJ Casper - Cha Cha Slide
+Cupid - Cupid Shuffle
+Toni Basil - Mickey
+Maroon 5 - Sugar
+Bruno Mars - Treasure
+Kool & The Gang - Get Down On It
+Sister Sledge - We Are Family
+The Pointer Sisters - I'm So Excited
+Madonna - Holiday
+Wham! - Wake Me Up Before You Go-Go
+Kesha - TiK ToK
+Rihanna - Only Girl (In The World)
+Selena Gomez - Love You Like A Love Song
+Carly Rae Jepsen - Call Me Maybe
+Justin Bieber - Baby
+Lizzo - Juice
+Earth, Wind & Fire - Let's Groove
 `,
   office: `
 Dolly Parton - 9 to 5
@@ -1257,5 +2315,42 @@ Kenny Loggins - Footloose
 The B-52's - Love Shack
 Bruce Springsteen - Glory Days
 Talking Heads - Once in a Lifetime
+Michael Jackson - Workin' Day and Night
+ABBA - Money, Money, Money
+Madonna - Material Girl
+The Vogues - Five O'Clock World
+Alan Jackson - It's Five O'Clock Somewhere
+Rush - Working Man
+The Silhouettes - Get a Job
+The Mamas & The Papas - Monday, Monday
+Bon Jovi - Livin' On A Prayer
+Queen - We Are The Champions
+ABBA - Dancing Queen
+The Beatles - Twist and Shout
+Neil Diamond - Sweet Caroline
+Whitney Houston - I Wanna Dance with Somebody (Who Loves Me)
+Otis Day & The Knights - Shout
+Village People - Y.M.C.A.
+C+C Music Factory - Gonna Make You Sweat (Everybody Dance Now)
+Queen - Bohemian Rhapsody
+Toto - Africa
+Bonnie Tyler - Total Eclipse of the Heart
+a-ha - Take On Me
+The B-52's - Rock Lobster
+Van Halen - Jump
+The Beatles - A Hard Day's Night
+The Beatles - Eight Days a Week
+Pet Shop Boys - Opportunities (Let's Make Lots of Money)
+Diana Ross - The Boss
+Aretha Franklin - Respect
+Kelly Clarkson - Since U Been Gone
+Cyndi Lauper - Girls Just Want to Have Fun
+Wham! - Wake Me Up Before You Go-Go
+Sister Sledge - We Are Family
+Lizzo - Good as Hell
+Dua Lipa - Don't Start Now
+Bruno Mars - 24K Magic
+Huey Lewis & The News - Hip To Be Square
+Kool & The Gang - Get Down On It
 `,
 };
