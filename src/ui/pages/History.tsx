@@ -23,6 +23,9 @@ export default function History() {
       <PageHeader title="History">
         <input aria-label="Search games" placeholder="Search games" value={q} onChange={(e) => setQ(e.target.value)} />
       </PageHeader>
+      {params.get('backup') === 'failed' && (
+        <p role="alert" className="mb-4 rounded-lg border border-deck-b/50 bg-deck-b/10 px-3 py-2">The game is saved here, but the automatic Google Drive backup didn’t finish. Open Settings → Google Drive and press Back up now.</p>
+      )}
       {games?.length === 0 && <p className="text-dim">Games you run show up here with every song that was called.</p>}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,22rem)_1fr]">
         <ul className="grid h-fit gap-2">

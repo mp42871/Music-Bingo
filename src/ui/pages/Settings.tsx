@@ -8,6 +8,7 @@ import { redirectUri } from '../../spotify/config';
 import { daysUntilReconnect } from '../../spotify/auth';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Field, PageHeader, Section } from '../components/Field';
+import { DriveSection } from '../components/DriveSection';
 
 export default function Settings() {
   const sp = useSpotify();
@@ -79,7 +80,9 @@ export default function Settings() {
           </div>
         </Section>
 
-        <Section title="Backup">
+        <DriveSection />
+
+        <Section title="Backup file">
           <p className="mb-3 text-sm text-dim">Everything (playlists, cards, game history) lives in this browser. Download a backup now and then.</p>
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" className="btn" onClick={async () => download(`music-bingo-backup-${new Date().toISOString().slice(0, 10)}.json`, await exportBackup())}>Download backup</button>

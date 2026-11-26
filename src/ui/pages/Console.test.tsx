@@ -11,6 +11,10 @@ import type { Game } from '../../core/types';
 import { catPool, layout } from '../../test/fixtures';
 import type { PlaybackPort } from '../../game/controller';
 
+const autoBackup = vi.fn(async (prepare: () => Promise<void>) => { await prepare(); return 'done'; });
+vi.mock('../../drive/backup', () => ({ autoBackupOnClick: (p: () => Promise<void>) => autoBackup(p) }));
+vi.mock('../../drive/service', () => ({ driveService: () => ({}), preloadGoogle: () => {}, refreshGoogleClientId: async () => '' }));
+
 const pool = catPool();
 let port: PlaybackPort & Record<string, ReturnType<typeof vi.fn>>;
 
@@ -148,4 +152,12 @@ test('opening Check a card pauses the game', async () => {
   await waitFor(() => expect(useGame.getState().cs?.phase).toBe('paused'));
   expect(port.pause).toHaveBeenCalled();
   expect(screen.getByRole('dialog', { name: 'Check a card' })).toBeInTheDocument();
+});
+
+test('ending the game finishes it and runs the automatic Drive backup', async () => {
+  await setup();
+  await userEvent.click(screen.getByRole('button', { name: 'End round' }));
+  await userEvent.click(within(await screen.findByRole('dialog', { name: 'Next round' })).getByRole('button', { name: 'End game' }));
+  await waitFor(() => expect(autoBackup).toHaveBeenCalled());
+  await waitFor(async () => expect((await repo.getGame('g1'))!.status).toBe('finished'));
 });

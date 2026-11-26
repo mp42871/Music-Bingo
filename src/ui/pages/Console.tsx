@@ -11,6 +11,8 @@ import { RoundDialog } from '../console/RoundDialog';
 import { Transport } from '../console/Transport';
 import { WinnerTracker } from '../console/WinnerTracker';
 import { ClaimPanel } from '../console/ClaimPanel';
+import { autoBackupOnClick } from '../../drive/backup';
+import { driveService } from '../../drive/service';
 import { Readiness } from '../components/Readiness';
 import { useOnline } from '../../app/online';
 import { useSpotify } from '../../app/spotifyStore';
@@ -157,7 +159,12 @@ export default function Console() {
       {roundDlg && (
         <RoundDialog round={game.rounds.length || 1} size={size} onClose={() => setRoundDlg(false)}
           onStart={async (p, m) => { await g.endRound([]); await g.startRound(p, m); setRoundDlg(false); }}
-          onFinish={async () => { await g.finish(); setRoundDlg(false); nav(`/history?game=${game.id}`); }} />
+          onFinish={async () => {
+            // Save the finished game, then back it up to Google Drive (if turned on) — started inside this click.
+            const result = await autoBackupOnClick(() => g.finish(), driveService);
+            setRoundDlg(false);
+            nav(`/history?game=${game.id}${result !== 'off' && result !== 'done' && result !== 'pending' ? '&backup=failed' : ''}`);
+          }} />
       )}
       {checking !== null && <ClaimPanel initial={checking === 'open' ? null : checking} onClose={() => setChecking(null)} />}
     </main>
