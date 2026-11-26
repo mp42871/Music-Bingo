@@ -4,7 +4,7 @@ import { gameToCsv } from '../../core/claim';
 import { cleanTitle, download } from '../../core/io';
 import { patternName } from '../../core/patterns';
 import type { Game } from '../../core/types';
-import { deleteGame, getSetting, listGames } from '../../db/repo';
+import { clearGames, deleteGame, getSetting, listGames } from '../../db/repo';
 import { cardNo } from '../components/CardGrid';
 import { PageHeader } from '../components/Field';
 
@@ -30,6 +30,13 @@ export default function History() {
     <main className="mx-auto max-w-7xl px-4 py-6">
       <PageHeader title="History">
         <input aria-label="Search games" placeholder="Search games" value={q} onChange={(e) => setQ(e.target.value)} />
+        <button type="button" className="btn" disabled={!games?.length}
+          onClick={async () => {
+            if (!confirm(`Delete all ${games!.length} games from history? Called songs, winners and in-progress games are removed for good. Playlists and cards are kept.`)) return;
+            await clearGames();
+            setGames([]);
+            setOpenId(null);
+          }}>Clear history</button>
       </PageHeader>
       {backupErr && (
         <p role="alert" className="mb-4 rounded-lg border border-deck-b/50 bg-deck-b/10 px-3 py-2">Your games are saved here, but the last Google Drive backup didn’t finish ({backupErr}). It will try again on your next click while online, or open Settings → Google Drive and press Back up now.</p>

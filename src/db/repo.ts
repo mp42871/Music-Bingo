@@ -15,6 +15,7 @@ export const saveGame = (g: Game) => db.games.put(g);
 export const getGame = (id: string) => db.games.get(id);
 export const listGames = () => db.games.orderBy('createdAt').reverse().toArray();
 export const deleteGame = (id: string) => db.games.delete(id);
+export const clearGames = () => db.games.clear();
 
 export async function getSetting<T>(key: string, fallback: T): Promise<T> {
   const row = await db.kv.get(key);

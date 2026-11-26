@@ -82,14 +82,27 @@ export default function Home() {
       </section>
 
       {games.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-3 text-lg font-bold">Pick up where you left off</h2>
+        <section className="mb-8" aria-labelledby="resume-heading">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 id="resume-heading" className="text-lg font-bold">Pick up where you left off</h2>
+            <button type="button" className="btn text-sm"
+              onClick={async () => {
+                if (!confirm(`End all ${games.length} unfinished games? They stay in History.`)) return;
+                await Promise.all(games.map((g) => saveGame({ ...g, status: 'finished' })));
+                setGames([]);
+              }}>Clear all</button>
+          </div>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((g) => (
-              <li key={g.id}><Link to={`/console/${g.id}`} className="panel block p-4 hover:border-deck-a">
-                <div className="font-semibold">{g.name}</div>
-                <div className="text-sm text-dim">{g.calls.length} of {g.callOrder.length} songs played · round {g.rounds.length}</div>
-              </Link></li>
+              <li key={g.id} className="relative">
+                <Link to={`/console/${g.id}`} className="panel block p-4 pr-12 hover:border-deck-a">
+                  <div className="font-semibold">{g.name}</div>
+                  <div className="text-sm text-dim">{g.calls.length} of {g.callOrder.length} songs played · round {g.rounds.length}</div>
+                </Link>
+                <button type="button" aria-label={`Clear ${g.name}`} title="End this game (it stays in History)"
+                  className="absolute right-2 top-2 rounded px-2 py-1 text-dim hover:text-deck-b"
+                  onClick={async () => { await saveGame({ ...g, status: 'finished' }); setGames((gs) => gs.filter((x) => x.id !== g.id)); }}>✕</button>
+              </li>
             ))}
           </ul>
         </section>

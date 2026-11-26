@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Check from './Check';
@@ -72,4 +72,26 @@ test('history lists newest first and shows calls and winners', async () => {
   await userEvent.click(items[0]);
   expect(await screen.findAllByRole('listitem', { name: /Call \d+/ })).toHaveLength(4);
   expect(screen.getByText(/Sam/)).toBeInTheDocument();
+});
+
+test('clear history deletes all games after confirming', async () => {
+  await repo.saveGame(game('a', 3, 1000, { status: 'finished' }));
+  await repo.saveGame(game('b', 3, 2000, { status: 'finished' }));
+  const ask = vi.fn(() => true);
+  window.confirm = ask;
+  render(<MemoryRouter><History /></MemoryRouter>);
+  await screen.findAllByRole('button', { name: /Game (a|b)/ });
+  await userEvent.click(screen.getByRole('button', { name: 'Clear history' }));
+  expect(ask).toHaveBeenCalled();
+  await waitFor(async () => expect(await repo.listGames()).toHaveLength(0));
+  expect(screen.queryByRole('button', { name: /Game (a|b)/ })).toBeNull();
+});
+
+test('clear history does nothing if you cancel', async () => {
+  await repo.saveGame(game('a', 3, 1000, { status: 'finished' }));
+  window.confirm = () => false;
+  render(<MemoryRouter><History /></MemoryRouter>);
+  await screen.findByRole('button', { name: /Game a/ });
+  await userEvent.click(screen.getByRole('button', { name: 'Clear history' }));
+  expect(await repo.listGames()).toHaveLength(1);
 });
