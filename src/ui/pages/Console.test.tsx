@@ -209,3 +209,20 @@ describe('live play', () => {
     await waitFor(async () => expect((await fake.getGame(code))!.status).toBe('closed'));
   });
 });
+
+test('when live play fails, the console explains why and can try again', async () => {
+  const { createFakeBackend } = await import('../../live/fake');
+  const { setLiveBackend } = await import('../../live/config');
+  const fake = createFakeBackend();
+  const realPublish = fake.publish;
+  let fail = true;
+  fake.publish = async (...a) => { if (fail) throw new Error('Supabase is blocking access — run the latest setup script'); return realPublish(...a); };
+  setLiveBackend(fake);
+  await setup();
+  const banner = await screen.findByRole('alert', { name: 'Live play problem' });
+  expect(banner).toHaveTextContent(/Supabase is blocking access/);
+  fail = false;
+  await userEvent.click(within(banner).getByRole('button', { name: 'Try again' }));
+  expect(await screen.findByText(/Live: \d{4}/)).toBeInTheDocument();
+  setLiveBackend(undefined);
+});

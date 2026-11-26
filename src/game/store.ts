@@ -208,6 +208,7 @@ export const useGame = create<GameStore>((set, get) => ({
     if (!game || !cardSet) return;
     const backend = await liveBackend();
     if (!backend) return;
+    set((st) => ({ live: { ...st.live, error: null } }));
     try {
       const code = await backend.publish(game.name, liveDef(cardSet), game.liveCode);
       if (get().game?.id !== game.id) return;

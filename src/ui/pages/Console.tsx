@@ -112,10 +112,15 @@ export default function Console() {
             <button type="button" className="ml-1 text-dim underline" onClick={() => { if (confirm('Stop live play? Phones can no longer join or call BINGO.')) void g.stopLive(); }}>Stop</button>
           </span>
         )}
-        {!g.live.code && g.live.error && <span className="chip border-peak text-peak" title={g.live.error}>Live play unavailable</span>}
         <button type="button" className="btn" onClick={() => { if (cs.phase === 'playing' || cs.phase === 'gap') void ctrl.togglePause(); setQuick(true); }}>⚡ Quick game</button>
         <button type="button" className="btn btn-b" onClick={() => openCheck('open')}>Check a card</button>
       </div>
+      {!g.live.code && g.live.error && (
+        <div role="alert" aria-label="Live play problem" className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-peak/60 bg-peak/10 px-4 py-3">
+          <p className="flex-1"><strong>Phones can’t join yet.</strong> {g.live.error}</p>
+          <button type="button" className="btn btn-a" onClick={() => void g.goLive()}>Try again</button>
+        </div>
+      )}
       {g.live.claims.length > 0 && (
         <div className="mb-4 grid gap-2">
           {g.live.claims.map((c) => (

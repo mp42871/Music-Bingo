@@ -58,11 +58,9 @@ export default function Audience() {
               </div>
             </div>
           )}
-          {m.showQr && !m.live && m.phoneUrl && (
+          {m.showQr && !m.live && m.phoneUrl && m.phoneUrl.length <= 1500 && (
             <div className="flex items-center gap-6 rounded-2xl bg-white p-5 text-night">
-              {m.phoneUrl.length > 2500
-                ? <div className="max-w-xs text-left text-lg">This playlist is too large for one QR code — use printed cards.</div>
-                : <QR text={m.phoneUrl} size={600} className="size-56" />}
+              <QR text={m.phoneUrl} size={900} className="size-80" />
               <div className="max-w-xs text-left text-2xl font-bold">No card? Scan to play on your phone.</div>
             </div>
           )}
