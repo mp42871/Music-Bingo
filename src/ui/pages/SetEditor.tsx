@@ -23,6 +23,7 @@ export default function SetEditor() {
   const [set, setSet] = useState<CardSet | null>(null);
   const [missing, setMissing] = useState(false);
   const [used, setUsed] = useState(false);
+  const [usedKnown, setUsedKnown] = useState(false);
   const [name, setName] = useState('');
   const [style, setStyle] = useState<PrintStyle>(DEFAULT_STYLE);
   const [lookMsg, setLookMsg] = useState<string | null>(null);
@@ -30,7 +31,7 @@ export default function SetEditor() {
   const [addMsg, setAddMsg] = useState<{ text: string; link?: string } | null>(null);
   const [target, setTarget] = useState('');
   const [replacement, setReplacement] = useState('');
-  const [swapMsg, setSwapMsg] = useState<{ text: string; link?: string; editLink?: string } | null>(null);
+  const [swapMsg, setSwapMsg] = useState<{ text: string; link?: string; editLink?: string; poster?: string } | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function SetEditor() {
       if (!s) return setMissing(true);
       setSet(s); setName(s.name); setStyle({ ...DEFAULT_STYLE, ...s.style });
     });
-    listGames().then((gs) => setUsed(gs.some((g) => g.cardSetId === id)));
+    listGames().then((gs) => { setUsed(gs.some((g) => g.cardSetId === id)); setUsedKnown(true); });
   }, [id]);
 
   const songs = useMemo(() => new Map(set?.songs?.map((s) => [s.id, s])), [set]);
@@ -100,6 +101,7 @@ export default function SetEditor() {
         text: `${what} — ${r.changed.length} card${r.changed.length === 1 ? '' : 's'} changed${used ? `, saved as a new set “${saved.name}”` : ''}.`,
         link: `/print/${saved.id}?cards=${range(r.changed)}`,
         editLink: used ? `/sets/${saved.id}` : undefined,
+        poster: `/print/${saved.id}?mode=poster`,
       });
       setTarget('');
       setReplacement('');
@@ -161,14 +163,15 @@ export default function SetEditor() {
               </Field>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" className="btn" disabled={!target} onClick={() => doSwap(false)}>Remove from cards</button>
-              <button type="button" className="btn btn-a" disabled={!target || !replacement} onClick={() => doSwap(true)}>Replace</button>
+              <button type="button" className="btn" disabled={!target || !usedKnown} onClick={() => doSwap(false)}>Remove from cards</button>
+              <button type="button" className="btn btn-a" disabled={!target || !replacement || !usedKnown} onClick={() => doSwap(true)}>Replace</button>
             </div>
             <p className="mt-2 text-xs text-dim">Cards that change need reprinting. A removed song is also left out of future games with this set.</p>
             {swapMsg && (
               <p role="status" className="mt-3 text-sm">{swapMsg.text}{' '}
                 {swapMsg.link && <Link to={swapMsg.link} className="text-deck-a underline">Print only changed cards</Link>}
                 {swapMsg.editLink && <> · <Link to={swapMsg.editLink} className="text-deck-a underline">Edit the new set</Link></>}
+                {swapMsg.poster && <span className="mt-1 block text-dim">Phone cards change too — if you printed the phone-card QR poster, <Link to={swapMsg.poster} className="text-deck-a underline">Reprint the phone QR poster</Link>.</span>}
               </p>
             )}
           </Section>

@@ -4,7 +4,7 @@ import { gameToCsv } from '../../core/claim';
 import { cleanTitle, download } from '../../core/io';
 import { patternName } from '../../core/patterns';
 import type { Game } from '../../core/types';
-import { deleteGame, listGames } from '../../db/repo';
+import { deleteGame, getSetting, listGames } from '../../db/repo';
 import { cardNo } from '../components/CardGrid';
 import { PageHeader } from '../components/Field';
 
@@ -13,7 +13,15 @@ export default function History() {
   const [games, setGames] = useState<Game[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(params.get('game'));
   const [q, setQ] = useState('');
-  useEffect(() => { listGames().then(setGames); }, []);
+  const [backupErr, setBackupErr] = useState('');
+  useEffect(() => {
+    listGames().then(setGames);
+    // The End game backup finishes in the background; check shortly after arriving.
+    const check = () => Promise.all([getSetting('driveBackupPending', false), getSetting('driveLastError', '')]).then(([p, e]) => setBackupErr(p && e ? e : ''));
+    void check();
+    const t = setTimeout(check, 8000);
+    return () => clearTimeout(t);
+  }, []);
 
   const shown = games?.filter((g) => !q || g.name.toLowerCase().includes(q.toLowerCase())) ?? [];
   const open = games?.find((g) => g.id === openId) ?? null;
@@ -23,8 +31,8 @@ export default function History() {
       <PageHeader title="History">
         <input aria-label="Search games" placeholder="Search games" value={q} onChange={(e) => setQ(e.target.value)} />
       </PageHeader>
-      {params.get('backup') === 'failed' && (
-        <p role="alert" className="mb-4 rounded-lg border border-deck-b/50 bg-deck-b/10 px-3 py-2">The game is saved here, but the automatic Google Drive backup didn’t finish. Open Settings → Google Drive and press Back up now.</p>
+      {backupErr && (
+        <p role="alert" className="mb-4 rounded-lg border border-deck-b/50 bg-deck-b/10 px-3 py-2">Your games are saved here, but the last Google Drive backup didn’t finish ({backupErr}). It will try again on your next click while online, or open Settings → Google Drive and press Back up now.</p>
       )}
       {games?.length === 0 && <p className="text-dim">Games you run show up here with every song that was called.</p>}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,22rem)_1fr]">

@@ -43,3 +43,10 @@ test('without a Client ID it shows the setup steps', async () => {
   expect(await screen.findByText(/Google Cloud console/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Back up now' })).toBeDisabled();
 });
+
+test('opening Restore also turns automatic backup on the first time', async () => {
+  render(<DriveSection />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Restore from Drive' }));
+  await screen.findByRole('button', { name: /Merge/ });
+  expect(await repo.getSetting('driveAutoBackup', null)).toBe(true);
+});

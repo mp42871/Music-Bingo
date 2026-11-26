@@ -160,10 +160,11 @@ export default function Console() {
         <RoundDialog round={game.rounds.length || 1} size={size} onClose={() => setRoundDlg(false)}
           onStart={async (p, m) => { await g.endRound([]); await g.startRound(p, m); setRoundDlg(false); }}
           onFinish={async () => {
-            // Save the finished game, then back it up to Google Drive (if turned on) — started inside this click.
-            const result = await autoBackupOnClick(() => g.finish(), driveService);
+            // Save the finished game; the Google Drive backup (if on) starts inside this click and finishes in the background.
+            const { saved } = autoBackupOnClick(() => g.finish(), driveService);
+            await saved;
             setRoundDlg(false);
-            nav(`/history?game=${game.id}${result !== 'off' && result !== 'done' && result !== 'pending' ? '&backup=failed' : ''}`);
+            nav(`/history?game=${game.id}`);
           }} />
       )}
       {checking !== null && <ClaimPanel initial={checking === 'open' ? null : checking} onClose={() => setChecking(null)} />}

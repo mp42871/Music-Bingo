@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useSpotify } from './app/spotifyStore';
-import { refreshGoogleClientId } from './drive/service';
+import { driveService, preloadGoogle, refreshGoogleClientId } from './drive/service';
+import { installPendingRetry, loadAutoBackupSetting } from './drive/backup';
+import { googleConnected } from './drive/google';
 import { Nav } from './ui/components/Nav';
 import Home from './ui/pages/Home';
 import Pools from './ui/pages/Pools';
@@ -45,7 +47,12 @@ function Shell() {
 }
 
 export default function App() {
-  useEffect(() => { void useSpotify.getState().init(); void refreshGoogleClientId(); }, []);
+  useEffect(() => {
+    void useSpotify.getState().init();
+    // Google Drive backup: know the settings up front and load Google's sign-in early, so End game can sign in instantly.
+    void Promise.all([refreshGoogleClientId(), loadAutoBackupSetting()]).then(([, on]) => { if (on && googleConnected()) preloadGoogle(); });
+    return installPendingRetry(driveService);
+  }, []);
   return (
     <HashRouter>
       <Shell />

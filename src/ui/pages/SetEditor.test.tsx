@@ -59,6 +59,18 @@ test('removing a song reports changed cards', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Remove from cards' }));
   expect(await screen.findByText(new RegExp(`“${title}” is off the cards — \\d+ cards? changed`))).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Print only changed cards' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Reprint the phone QR poster' })).toHaveAttribute('href', '/print/cs?mode=poster');
+});
+
+test('swap buttons wait until it is known whether the set was used in a game', async () => {
+  const repo = await import('../../db/repo');
+  const spy = vi.spyOn(repo, 'listGames').mockReturnValue(new Promise(() => {}) as never);
+  const set = base();
+  await saveCardSet(set);
+  open();
+  await userEvent.selectOptions(await screen.findByLabelText('Song to swap'), (set.cards[0].cells[0] as { songId: string }).songId);
+  expect(screen.getByRole('button', { name: 'Remove from cards' })).toBeDisabled();
+  spy.mockRestore();
 });
 
 test('a set used in a game saves swaps as a new version', async () => {

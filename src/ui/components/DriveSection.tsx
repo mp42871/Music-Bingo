@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useOnline } from '../../app/online';
-import { backupNow } from '../../drive/backup';
+import { autoBackupEnabled, backupNow, loadAutoBackupSetting, noteDriveConnected, setAutoBackup } from '../../drive/backup';
 import type { BackupFile } from '../../drive/drive';
 import { disconnectGoogle, googleConnected } from '../../drive/google';
 import { driveService, preloadGoogle, refreshGoogleClientId } from '../../drive/service';
@@ -26,7 +26,7 @@ export function DriveSection() {
   const refresh = async () => {
     const id = await refreshGoogleClientId();
     setClientId(id); setSavedId(id);
-    setAuto(await getSetting('driveAutoBackup', googleConnected()));
+    setAuto(await loadAutoBackupSetting());
     setLast(await getSetting('driveLastBackupAt', 0));
     setPending(await getSetting('driveBackupPending', false));
     setLastErr(await getSetting('driveLastError', ''));
@@ -68,17 +68,17 @@ export function DriveSection() {
             onClick={() => run('Backing up…', async () => {
               const d = driveService();
               await backupNow(d);
-              if (!connected) { setConnected(true); if ((await getSetting<boolean | null>('driveAutoBackup', null)) === null) await setSetting('driveAutoBackup', true); }
+              setConnected(true);
               await refresh();
               setMsg('Backed up to Google Drive.');
             })}>Back up now</button>
           <button type="button" className="btn" disabled={!ready || !!busy}
-            onClick={() => run('Loading backups…', async () => { setBackups(await driveService().list()); setConnected(true); })}>Restore from Drive</button>
+            onClick={() => run('Loading backups…', async () => { setBackups(await driveService().list()); setConnected(true); await noteDriveConnected(); setAuto(autoBackupEnabled()); })}>Restore from Drive</button>
           {connected && <button type="button" className="btn text-dim" onClick={() => { disconnectGoogle(); setConnected(false); setBackups(null); }}>Disconnect Google</button>}
         </div>
         {!online && <p className="text-sm text-peak">You’re offline — Drive backups need internet.</p>}
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={auto} onChange={async (e) => { setAuto(e.target.checked); await setSetting('driveAutoBackup', e.target.checked); }} />
+          <input type="checkbox" checked={auto} onChange={async (e) => { setAuto(e.target.checked); await setAutoBackup(e.target.checked); }} />
           Back up automatically when a game ends
         </label>
         <div className="text-sm text-dim">
