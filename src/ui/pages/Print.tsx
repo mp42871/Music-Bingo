@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { phoneUrl } from '../../core/phone';
 import { setPhoneDef } from '../../game/phoneLink';
 import { DEFAULT_STYLE } from '../../core/style';
+import { parseCardRange } from '../../core/cardEdit';
 import type { CardSet, Game, Song } from '../../core/types';
 import { getCardSet, getGame } from '../../db/repo';
 import { CardGrid } from '../components/CardGrid';
@@ -37,8 +38,10 @@ export default function Print() {
   const paper = PAPER[style.paper];
   const [cols, rows] = GRID[style.perPage];
   const perPage = cols * rows;
+  const only = q.get('cards') ? new Set(parseCardRange(q.get('cards')!)) : null;
+  const printCards = only ? set.cards.filter((c) => only.has(c.number)) : set.cards;
   const pages: CardSet['cards'][] = [];
-  for (let i = 0; i < set.cards.length; i += perPage) pages.push(set.cards.slice(i, i + perPage));
+  for (let i = 0; i < printCards.length; i += perPage) pages.push(printCards.slice(i, i + perPage));
 
   const url = phoneUrl(setPhoneDef(set.songs ? set : { ...set, songs }));
 
@@ -56,7 +59,7 @@ export default function Print() {
       `}</style>
       <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-rail bg-night px-4 py-3">
         <Link to="/designer" className="btn">Back</Link>
-        <span className="mr-auto font-semibold">{set.name} · {set.cards.length} cards</span>
+        <span className="mr-auto font-semibold">{set.name} · {only ? `${printCards.length} of ${set.cards.length} cards` : `${set.cards.length} cards`}</span>
         {tabs.map(([id, label]) => (
           <button key={id} type="button" className="chip" aria-pressed={mode === id} onClick={() => { q.set('mode', id); setQ(q); }}>{label}</button>
         ))}

@@ -14,6 +14,7 @@ import History from './ui/pages/History';
 import Settings from './ui/pages/Settings';
 import Phone from './ui/pages/Phone';
 import Library from './ui/pages/Library';
+import SetEditor from './ui/pages/SetEditor';
 
 const BARE = ['/audience', '/phone', '/print'];
 
@@ -30,6 +31,7 @@ function Shell() {
         <Route path="/library" element={<Library />} />
         <Route path="/designer" element={<Designer />} />
         <Route path="/print/:setId" element={<Print />} />
+        <Route path="/sets/:id" element={<SetEditor />} />
         <Route path="/console/:gameId" element={<Console />} />
         <Route path="/audience" element={<Audience />} />
         <Route path="/check" element={<Check />} />

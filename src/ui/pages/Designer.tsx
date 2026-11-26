@@ -6,12 +6,14 @@ import { combinePools } from '../../core/combine';
 import { estimate } from '../../core/forecast';
 import { masksFor, PATTERNS } from '../../core/patterns';
 import { randomSeed } from '../../core/rng';
-import { DEFAULT_STYLE, THEMES } from '../../core/style';
+import { DEFAULT_STYLE } from '../../core/style';
 import type { CardLayout, CardSet, CellContent, HeaderMode, Pool, PrintStyle } from '../../core/types';
-import { deleteCardSet, getSetting, listCardSets, listPools, saveCardSet, savePool, setSetting } from '../../db/repo';
+import { deleteCardSet, getCardSet, getSetting, listCardSets, listGames, listPools, saveCardSet, savePool, setSetting } from '../../db/repo';
+import { nextVersionName } from '../../core/cardEdit';
 import { CardGrid, cardNo } from '../components/CardGrid';
 import { Field, PageHeader, Section } from '../components/Field';
 import { NumberInput } from '../components/NumberInput';
+import { StyleControls } from '../components/StyleControls';
 
 const DEFAULT_LAYOUT: CardLayout = {
   size: 5, freeCenter: true, freeText: 'FREE', headerMode: 'categories', columnCategories: [],
@@ -42,10 +44,27 @@ export default function Designer() {
   const [pattern, setPattern] = useState('line');
   const [sets, setSets] = useState<CardSet[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const editId = params.get('edit');
+  const [editing, setEditing] = useState<CardSet | null>(null);
 
   useEffect(() => {
-    listPools().then((ps) => { setPools(ps); setPoolIds((ids) => (ids.length ? ids.filter((id) => ps.some((p) => p.id === id)) : ps[0] ? [ps[0].id] : [])); });
     listCardSets().then(setSets);
+    if (editId) {
+      // Change layout of an existing set: start from its current settings.
+      Promise.all([getCardSet(editId), listPools()]).then(([s, ps]) => {
+        setPools(ps);
+        if (!s) return setErr('That card set doesn’t exist any more.');
+        setEditing(s);
+        setPoolIds((s.poolIds ?? [s.poolId]).filter((id) => ps.some((p) => p.id === id)));
+        setLayout(s.layout);
+        setStyle({ ...DEFAULT_STYLE, ...s.style });
+        setCount(s.cards.length);
+        setStartNumber(Math.min(...s.cards.map((c) => c.number)));
+        setSeed(s.seed);
+      });
+      return;
+    }
+    listPools().then((ps) => { setPools(ps); setPoolIds((ids) => (ids.length ? ids.filter((id) => ps.some((p) => p.id === id)) : ps[0] ? [ps[0].id] : [])); });
     getSetting('printStyle', DEFAULT_STYLE).then((s) => setStyle({ ...DEFAULT_STYLE, ...s }));
     getSetting('layout', DEFAULT_LAYOUT).then((l) => setLayout({ ...DEFAULT_LAYOUT, ...l }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,7 +105,6 @@ export default function Designer() {
   }, [pool, layout, seed, count, startNumber, pattern, songsById, validation?.ok]);
 
   const set = <K extends keyof CardLayout>(k: K, v: CardLayout[K]) => setLayout((l) => ({ ...l, [k]: v }));
-  const st = <K extends keyof PrintStyle>(k: K, v: PrintStyle[K]) => setStyle((s) => ({ ...s, [k]: v }));
 
   const decadeDash = async () => {
     if (!pool) return;
@@ -120,6 +138,29 @@ export default function Designer() {
     }
   };
 
+  const rebuild = async () => {
+    if (!pool || !editing) return;
+    setErr(null);
+    const used = (await listGames()).some((g) => g.cardSetId === editing.id);
+    const msg = used
+      ? `“${editing.name}” was used in a game, so the rebuilt cards will be saved as a new set. Continue?`
+      : `Rebuild all ${count} cards of “${editing.name}”? Every card changes and must be reprinted.`;
+    if (!confirm(msg)) return;
+    try {
+      const res = generateCardSet(pool, layout, { seed, count, startNumber, name: editing.name });
+      const names = (await listCardSets()).map((x) => x.name);
+      const cs: CardSet = {
+        ...res.set, style, ...(chosen.length > 1 ? { poolIds: chosen.map((p) => p.id) } : {}),
+        ...(used ? { name: nextVersionName(editing.name, names) } : { id: editing.id, name: editing.name, createdAt: editing.createdAt }),
+      };
+      await saveCardSet(cs);
+      if (res.capped) alert(res.message);
+      nav(`/sets/${cs.id}`);
+    } catch (e) {
+      setErr(e instanceof PoolTooSmallError ? e.message : String(e));
+    }
+  };
+
   if (!pools.length) return (
     <main className="mx-auto max-w-7xl px-4 py-6">
       <PageHeader title="Cards" />
@@ -130,9 +171,19 @@ export default function Designer() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
       <PageHeader title="Cards">
-        <button type="button" className="btn" disabled={!validation?.ok} onClick={() => generate(false)}>Save cards</button>
-        <button type="button" className="btn btn-b" disabled={!validation?.ok} onClick={() => generate(true)}>Make {count} cards &amp; print</button>
+        {editing ? (
+          <>
+            <Link to={`/sets/${editing.id}`} className="btn">Cancel</Link>
+            <button type="button" className="btn btn-b" disabled={!validation?.ok} onClick={rebuild}>Rebuild cards</button>
+          </>
+        ) : (
+          <>
+            <button type="button" className="btn" disabled={!validation?.ok} onClick={() => generate(false)}>Save cards</button>
+            <button type="button" className="btn btn-b" disabled={!validation?.ok} onClick={() => generate(true)}>Make {count} cards &amp; print</button>
+          </>
+        )}
       </PageHeader>
+      {editing && <p className="mb-4 rounded-lg border border-deck-a/40 bg-deck-a/10 px-3 py-2 text-sm">Changing the layout of “{editing.name}”. Rebuilding replaces every card with the same numbers — reprint them all afterwards.</p>}
       {err && <p role="alert" className="mb-4 text-deck-b">{err}</p>}
       {saved && <p role="status" className="mb-4 rounded-lg border border-ok/40 bg-ok/10 px-3 py-2 text-ok">{saved}</p>}
       <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
@@ -156,11 +207,12 @@ export default function Designer() {
                   </div>
                 )}
               </div>
-              <Field label="Card size">
+              <div className="flex min-w-0 flex-col gap-1" role="group" aria-labelledby="card-size-label">
+                <span id="card-size-label" className="label">Card size</span>
                 <div className="flex gap-1.5">
                   {([3, 4, 5] as const).map((n) => <button key={n} type="button" className="chip" aria-pressed={layout.size === n} onClick={() => set('size', n)}>{n}×{n}</button>)}
                 </div>
-              </Field>
+              </div>
             </div>
             <div className="mt-4 grid gap-2">
               <span className="label">Across the top</span>
@@ -258,70 +310,7 @@ export default function Designer() {
           </Section>
 
           <Section title="Look">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {THEMES.map((t) => (
-                <button key={t.id} type="button" onClick={() => st('theme', t.id)}
-                  className={`flex items-center gap-3 rounded-xl border p-2.5 text-left ${style.theme === t.id ? 'border-deck-b' : 'border-rail hover:border-dim'}`}>
-                  <span className="flex h-8 w-12 overflow-hidden rounded" style={{ background: t.bg }}>
-                    <span className="m-1 w-3 rounded-sm" style={{ background: t.accent }} /><span className="my-1 w-3 rounded-sm" style={{ background: t.accent2 }} />
-                  </span>
-                  <span className="text-sm font-semibold">{t.name}</span>
-                </button>
-              ))}
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Title"><input value={style.title} onChange={(e) => st('title', e.target.value)} /></Field>
-              <Field label="Subtitle (event, date, charity…)"><input value={style.subtitle} onChange={(e) => st('subtitle', e.target.value)} /></Field>
-              <Field label="Accent color">
-                <div className="flex items-center gap-2">
-                  <input type="color" aria-label="Accent color" value={style.accent || '#2de2ff'} onChange={(e) => st('accent', e.target.value)} className="h-9 w-14 p-1" />
-                  {style.accent && <button type="button" className="text-xs text-dim underline" onClick={() => st('accent', '')}>theme default</button>}
-                </div>
-              </Field>
-              <Field label="Background color">
-                <div className="flex items-center gap-2">
-                  <input type="color" aria-label="Background color" value={style.background || '#ffffff'} onChange={(e) => st('background', e.target.value)} className="h-9 w-14 p-1" />
-                  {style.background && <button type="button" className="text-xs text-dim underline" onClick={() => st('background', '')}>theme default</button>}
-                </div>
-              </Field>
-              <Field label="Logo (optional)">
-                <div className="flex items-center gap-2">
-                  <input type="file" accept="image/*" aria-label="Logo" onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-                    const r = new FileReader();
-                    r.onload = () => st('logoDataUrl', String(r.result));
-                    r.readAsDataURL(f);
-                  }} />
-                  {style.logoDataUrl && <button type="button" className="text-xs text-dim underline" onClick={() => st('logoDataUrl', undefined)}>remove</button>}
-                </div>
-              </Field>
-              <Field label="Paper and layout">
-                <div className="flex gap-2">
-                  <select aria-label="Paper size" value={style.paper} onChange={(e) => st('paper', e.target.value as PrintStyle['paper'])}>
-                    <option value="letter">US Letter</option><option value="a4">A4</option>
-                  </select>
-                  <select aria-label="Cards per page" value={style.perPage} onChange={(e) => st('perPage', Number(e.target.value) as PrintStyle['perPage'])}>
-                    <option value={1}>1 per page</option><option value={2}>2 per page</option><option value={4}>4 per page</option><option value={6}>6 per page</option>
-                  </select>
-                </div>
-              </Field>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-              <label className="flex items-center gap-2"><input type="checkbox" checked={style.inkSaver} onChange={(e) => st('inkSaver', e.target.checked)} /> Ink saver (white background)</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={style.cutLines} onChange={(e) => st('cutLines', e.target.checked)} /> Cut lines</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={style.showArt} onChange={(e) => st('showArt', e.target.checked)} /> Album art squares</label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={style.bonusCorners} onChange={(e) => st('bonusCorners', e.target.checked)} /> Bonus corners ★</label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={style.mysteryColumn !== null} disabled={layout.headerMode !== 'categories'}
-                  onChange={(e) => st('mysteryColumn', e.target.checked ? layout.size - 1 : null)} /> Mystery column
-                {style.mysteryColumn !== null && (
-                  <select aria-label="Mystery column" value={style.mysteryColumn} onChange={(e) => st('mysteryColumn', Number(e.target.value))}>
-                    {Array.from({ length: layout.size }, (_, i) => <option key={i} value={i}>Column {i + 1}</option>)}
-                  </select>
-                )}
-              </label>
-            </div>
+            <StyleControls style={style} onChange={setStyle} layout={layout} />
           </Section>
         </div>
 
@@ -339,6 +328,7 @@ export default function Designer() {
                 {sets.map((s) => (
                   <li key={s.id} className="flex items-center gap-2">
                     <span className="min-w-0 flex-1 truncate">{s.name} <span className="text-dim">· {s.cards.length} cards · {new Date(s.createdAt).toLocaleDateString()}</span></span>
+                    <Link to={`/sets/${s.id}`} className="btn px-2 py-1 text-xs">Edit</Link>
                     <Link to={`/print/${s.id}`} className="btn px-2 py-1 text-xs">Print</Link>
                     <button type="button" className="btn px-2 py-1 text-xs" aria-label={`Delete ${s.name}`}
                       onClick={async () => { if (confirm('Delete this card set? Games that used it can no longer check cards.')) { await deleteCardSet(s.id); setSets(await listCardSets()); } }}>✕</button>

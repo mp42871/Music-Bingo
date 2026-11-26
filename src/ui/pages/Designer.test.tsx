@@ -49,3 +49,26 @@ test('whole-card theme defaults to the whole playlist even if an empty category 
   expect(screen.queryByText(/needs at least/)).toBeNull();
   await waitFor(() => expect(screen.getByRole('button', { name: 'Save cards' })).toBeEnabled());
 });
+
+test('change layout: designer opens filled in and rebuilds the same set', async () => {
+  const { generateCardSet } = await import('../../core/cards');
+  const { saveCardSet, getCardSet } = await import('../../db/repo');
+  const { layout } = await import('../../test/fixtures');
+  await savePool(catPool());
+  const set = { ...generateCardSet(catPool(), layout(), { seed: 3, count: 12, startNumber: 1 }).set, id: 'cs', name: 'Gala' };
+  await saveCardSet(set);
+  render(<MemoryRouter initialEntries={['/designer?edit=cs']}><Designer /></MemoryRouter>);
+  expect(await screen.findByText(/Changing the layout of “Gala”/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: '3×3' }));
+  const rebuild = screen.getByRole('button', { name: 'Rebuild cards' });
+  await waitFor(() => expect(rebuild).toBeEnabled());
+  window.confirm = () => true;
+  await userEvent.click(rebuild);
+  await waitFor(async () => {
+    const s = (await getCardSet('cs'))!;
+    expect(s.layout.size).toBe(3);
+    expect(s.cards).toHaveLength(12);
+    expect(s.name).toBe('Gala');
+  });
+  expect(await listCardSets()).toHaveLength(1);
+});
