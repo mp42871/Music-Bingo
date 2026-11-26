@@ -51,8 +51,8 @@ export function DriveSection() {
             <button type="button" className="btn" onClick={async () => { await setSetting('googleClientId', clientId.trim()); await refresh(); setMsg('Client ID saved.'); }}>Save</button>
           </div>
         </Field>
-        {!savedId && (
-          <details open className="rounded-lg border border-rail p-3 text-sm text-dim">
+        {(
+          <details open={!savedId} className="rounded-lg border border-rail p-3 text-sm text-dim">
             <summary className="cursor-pointer font-semibold text-ink">One-time Google setup (about 10 minutes)</summary>
             <ol className="mt-2 list-decimal space-y-1 pl-5">
               <li>Open the Google Cloud console (console.cloud.google.com) and create a project, e.g. “Music Bingo”.</li>
