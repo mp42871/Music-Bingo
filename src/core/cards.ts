@@ -116,7 +116,7 @@ export function generateCard(pool: Pool, layout: CardLayout, seed: number, numbe
   return buildCard(pool, layout, mulberry32(hashSeed(seed, number)), number);
 }
 
-const signature = (card: Card) =>
+export const cardSignature = (card: Card) =>
   card.cells.map((c) => (c.kind === 'song' ? c.songId : c.kind === 'artist' ? `a:${c.artist}` : '*')).sort().join('|');
 
 export function generateCardSet(
@@ -136,15 +136,15 @@ export function generateCardSet(
     const number = opts.startNumber + i;
     let card = generateCard(pool, layout, opts.seed, number);
     let attempt = 0;
-    while (seen.has(signature(card)) && attempt < 50) {
+    while (seen.has(cardSignature(card)) && attempt < 50) {
       attempt++;
       card = buildCard(pool, layout, mulberry32(hashSeed(opts.seed, number, attempt)), number);
     }
-    if (seen.has(signature(card))) {
+    if (seen.has(cardSignature(card))) {
       capped = true;
       break;
     }
-    seen.add(signature(card));
+    seen.add(cardSignature(card));
     cards.push(card);
   }
   const set: CardSet = {
