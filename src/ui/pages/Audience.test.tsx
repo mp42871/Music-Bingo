@@ -14,3 +14,13 @@ test('players see how much of the song is left', async () => {
   expect(await screen.findByTestId('audience-countdown')).toHaveTextContent('0:18');
   ch.close();
 });
+
+test('the countdown keeps moving between console updates (console tab in the background)', async () => {
+  render(<Audience />);
+  const ch = new BroadcastChannel('music-bingo-audience');
+  await act(async () => { ch.postMessage(msg({ clipElapsedMs: 10000 })); await new Promise((r) => setTimeout(r, 30)); });
+  expect(await screen.findByTestId('audience-countdown')).toHaveTextContent('0:20');
+  await act(async () => { await new Promise((r) => setTimeout(r, 1300)); });
+  expect(screen.getByTestId('audience-countdown')).toHaveTextContent(/0:1[89]/);
+  ch.close();
+});

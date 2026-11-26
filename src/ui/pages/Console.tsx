@@ -18,6 +18,7 @@ import { WinnerTracker } from '../console/WinnerTracker';
 import { ClaimPanel } from '../console/ClaimPanel';
 import { cardNo } from '../components/CardGrid';
 import { autoBackupOnClick } from '../../drive/backup';
+import { startTicker } from '../../game/ticker';
 import { driveService } from '../../drive/service';
 import { Readiness } from '../components/Readiness';
 import { useOnline } from '../../app/online';
@@ -57,11 +58,8 @@ export default function Console() {
     };
   }, [gameId]);
 
-  // Drive clip timing.
-  useEffect(() => {
-    const t = setInterval(() => useGame.getState().ctrl?.tick(), 250);
-    return () => clearInterval(t);
-  }, []);
+  // Drive clip timing (keeps running when this tab is in the background).
+  useEffect(() => startTicker(() => useGame.getState().ctrl?.tick(), 250), []);
 
   // Keyboard shortcuts.
   useEffect(() => {

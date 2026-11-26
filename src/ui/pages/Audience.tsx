@@ -6,15 +6,27 @@ import { MAX_PHONE_URL } from '../components/JoinQr';
 
 export default function Audience() {
   const [m, setM] = useState<AudienceMessage | null>(null);
+  const [got, setGot] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const ch = openChannel();
     if (!ch) return;
-    ch.onmessage = (e) => e.data?.type === 'state' && setM(e.data);
+    ch.onmessage = (e) => { if (e.data?.type === 'state') { setM(e.data); setGot(Date.now()); setNow(Date.now()); } };
     ch.postMessage({ type: 'hello' }); // ask the console for the current state
     return () => ch.close();
   }, []);
 
+  // Count down here between the console's updates, so the clock keeps moving even if they come slowly.
+  const ticking = m?.phase === 'playing' || m?.phase === 'gap';
+  useEffect(() => {
+    if (!ticking) return;
+    const t = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(t);
+  }, [ticking]);
+  const since = Math.max(0, now - got);
   const playing = m?.phase === 'playing';
+  const clipLeft = m ? Math.max(0, m.clipMs - m.clipElapsedMs - (playing ? since : 0)) : 0;
+  const gapLeft = m?.phase === 'gap' ? Math.max(0, m.gapRemainingMs - since) : 0;
   const gap = m?.phase === 'gap' && m.gapRemainingMs > 0;
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden p-8 text-center">
@@ -38,11 +50,11 @@ export default function Audience() {
           <div className="text-2xl text-dim">song {m.callNumber} of {m.total}</div>
           {playing && (
             <div data-testid="audience-countdown" className="flex items-baseline gap-3">
-              <span className="font-display text-6xl tabular-nums text-deck-a">{formatTime(Math.max(0, m.clipMs - m.clipElapsedMs))}</span>
+              <span className="font-display text-6xl tabular-nums text-deck-a">{formatTime(clipLeft)}</span>
               <span className="text-2xl text-dim">left in this song</span>
             </div>
           )}
-          {gap && <div className="font-display text-4xl text-peak">Next song in {Math.ceil(m.gapRemainingMs / 1000)}</div>}
+          {gap && <div className="font-display text-4xl text-peak">Next song in {Math.max(1, Math.ceil(gapLeft / 1000))}</div>}
           {m.revealed && (
             <div className="flex items-center gap-6 rounded-2xl border border-rail bg-booth/80 px-8 py-5">
               {m.revealed.art && <img src={m.revealed.art} alt="" className="size-28 rounded-xl" />}
