@@ -3,6 +3,7 @@ import { useOnline } from '../../app/online';
 import { useSpotify } from '../../app/spotifyStore';
 import { presetQueries, type Preset } from '../../core/presets';
 import { collect } from '../../spotify/collect';
+import { collectCurated, parseCurated, type CuratedLine } from '../../spotify/curated';
 import { PresetPicker } from './PresetPicker';
 import { PreviewButton } from './PreviewButton';
 import type { Song } from '../../core/types';
@@ -23,7 +24,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
   const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [paging, setPaging] = useState<{ queries: string[]; offsets: number[]; done: boolean; seen: Set<string> } | null>(null);
+  const [paging, setPaging] = useState<{ queries: string[]; offsets: number[]; done: boolean; seen: Set<string>; curated?: { lines: CuratedLine[]; next: number } } | null>(null);
 
   const BATCH = 50;
   const runQueries = async (queries: string[], label: string, more = false) => {
@@ -43,6 +44,23 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
       setBusy(false);
     }
   };
+  // Hand-picked categories: look each listed song up exactly, 25 at a time.
+  const runCurated = async (lines: CuratedLine[], label: string, more = false) => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const seen = more && paging ? paging.seen : new Set<string>();
+      const r = await collectCurated(api, lines, 25, more && paging?.curated ? paging.curated.next : 0, seen);
+      setPaging({ queries: [], offsets: [], done: r.done, seen, curated: { lines, next: r.next } });
+      setQuery(label);
+      if (!more) setTotal(lines.length);
+      setResults((prev) => (more ? [...prev, ...r.songs] : r.songs));
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
   const run = (filters: SearchFilters) => { const q = buildSearchQuery(filters); return runQueries(q ? [q] : [], q); };
 
   return (
@@ -50,7 +68,12 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
       <div>
         <span className="label">Quick categories</span>
         <div className="mt-2">
-          <PresetPicker mode="pick" disabled={!online} onPick={(p) => { setF(p.query ?? {}); onPreset(p); void runQueries(presetQueries(p), p.name); }} />
+          <PresetPicker mode="pick" disabled={!online} onPick={(p) => {
+            setF(p.query ?? {});
+            onPreset(p);
+            if (p.songs) void runCurated(parseCurated(p.songs), `${p.name} (hand-picked)`);
+            else void runQueries(presetQueries(p), p.name);
+          }} />
         </div>
       </div>
       <form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); void run(f); }}>
@@ -94,7 +117,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
             ))}
           </ul>
           {paging && !paging.done && (
-            <button type="button" className="btn" disabled={busy} onClick={() => runQueries(paging.queries, query, true)}>{busy ? 'Loading…' : 'Load more'}</button>
+            <button type="button" className="btn" disabled={busy} onClick={() => (paging.curated ? runCurated(paging.curated.lines, query, true) : runQueries(paging.queries, query, true))}>{busy ? 'Loading…' : 'Load more'}</button>
           )}
         </div>
       )}

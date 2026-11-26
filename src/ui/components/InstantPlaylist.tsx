@@ -4,6 +4,8 @@ import { PRESETS, presetQueries, type Preset } from '../../core/presets';
 import { uid } from '../../core/rng';
 import type { Pool, Song } from '../../core/types';
 import { collect } from '../../spotify/collect';
+import { collectCurated, parseCurated } from '../../spotify/curated';
+import { shuffle } from '../../core/rng';
 import { PresetPicker } from './PresetPicker';
 
 const SIZES = [50, 75, 100, 150];
@@ -27,7 +29,10 @@ export function InstantPlaylist({ onDone, onClose }: { onDone(p: Pool): void; on
     try {
       for (const [i, p] of chosen.entries()) {
         setBusy(`Finding ${p.name} songs (${i + 1} of ${chosen.length})…`);
-        const r = await collect(api, presetQueries(p), Math.min(per, size - songs.length), undefined, seen);
+        const want = Math.min(per, size - songs.length);
+        const r = p.songs
+          ? await collectCurated(api, shuffle(parseCurated(p.songs), Math.random), want, 0, seen)
+          : await collect(api, presetQueries(p), want, undefined, seen);
         songs.push(...r.songs.map((s) => ({ ...s, categories: chosen.length > 1 ? [p.name] : [] })));
       }
     } catch (e) {
@@ -49,7 +54,7 @@ export function InstantPlaylist({ onDone, onClose }: { onDone(p: Pool): void; on
         </div>
         {!connected ? <p className="text-peak">Connect Spotify in Settings first.</p> : (
           <>
-            <p className="mb-3 text-sm text-dim">Pick one or more categories. Each one becomes a card column, with songs split evenly. You can trim the list afterwards.</p>
+            <p className="mb-3 text-sm text-dim">Pick one or more categories. Each one becomes a card column, with songs split evenly. Themes and Occasions are hand-picked song lists (about 30–45 songs each); Decades and Genres search Spotify. You can trim the list afterwards.</p>
             <PresetPicker mode="multi" selected={picked} onPick={toggle} disabled={!!busy} />
             {chosen.length > 0 && <p className="mt-3 text-sm">Picked: <span className="text-deck-b">{chosen.map((p) => p.name).join(' · ')}</span></p>}
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -1,4 +1,5 @@
 import { buildSearchQuery, type SearchFilters } from '../spotify/query';
+import { CURATED } from './curatedLists';
 
 export const PRESET_GROUPS = ['Decades', 'Genres', 'Occasions', 'Themes'] as const;
 export type PresetGroup = (typeof PRESET_GROUPS)[number];
@@ -7,15 +8,16 @@ export interface Preset {
   id: string; name: string; group: PresetGroup;
   /** One search with filters… */
   query?: SearchFilters;
-  /** …or several Spotify searches mixed together. */
+  /** …or several Spotify searches mixed together… */
   queries?: string[];
+  /** …or a hand-picked list ("Artist - Title" per line) looked up song by song. */
+  songs?: string;
 }
 
 const dec = (id: string, name: string, from: number, to: number): Preset => ({ id, name, group: 'Decades', query: { yearFrom: from, yearTo: to } });
 const gen = (id: string, name: string, genre: string, years?: [number, number]): Preset =>
   ({ id, name, group: 'Genres', query: { genre, ...(years ? { yearFrom: years[0], yearTo: years[1] } : {}) } });
-const words = (id: string, name: string, group: PresetGroup, list: string[]): Preset => ({ id, name, group, queries: list.map((w) => `track:"${w}"`) });
-const text = (id: string, name: string, group: PresetGroup, list: string[]): Preset => ({ id, name, group, queries: list });
+const picked = (id: string, name: string, group: PresetGroup): Preset => ({ id, name, group, songs: CURATED[id] });
 
 export const PRESETS: Preset[] = [
   dec('50s', '50s', 1950, 1959), dec('60s', '60s', 1960, 1969), dec('70s', '70s', 1970, 1979), dec('80s', '80s', 1980, 1989),
@@ -36,39 +38,39 @@ export const PRESETS: Preset[] = [
   gen('blues', 'Blues', 'blues'), gen('jazz', 'Jazz Standards', 'jazz'), gen('gospel', 'Gospel', 'gospel'),
   gen('broadway', 'Broadway', 'show tunes'), gen('metal', 'Metal', 'metal'), gen('ska', 'Ska', 'ska'),
 
-  text('christmas', 'Christmas', 'Occasions', ['christmas', 'track:"christmas"', 'holiday', 'jingle']),
-  text('halloween', 'Halloween', 'Occasions', ['halloween', 'track:"monster"', 'track:"ghost"', 'spooky']),
-  text('wedding', 'Wedding', 'Occasions', ['wedding', 'track:"love"', 'first dance', 'track:"forever"']),
-  text('summer', 'Summer', 'Occasions', ['track:"summer"', 'track:"sun"', 'beach', 'track:"surf"']),
-  text('roadtrip', 'Road Trip', 'Occasions', ['road trip', 'track:"highway"', 'track:"drive"', 'track:"road"']),
-  text('workout', 'Workout', 'Occasions', ['workout', 'track:"run"', 'pump up', 'track:"stronger"']),
-  text('july4', '4th of July', 'Occasions', ['track:"america"', 'track:"usa"', 'track:"freedom"', 'track:"fireworks"']),
-  text('stpats', 'St. Patrick’s Day', 'Occasions', ['irish', 'track:"irish"', 'celtic', 'track:"whiskey"']),
-  text('valentines', 'Valentine’s Day', 'Occasions', ['track:"love"', 'track:"heart"', 'love songs', 'track:"kiss"']),
-  text('newyear', 'New Year’s Eve', 'Occasions', ['track:"tonight"', 'track:"party"', 'celebration', 'track:"new year"']),
-  text('birthday', 'Birthday Party', 'Occasions', ['birthday', 'track:"birthday"', 'track:"party"', 'track:"celebrate"']),
-  text('office', 'Office Party', 'Occasions', ['track:"work"', 'track:"9 to 5"', 'track:"money"', 'track:"boss"']),
+  picked('christmas', 'Christmas', 'Occasions'),
+  picked('halloween', 'Halloween', 'Occasions'),
+  picked('wedding', 'Wedding', 'Occasions'),
+  picked('summer', 'Summer', 'Occasions'),
+  picked('roadtrip', 'Road Trip', 'Occasions'),
+  picked('workout', 'Workout', 'Occasions'),
+  picked('july4', '4th of July', 'Occasions'),
+  picked('stpats', 'St. Patrick’s Day', 'Occasions'),
+  picked('valentines', 'Valentine’s Day', 'Occasions'),
+  picked('newyear', 'New Year’s Eve', 'Occasions'),
+  picked('birthday', 'Birthday Party', 'Occasions'),
+  picked('office', 'Office Party', 'Occasions'),
 
-  words('colors', 'Colors in the Title', 'Themes', ['red', 'blue', 'yellow', 'black', 'white', 'green', 'purple', 'pink', 'gold']),
-  words('numbers', 'Numbers in the Title', 'Themes', ['one', 'two', 'three', 'five', 'seven', 'nine', '99', 'hundred']),
-  words('places', 'Places in the Title', 'Themes', ['california', 'new york', 'texas', 'london', 'paris', 'memphis', 'tennessee', 'hollywood']),
-  words('names', 'Names in the Title', 'Themes', ['jolene', 'roxanne', 'billie', 'jessie', 'layla', 'gloria', 'mickey', 'angie']),
-  words('weather', 'Weather', 'Themes', ['rain', 'sunshine', 'storm', 'thunder', 'snow', 'wind', 'cloud']),
-  words('animals', 'Animals', 'Themes', ['dog', 'cat', 'tiger', 'bird', 'horse', 'wolf', 'eagle', 'monkey']),
-  words('food', 'Food & Drink', 'Themes', ['sugar', 'cherry', 'candy', 'whiskey', 'tequila', 'coffee', 'peach', 'honey']),
-  words('cars', 'Cars & Driving', 'Themes', ['car', 'cadillac', 'drive', 'highway', 'truck', 'little red corvette']),
-  words('night', 'Night & Day', 'Themes', ['night', 'tonight', 'midnight', 'morning', 'sunday', 'friday', 'saturday']),
-  words('dance', 'Songs About Dancing', 'Themes', ['dance', 'dancing', 'shake', 'move', 'boogie', 'groove']),
-  text('onehit', 'One-Hit Wonders', 'Themes', ['one hit wonder', 'one hit wonders 80s', 'one hit wonders 90s']),
-  text('movies', 'Movie Soundtracks', 'Themes', ['soundtrack', 'from the motion picture', 'movie theme']),
-  text('tv', 'TV Theme Songs', 'Themes', ['tv theme', 'theme from', 'theme song']),
-  text('boybands', 'Boy Bands', 'Themes', ['genre:"boy band"', 'boy band']),
-  text('divas', 'Divas', 'Themes', ['artist:"whitney houston"', 'artist:"mariah carey"', 'artist:"celine dion"', 'artist:"madonna"', 'artist:"beyonce"', 'artist:"adele"']),
-  text('duets', 'Duets', 'Themes', ['duet', 'feat.', 'with']),
-  text('karaoke', 'Karaoke Classics', 'Themes', ['karaoke classics', 'sing along', 'singalong']),
-  text('anthems', 'Stadium Anthems', 'Themes', ['anthem', 'stadium anthems', 'track:"rock"']),
-  text('covers', 'Famous Covers', 'Themes', ['cover', 'covers']),
-  text('kids', '90s Kids', 'Themes', ['year:1995-2002 genre:"pop"', 'year:1995-2002 genre:"boy band"']),
+  picked('colors', 'Colors in the Title', 'Themes'),
+  picked('numbers', 'Numbers in the Title', 'Themes'),
+  picked('places', 'Places in the Title', 'Themes'),
+  picked('names', 'Names in the Title', 'Themes'),
+  picked('weather', 'Weather', 'Themes'),
+  picked('animals', 'Animals', 'Themes'),
+  picked('food', 'Food & Drink', 'Themes'),
+  picked('cars', 'Cars & Driving', 'Themes'),
+  picked('night', 'Night & Day', 'Themes'),
+  picked('dance', 'Songs About Dancing', 'Themes'),
+  picked('onehit', 'One-Hit Wonders', 'Themes'),
+  picked('movies', 'Movie Soundtracks', 'Themes'),
+  picked('tv', 'TV Theme Songs', 'Themes'),
+  picked('boybands', 'Boy Bands', 'Themes'),
+  picked('divas', 'Divas', 'Themes'),
+  picked('duets', 'Duets', 'Themes'),
+  picked('karaoke', 'Karaoke Classics', 'Themes'),
+  picked('anthems', 'Stadium Anthems', 'Themes'),
+  picked('covers', 'Famous Covers', 'Themes'),
+  picked('kids', '90s Kids', 'Themes'),
 ];
 
 export function presetQueries(p: Preset): string[] {
