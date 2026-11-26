@@ -55,7 +55,8 @@ export default function Print() {
         .sheet { width: ${paper.w}; height: ${paper.h}; background: #fff; color: #111; box-sizing: border-box; padding: 0.35in; break-after: page; page-break-after: always; overflow: hidden; }
         .sheet:last-child { break-after: auto; page-break-after: auto; }
         .slot { position: relative; padding: 0.12in; box-sizing: border-box; min-height: 0; min-width: 0; display: grid; }
-        .cut .slot { outline: 1px dashed #999; outline-offset: -1px; }
+        .cut .slot[data-cut-right] { border-right: 1px dashed #999; }
+        .cut .slot[data-cut-below] { border-bottom: 1px dashed #999; }
       `}</style>
       <div className="no-print sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-rail bg-night px-4 py-3">
         <Link to="/designer" className="btn">Back</Link>
@@ -71,8 +72,9 @@ export default function Print() {
         {mode === 'cards' && pages.map((page, pi) => (
           <div key={pi} className={`sheet shadow-2xl ${style.cutLines ? 'cut' : ''}`}
             style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
-            {page.map((card) => (
-              <div key={card.number} className="slot">
+            {page.map((card, ci) => (
+              // Cut lines only between cards, never along the paper's edge.
+              <div key={card.number} className="slot" data-cut-right={ci % cols < cols - 1 && ci + 1 < page.length ? '' : undefined} data-cut-below={ci + cols < page.length ? '' : undefined}>
                 <CardGrid card={card} layout={set.layout} songsById={byId} style={style} showQr />
               </div>
             ))}

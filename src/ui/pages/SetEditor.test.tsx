@@ -117,3 +117,13 @@ test('theme buttons say which one is selected', async () => {
   expect(await screen.findByRole('button', { name: /Neon club/ })).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByRole('button', { name: /Retro vinyl/ })).toHaveAttribute('aria-pressed', 'false');
 });
+
+test('cut lines run only between cards, never along the paper edge', async () => {
+  await saveCardSet({ ...base(), style: { ...DEFAULT_STYLE, perPage: 4, cutLines: true } });
+  render(<MemoryRouter initialEntries={['/print/cs?cards=1-7']}><Routes><Route path="/print/:setId" element={<Print />} /></Routes></MemoryRouter>);
+  await screen.findByText(/Gala/);
+  const slots = [...document.querySelectorAll('.slot')];
+  const lines = slots.map((s) => `${s.hasAttribute('data-cut-right') ? 'R' : '-'}${s.hasAttribute('data-cut-below') ? 'B' : '-'}`);
+  // page 1: 2×2 full; page 2: three cards (top row full, one below-left)
+  expect(lines).toEqual(['RB', '-B', 'R-', '--', 'RB', '--', '--']);
+});
