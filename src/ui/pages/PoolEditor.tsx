@@ -13,6 +13,8 @@ import { listAudio } from '../../db/audio';
 import type { AudioFile } from '../../core/types';
 import { SearchPanel } from '../components/SearchPanel';
 import { SongRow } from '../components/SongRow';
+import { PreviewBar } from '../components/PreviewBar';
+import { usePreview } from '../../app/preview';
 
 const MIN_PER_COLUMN = 5;
 const GOOD_PER_COLUMN = 15;
@@ -42,6 +44,7 @@ export default function PoolEditor() {
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => { getPool(id!).then((p) => (p ? setPool(p) : setMissing(true))); }, [id]);
+  useEffect(() => () => usePreview.getState().stop(), []); // leaving the page stops any preview
 
   const update = useCallback((fn: (p: Pool) => Pool) => {
     setPool((prev) => {
@@ -195,6 +198,11 @@ export default function PoolEditor() {
         </section>
       </div>
 
+      <PreviewBar onSetStart={(id, ms) => {
+        if (!pool.songs.some((x) => x.id === id)) return flash('Add the song to the playlist first, then set its start point.');
+        update((p) => ({ ...p, songs: p.songs.map((x) => (x.id === id ? { ...x, startMs: ms } : x)) }));
+        flash('Start point saved.');
+      }} />
       {linking && (
         <LinkFilesDialog songs={pool.songs.filter((s) => !s.id.startsWith('file:'))} files={linking} onClose={() => setLinking(null)}
           onApply={(links) => {

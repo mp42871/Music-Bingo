@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatTime, parseTime } from '../../core/io';
 import type { Song } from '../../core/types';
+import { PreviewButton } from './PreviewButton';
 
 export function SongRow({ song, categories, onChange, onRemove }: {
   song: Song; categories: string[]; onChange: (s: Song) => void; onRemove: () => void;
@@ -28,6 +29,7 @@ export function SongRow({ song, categories, onChange, onRemove }: {
   return (
     <li className={`flex flex-wrap items-center gap-3 rounded-xl border border-rail bg-booth-2/60 px-3 py-2 ${song.excluded ? 'opacity-50' : ''}`}>
       {song.artUrl ? <img src={song.artUrl} alt="" className="size-11 rounded" /> : <div className="size-11 rounded bg-rail" />}
+      <PreviewButton song={song} />
       <div className="min-w-[12rem] flex-1">
         <input aria-label={`Card title for ${song.title}`} value={title} onChange={(e) => setTitle(e.target.value)} onBlur={commitTitle}
           className="w-full border-transparent bg-transparent px-1 py-0.5 font-semibold hover:border-rail" />
@@ -45,6 +47,7 @@ export function SongRow({ song, categories, onChange, onRemove }: {
       <input aria-label={`Start point for ${song.title}`} placeholder="start m:ss" value={start}
         onChange={(e) => setStart(e.target.value)} onBlur={commitStart} onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
         className="w-24 text-center font-mono text-sm" />
+      {song.startMs !== undefined && <PreviewButton song={song} from="marker" label={`Play ${song.title} from its start point`} />}
       <label className="flex items-center gap-1 text-sm text-dim">
         <input type="checkbox" checked={!song.excluded} onChange={(e) => onChange({ ...song, excluded: !e.target.checked })} aria-label={`Use ${song.title}`} /> Use
       </label>

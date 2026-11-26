@@ -4,6 +4,7 @@ import { useSpotify } from '../../app/spotifyStore';
 import { presetQueries, type Preset } from '../../core/presets';
 import { collect } from '../../spotify/collect';
 import { PresetPicker } from './PresetPicker';
+import { PreviewButton } from './PreviewButton';
 import type { Song } from '../../core/types';
 import { buildSearchQuery, type SearchFilters } from '../../spotify/query';
 import { NumberInput } from './NumberInput';
@@ -79,6 +80,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
           <ul className="flex max-h-[55vh] flex-col gap-1 overflow-auto pr-1">
             {results.map((s) => (
               <li key={s.id} className="flex items-center gap-3 rounded-lg border border-transparent px-2 py-1.5 hover:border-rail">
+                <PreviewButton song={s} />
                 {s.artUrl ? <img src={s.artUrl} alt="" className="size-10 rounded" /> : <div className="size-10 rounded bg-rail" />}
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">{s.title}</div>
