@@ -7,7 +7,8 @@ import { setPhoneDef } from './phoneLink';
 import { createSpotifyPort } from './spotifyPort';
 import { DEFAULT_STYLE } from '../core/style';
 import type { CardSet, ClipSettings, Game, Song } from '../core/types';
-import { getCardSet, getGame, getPool, saveGame } from '../db/repo';
+import { getCardSet, getGame, saveGame } from '../db/repo';
+import { liveSongsFor } from './liveSongs';
 import { withLatestFiles } from '../core/offline';
 import { getAccessToken } from '../spotify/auth';
 import { loadPlayer } from '../spotify/sdk';
@@ -110,10 +111,10 @@ export const useGame = create<GameStore>((set, get) => ({
     set({ source: null });
     const stored = await getGame(id);
     if (!stored) return false;
-    // Pick up music files linked in the playlist since the cards were made.
-    const live = await getPool(stored.pool.id).catch(() => undefined);
-    const game = { ...stored, pool: { ...stored.pool, songs: withLatestFiles(stored.pool.songs, live?.songs) } };
-    const cardSet = (await getCardSet(game.cardSetId)) ?? null;
+    const cardSet = (await getCardSet(stored.cardSetId)) ?? null;
+    // Pick up music files linked in the playlist(s) since the cards were made.
+    const live = await liveSongsFor(cardSet ?? { poolId: stored.pool.id });
+    const game = { ...stored, pool: { ...stored.pool, songs: withLatestFiles(stored.pool.songs, live) } };
     const songs = new Map(game.pool.songs.map((s) => [s.id, s]));
     set({ songs });
     const ctrl = new GameController(get().makePort(), [...game.callOrder], songs, game.settings, {

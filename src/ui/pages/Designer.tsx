@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { generateCard, generateCardSet, PoolTooSmallError, validatePool } from '../../core/cards';
 import { decadesIn, tagDecades } from '../../core/decades';
+import { combinePools } from '../../core/combine';
 import { estimate } from '../../core/forecast';
 import { masksFor, PATTERNS } from '../../core/patterns';
 import { randomSeed } from '../../core/rng';
@@ -31,7 +32,8 @@ export default function Designer() {
   const [params] = useSearchParams();
   const nav = useNavigate();
   const [pools, setPools] = useState<Pool[]>([]);
-  const [poolId, setPoolId] = useState(params.get('pool') ?? '');
+  const [poolIds, setPoolIds] = useState<string[]>(params.get('pool') ? [params.get('pool')!] : []);
+  const [tagged, setTagged] = useState<Pool | null>(null);
   const [layout, setLayout] = useState<CardLayout>(DEFAULT_LAYOUT);
   const [style, setStyle] = useState<PrintStyle>(DEFAULT_STYLE);
   const [count, setCount] = useState(40);
@@ -42,14 +44,18 @@ export default function Designer() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    listPools().then((ps) => { setPools(ps); if (!poolId && ps[0]) setPoolId(ps[0].id); });
+    listPools().then((ps) => { setPools(ps); setPoolIds((ids) => (ids.length ? ids.filter((id) => ps.some((p) => p.id === id)) : ps[0] ? [ps[0].id] : [])); });
     listCardSets().then(setSets);
     getSetting('printStyle', DEFAULT_STYLE).then((s) => setStyle({ ...DEFAULT_STYLE, ...s }));
     getSetting('layout', DEFAULT_LAYOUT).then((l) => setLayout({ ...DEFAULT_LAYOUT, ...l }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const pool = pools.find((p) => p.id === poolId);
+  const chosen = useMemo(() => poolIds.map((id) => pools.find((p) => p.id === id)).filter(Boolean) as Pool[], [poolIds, pools]);
+  const combined = useMemo(() => (chosen.length ? combinePools(chosen) : undefined), [chosen]);
+  const pool = tagged && combined && tagged.id === combined.id ? tagged : combined;
+  const togglePool = (id: string) => { setTagged(null); setPoolIds((ids) => (ids.includes(id) ? (ids.length > 1 ? ids.filter((x) => x !== id) : ids) : [...ids, id])); };
+  const perColumn = () => setLayout((l) => ({ ...l, headerMode: 'categories', columnCategories: Array.from({ length: l.size }, (_, i) => chosen[i % chosen.length].name) }));
   const songsById = useMemo(() => new Map(pool?.songs.map((s) => [s.id, s])), [pool]);
 
   // Keep column categories sensible for the chosen pool.
@@ -83,10 +89,10 @@ export default function Designer() {
 
   const decadeDash = async () => {
     if (!pool) return;
-    const tagged = tagDecades(pool);
-    await savePool(tagged);
-    setPools((ps) => ps.map((p) => (p.id === tagged.id ? tagged : p)));
-    const decades = decadesIn(tagged);
+    const t = tagDecades(pool);
+    if (chosen.length === 1) { await savePool(t); setPools((ps) => ps.map((p) => (p.id === t.id ? t : p))); }
+    else setTagged(t);
+    const decades = decadesIn(t);
     setLayout((l) => ({ ...l, headerMode: 'categories', columnCategories: Array.from({ length: l.size }, (_, i) => decades[i] ?? decades[decades.length - 1] ?? '') }));
   };
 
@@ -97,7 +103,7 @@ export default function Designer() {
     setSaved(null);
     try {
       const res = generateCardSet(pool, layout, { seed, count, startNumber, name: `${style.title || pool.name} · ${pool.name}` });
-      const cs: CardSet = { ...res.set, style };
+      const cs: CardSet = { ...res.set, style, ...(chosen.length > 1 ? { poolIds: chosen.map((p) => p.id) } : {}) };
       await saveCardSet(cs);
       await setSetting('printStyle', style);
       await setSetting('layout', layout);
@@ -132,11 +138,23 @@ export default function Designer() {
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
           <Section title="Playlist and layout">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Playlist">
-                <select value={poolId} onChange={(e) => setPoolId(e.target.value)}>
-                  {pools.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.songs.length})</option>)}
-                </select>
-              </Field>
+              <div className="flex min-w-0 flex-col gap-1 sm:col-span-2">
+                <span className="label">Playlists — pick one, or several to give each column its own playlist</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {pools.map((p) => (
+                    <label key={p.id} className={`chip cursor-pointer ${poolIds.includes(p.id) ? 'border-deck-b text-deck-b' : ''}`}>
+                      <input type="checkbox" className="sr-only" checked={poolIds.includes(p.id)} onChange={() => togglePool(p.id)} aria-label={`${p.name} (${p.songs.length} songs)`} />
+                      {poolIds.includes(p.id) ? '✓ ' : ''}{p.name} <span className="text-dim">{p.songs.length}</span>
+                    </label>
+                  ))}
+                </div>
+                {chosen.length > 1 && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button type="button" className="btn text-xs" onClick={perColumn}>One playlist per column</button>
+                    <span className="text-xs text-dim">{combined!.songs.filter((x) => !x.excluded).length} songs from {chosen.length} playlists. Each playlist is also a category you can pick per column below.</span>
+                  </div>
+                )}
+              </div>
               <Field label="Card size">
                 <div className="flex gap-1.5">
                   {([3, 4, 5] as const).map((n) => <button key={n} type="button" className="chip" aria-pressed={layout.size === n} onClick={() => set('size', n)}>{n}×{n}</button>)}
@@ -158,7 +176,9 @@ export default function Designer() {
               <div className="mt-4">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <span className="label">Column categories</span>
-                  <button type="button" className="btn text-xs" onClick={decadeDash} title="Tags songs by release year and makes each column a decade">Decade Dash</button>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" className="btn text-xs" onClick={decadeDash} title="Tags songs by release year and makes each column a decade">Decade Dash</button>
+                  </div>
                 </div>
                 <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${layout.size}, minmax(0,1fr))` }}>
                   {Array.from({ length: layout.size }, (_, i) => (
@@ -205,7 +225,7 @@ export default function Designer() {
                   ))}
                 </div>
                 {validation.messages.map((m) => <p key={m} className="mt-1 text-deck-b">{m}</p>)}
-                {pool && !validation.ok && <Link to={`/pools/${pool.id}`} className="mt-2 inline-block text-deck-a underline">Add songs to {pool.name}</Link>}
+                {pool && !validation.ok && chosen.length === 1 && <Link to={`/pools/${pool.id}`} className="mt-2 inline-block text-deck-a underline">Add songs to {pool.name}</Link>}
               </div>
             )}
           </Section>

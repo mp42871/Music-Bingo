@@ -4,8 +4,9 @@ import { DEFAULT_CLIP } from '../../core/clip';
 import { makeCallOrder, tuneCallOrder } from '../../core/forecast';
 import { masksFor, PATTERNS } from '../../core/patterns';
 import { randomSeed, uid } from '../../core/rng';
-import type { CardSet, ClipSettings, Game, Pool } from '../../core/types';
-import { getPool, getSetting, listCardSets, listGames, saveGame } from '../../db/repo';
+import type { CardSet, ClipSettings, Game, Song } from '../../core/types';
+import { getSetting, listCardSets, listGames, saveGame } from '../../db/repo';
+import { liveSongsFor } from '../../game/liveSongs';
 import { withLatestFiles } from '../../core/offline';
 import { ClipSettingsPanel } from '../components/ClipSettingsPanel';
 import { Field } from '../components/Field';
@@ -33,7 +34,7 @@ export default function Home() {
   const [note, setNote] = useState<string | null>(null);
   const [fileIds, setFileIds] = useState<Set<string>>(new Set());
   const online = useOnline();
-  const [livePool, setLivePool] = useState<Pool | undefined>();
+  const [liveSongs, setLiveSongs] = useState<Song[] | undefined>();
 
   useEffect(() => {
     listCardSets().then((s) => { setSets(s); if (s[0]) setSetId(s[0].id); });
@@ -43,7 +44,7 @@ export default function Home() {
   }, []);
 
   const set = sets?.find((s) => s.id === setId);
-  useEffect(() => { if (set) getPool(set.poolId).then(setLivePool).catch(() => setLivePool(undefined)); }, [set]);
+  useEffect(() => { if (set) liveSongsFor(set).then(setLiveSongs).catch(() => setLiveSongs(undefined)); }, [set]);
   const songCount = set?.songs?.length ?? 0;
   const size = set?.layout.size ?? 5;
   const byId = useMemo(() => new Map(set?.songs?.map((s) => [s.id, s])), [set]);
@@ -128,7 +129,7 @@ export default function Home() {
             </div>
             {set?.songs && (
               <div className="rounded-xl border border-rail p-3">
-                <Readiness songs={withLatestFiles(set.songs, livePool?.songs)} fileIds={fileIds} online={online} />
+                <Readiness songs={withLatestFiles(set.songs, liveSongs)} fileIds={fileIds} online={online} />
                 <p className="mt-1 text-xs text-dim">Link music files from the playlist’s “Link music files” button — games pick up new links automatically.</p>
               </div>
             )}

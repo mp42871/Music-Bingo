@@ -18,3 +18,22 @@ test('Save cards stores the set without going to print', async () => {
   expect(await screen.findByText(/Saved 40 cards/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Save cards' })).toBeInTheDocument();
 });
+
+test('several playlists: each becomes a column with one click and the set remembers them', async () => {
+  const { song } = await import('../../test/fixtures');
+  const mk = (id: string, name: string, base: number) => ({ id, name, songs: Array.from({ length: 6 }, (_, i) => song(base + i)), categories: [], createdAt: 0, updatedAt: 0 });
+  for (const [i, n] of ['Rock', 'Pop', 'Country', 'Soul', 'Disco'].entries()) await savePool(mk(`p${i}`, n, i * 100));
+  render(<MemoryRouter initialEntries={['/designer?pool=p0']}><Designer /></MemoryRouter>);
+  for (const n of ['Pop', 'Country', 'Soul', 'Disco']) await userEvent.click(await screen.findByRole('checkbox', { name: new RegExp(`^${n}`) }));
+  await userEvent.click(screen.getByRole('button', { name: 'One playlist per column' }));
+  expect(screen.getByLabelText('Column 1 category')).toHaveValue('Rock');
+  expect(screen.getByLabelText('Column 5 category')).toHaveValue('Disco');
+  const save = screen.getByRole('button', { name: 'Save cards' });
+  await waitFor(() => expect(save).toBeEnabled());
+  await userEvent.click(save);
+  await waitFor(async () => {
+    const [set] = await listCardSets();
+    expect(set.poolIds).toEqual(['p0', 'p1', 'p2', 'p3', 'p4']);
+    expect(set.layout.columnCategories).toEqual(['Rock', 'Pop', 'Country', 'Soul', 'Disco']);
+  });
+});

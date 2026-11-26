@@ -32,6 +32,8 @@ export interface CardSet {
   /** Snapshot of the pool's songs when the cards were made (so reprints/checks never drift). */
   songs?: Song[];
   style?: PrintStyle;
+  /** All playlists the cards were made from (when more than one). */
+  poolIds?: string[];
 }
 export interface PatternDef { id: string; name: string }
 export interface Call { songId: string; at: number }
