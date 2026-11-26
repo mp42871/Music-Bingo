@@ -3,7 +3,11 @@ import type { PhoneDef } from '../core/phone';
 import { randomCode, type LiveBackend } from './types';
 
 const friendly = (e: { message?: string } | null, fallback: string) =>
-  new Error(e?.message?.includes('relation') ? 'Live play isn’t set up yet — run the setup script in Supabase (Settings → Live play).' : e?.message || fallback);
+  new Error(
+    e?.message?.includes('relation') ? 'Live play isn’t set up yet — run the setup script in Supabase (Settings → Live play).'
+      : e?.message?.includes('permission denied') ? 'Supabase is blocking access — run the latest setup script again in Supabase → SQL Editor (Settings → Live play → Copy setup script).'
+        : e?.message || fallback,
+  );
 
 /** Live play on the host's own free Supabase project. */
 export function createSupabaseBackend(url: string, key: string): LiveBackend {

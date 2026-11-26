@@ -22,6 +22,13 @@ create table if not exists live_claims (
   name text check (char_length(name) <= 40),
   created_at timestamptz not null default now()
 );
+-- New Supabase projects don't expose tables to apps automatically: grant exactly what the rules below allow.
+grant usage on schema public to anon, authenticated;
+grant select on public.live_games to anon, authenticated;
+grant insert, update, delete on public.live_games to authenticated;
+grant select, insert on public.live_players to anon, authenticated;
+grant select, insert on public.live_claims to anon, authenticated;
+
 alter table live_games enable row level security;
 alter table live_players enable row level security;
 alter table live_claims enable row level security;
