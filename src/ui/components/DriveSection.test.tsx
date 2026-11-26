@@ -40,7 +40,7 @@ test('auto backup toggle saves the setting', async () => {
 test('setup steps stay available for changing the Client ID', async () => {
   render(<DriveSection />);
   expect(await screen.findByText(/Google Cloud console/)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Back up now' })).toBeEnabled();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Back up now' })).toBeEnabled());
 });
 
 test('opening Restore also turns automatic backup on the first time', async () => {

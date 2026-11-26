@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useOnline } from '../../app/online';
 import { useSpotify } from '../../app/spotifyStore';
-import { PRESETS, type Preset } from '../../core/presets';
+import { presetQueries, type Preset } from '../../core/presets';
+import { collect } from '../../spotify/collect';
+import { PresetPicker } from './PresetPicker';
 import type { Song } from '../../core/types';
 import { buildSearchQuery, type SearchFilters } from '../../spotify/query';
 import { NumberInput } from './NumberInput';
@@ -20,37 +22,34 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
   const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [paging, setPaging] = useState<{ queries: string[]; offsets: number[]; done: boolean; seen: Set<string> } | null>(null);
 
-  const run = async (filters: SearchFilters, offset = 0) => {
-    const q = buildSearchQuery(filters);
-    if (!q) return;
+  const BATCH = 50;
+  const runQueries = async (queries: string[], label: string, more = false) => {
+    if (!queries.length) return;
     setBusy(true);
     setErr(null);
     try {
-      const r = await api.searchTracks(q, offset, 10);
-      setQuery(q);
-      setTotal(r.total);
-      setResults((prev) => (offset ? [...prev, ...r.songs.filter((s) => !prev.some((p) => p.id === s.id))] : r.songs));
+      const seen = more && paging ? paging.seen : new Set<string>();
+      const r = await collect(api, queries, BATCH, more && paging ? paging.offsets : undefined, seen);
+      setPaging({ queries, offsets: r.offsets, done: r.done, seen });
+      setQuery(label);
+      if (!more) setTotal(r.total);
+      setResults((prev) => (more ? [...prev, ...r.songs] : r.songs));
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
   };
+  const run = (filters: SearchFilters) => { const q = buildSearchQuery(filters); return runQueries(q ? [q] : [], q); };
 
   return (
     <div className="flex flex-col gap-4">
       <div>
         <span className="label">Quick categories</span>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {PRESETS.map((p) => (
-            <button key={p.id} type="button" className="chip hover:border-deck-a" disabled={!online} onClick={() => {
-              const nf = { ...p.query };
-              setF(nf);
-              onPreset(p);
-              void run(nf);
-            }}>{p.name}</button>
-          ))}
+        <div className="mt-2">
+          <PresetPicker mode="pick" disabled={!online} onPick={(p) => { setF(p.query ?? {}); onPreset(p); void runQueries(presetQueries(p), p.name); }} />
         </div>
       </div>
       <form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); void run(f); }}>
@@ -74,7 +73,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
       {results.length > 0 && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="label">{results.length} of {total.toLocaleString()} results · <span className="font-mono">{query}</span></span>
+            <span className="label">{results.length} of {Math.max(total, results.length).toLocaleString()} results · <span className="font-mono">{query}</span></span>
             <button type="button" className="btn text-xs" onClick={() => onAddMany(results.filter((s) => !inPool.has(s.id)))}>Add all shown</button>
           </div>
           <ul className="flex max-h-[55vh] flex-col gap-1 overflow-auto pr-1">
@@ -92,8 +91,8 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
               </li>
             ))}
           </ul>
-          {results.length < total && (
-            <button type="button" className="btn" disabled={busy} onClick={() => run(f, results.length)}>Load more</button>
+          {paging && !paging.done && (
+            <button type="button" className="btn" disabled={busy} onClick={() => runQueries(paging.queries, query, true)}>{busy ? 'Loading…' : 'Load more'}</button>
           )}
         </div>
       )}

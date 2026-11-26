@@ -96,3 +96,13 @@ test('text import shows review groups before saving', async () => {
   expect(within(review).getByText(/Not found \(1\)/)).toBeInTheDocument();
   expect((await repo.getPool('p1'))!.songs).toHaveLength(0);
 });
+
+test('a search fills the list with 50 results, and Load more adds 50 more', async () => {
+  let n = 0;
+  api.searchTracks.mockImplementation(async () => ({ total: 500, songs: Array.from({ length: 10 }, () => { n++; return song(5000 + n, { title: `Hit ${n}`, artist: `Band ${n}` }); }) }));
+  await renderEditor();
+  await userEvent.type(screen.getByLabelText('Search songs'), 'love{enter}');
+  expect(await screen.findByText(/50 of 500 results/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Load more' }));
+  expect(await screen.findByText(/100 of 500 results/)).toBeInTheDocument();
+});
