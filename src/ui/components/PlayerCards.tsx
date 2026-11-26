@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { phoneCard, phoneDefToPool, type PhoneDef } from '../../core/phone';
+import { phoneCard, phoneDefToPool, typedNumberProblem, type PhoneDef } from '../../core/phone';
 import { DEFAULT_STYLE } from '../../core/style';
 import { pickFreeNumber } from '../../live/types';
 import { CardGrid, cardNo } from './CardGrid';
@@ -18,7 +18,7 @@ const store = (key: string, s: Saved) => { try { localStorage.setItem(key, JSON.
  */
 export function PlayerCards({ def, storageKey, live }: {
   def: PhoneDef; storageKey: string;
-  live?: { taken(): Promise<number[]>; join(n: number, name: string): Promise<void>; claim(n: number, name: string): Promise<void> };
+  live?: { taken(): Promise<number[]>; join(n: number, name: string): Promise<void>; leave(n: number): Promise<void>; claim(n: number, name: string): Promise<void> };
 }) {
   const [saved, setSaved] = useState<Saved>(() => load(storageKey));
   const [adding, setAdding] = useState(false);
@@ -35,7 +35,9 @@ export function PlayerCards({ def, storageKey, live }: {
   const addCard = async (n: number | null) => {
     setBusy(true); setErr(null);
     try {
-      const number = n ?? pickFreeNumber(live ? await live.taken() : saved.cards.map((c) => c.number));
+      const problem = n === null ? null : typedNumberProblem(def, n);
+      if (problem) { setErr(problem); return; }
+      const number = n ?? pickFreeNumber([...saved.cards.map((c) => c.number), ...(live ? await live.taken() : [])]);
       const existing = saved.cards.findIndex((c) => c.number === number);
       if (existing >= 0) { update({ ...saved, active: existing }); setAdding(false); return; }
       await live?.join(number, saved.name);
@@ -67,6 +69,20 @@ export function PlayerCards({ def, storageKey, live }: {
   const clear = () => {
     if (!card || !confirm(`Clear all daubs on card ${cardNo(mine.number)}?`)) return;
     setMine({ ...mine, marks: card.cells.map((c, i) => (c.kind === 'free' ? i : -1)).filter((i) => i >= 0), history: [] });
+  };
+  const remove = async () => {
+    if (!mine || !confirm(`Remove card ${cardNo(mine.number)} from this phone? Its daubs will be lost.`)) return;
+    await live?.leave(mine.number).catch(() => {});
+    const cards = saved.cards.filter((c) => c.number !== mine.number);
+    update({ ...saved, cards, active: Math.max(0, Math.min(saved.active, cards.length - 1)) });
+    setMsg(null); setErr(null);
+  };
+  const startOver = async () => {
+    if (!confirm('Start over? This removes all your cards and daubs for this game from this phone.')) return;
+    await Promise.all(saved.cards.map((c) => live?.leave(c.number).catch(() => {})));
+    try { localStorage.removeItem(storageKey); } catch { /* private mode */ }
+    setSaved({ name: '', cards: [], active: 0 });
+    setAdding(false); setMsg(null); setErr(null); setNum('');
   };
   const bingo = async () => {
     if (!mine) return;
@@ -126,6 +142,10 @@ export function PlayerCards({ def, storageKey, live }: {
               </div>
               <button type="button" className="btn btn-b py-4 font-display text-3xl" disabled={recentlySent && !!live} onClick={bingo}>BINGO!</button>
               {msg && recentlySent && <p role="status" className="text-center text-xl text-ok">{msg}</p>}
+              <div className="mt-4 flex justify-center gap-2 text-sm">
+                <button type="button" className="btn" onClick={remove}>Remove this card</button>
+                <button type="button" className="btn" onClick={startOver}>Start over</button>
+              </div>
             </>
           )}
         </>

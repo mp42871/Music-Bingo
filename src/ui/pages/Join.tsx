@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { joinBackendFor } from '../../live/config';
-import type { LiveBackend, LiveGame } from '../../live/types';
+import { deviceId, type LiveBackend, type LiveGame } from '../../live/types';
 import { PlayerCards } from '../components/PlayerCards';
 
 export default function Join() {
@@ -50,8 +50,9 @@ export default function Join() {
       </div>
       <PlayerCards def={game.def} storageKey={`mb.join.${code}`} live={{
         taken: () => backend!.takenNumbers(code),
-        join: (n, name) => backend!.join(code, n, name),
-        claim: (n, name) => backend!.claim(code, n, name),
+        join: (n, name) => backend!.join(code, n, name, deviceId()),
+        leave: (n) => backend!.leave(code, n, deviceId()),
+        claim: (n, name) => backend!.claim(code, n, name, deviceId()),
       }} />
     </main>
   );

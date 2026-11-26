@@ -1,10 +1,11 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { PhoneDef } from '../core/phone';
-import { randomCode, type LiveBackend } from './types';
+import { LIVE_REFUSALS, randomCode, type LiveBackend } from './types';
 
 const friendly = (e: { message?: string } | null, fallback: string) =>
   new Error(
-    e?.message?.includes('relation') ? 'Live play isn’t set up yet — run the setup script in Supabase (Settings → Live play).'
+    /join_card|claim_card|leave_card|schema cache|column/.test(e?.message ?? '') ? 'Live play needs the newest setup script — copy it from Settings → Live play and run it again in Supabase → SQL Editor.'
+      : e?.message?.includes('relation') ? 'Live play isn’t set up yet — run the setup script in Supabase (Settings → Live play).'
       : e?.message?.includes('permission denied') ? 'Supabase is blocking access — run the latest setup script again in Supabase → SQL Editor (Settings → Live play → Copy setup script).'
         : e?.message || fallback,
   );
@@ -50,6 +51,7 @@ export function createSupabaseBackend(url: string, key: string): LiveBackend {
       void count();
       const ch = sb.channel(`live-${code}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_players', filter: `code=eq.${code}` }, () => void count())
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'live_players' }, () => void count())
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_claims', filter: `code=eq.${code}` }, (p) => {
           const r = p.new as { id: number; code: string; card_number: number; name: string | null; created_at: string };
           on.claim({ id: String(r.id), code: r.code, cardNumber: r.card_number, name: r.name ?? '', at: Date.parse(r.created_at) });
@@ -66,13 +68,18 @@ export function createSupabaseBackend(url: string, key: string): LiveBackend {
       const { data } = await sb.from('live_players').select('card_number').eq('code', code);
       return (data ?? []).map((r: { card_number: number }) => r.card_number);
     },
-    async join(code, cardNumber, name) {
-      const { error } = await sb.from('live_players').insert({ code, card_number: cardNumber, name: name || null });
+    async join(code, cardNumber, name, device) {
+      const { data, error } = await sb.rpc('join_card', { p_code: code, p_card: cardNumber, p_name: name || '', p_device: device });
       if (error) throw friendly(error, 'Couldn’t join — the game may have ended.');
+      if (data !== 'ok') throw new Error(LIVE_REFUSALS[data as string]?.(cardNumber) ?? 'Couldn’t join — the game may have ended.');
     },
-    async claim(code, cardNumber, name) {
-      const { error } = await sb.from('live_claims').insert({ code, card_number: cardNumber, name: name || null });
+    async leave(code, cardNumber, device) {
+      await sb.rpc('leave_card', { p_code: code, p_card: cardNumber, p_device: device });
+    },
+    async claim(code, cardNumber, name, device) {
+      const { data, error } = await sb.rpc('claim_card', { p_code: code, p_card: cardNumber, p_name: name || '', p_device: device });
       if (error) throw friendly(error, 'Couldn’t send your BINGO — check your connection and try again.');
+      if (data !== 'ok') throw new Error(LIVE_REFUSALS[data as string]?.(cardNumber) ?? 'Couldn’t send your BINGO — try again.');
     },
   };
 }

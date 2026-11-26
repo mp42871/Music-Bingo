@@ -57,3 +57,19 @@ test('live defs carry printed cards so a paper card number shows the same card o
   expect(phoneCard(def, 6000).number).toBe(6000);
 });
 function catPoolLike() { return { id: 'p', name: 'x', songs: Array.from({ length: 75 }, (_, i) => song(i, { title: `Song ${i}`, categories: [['70s', '80s', '90s', 'Country', 'Rock'][Math.floor(i / 15)]] })), categories: [], createdAt: 0, updatedAt: 0 }; }
+
+describe('card numbers', () => {
+  it('writes number lists as ranges', async () => {
+    const { toRanges } = await import('./phone');
+    expect(toRanges([3, 1, 2, 5, 9, 10])).toBe('1-3,5,9-10');
+    expect(toRanges([])).toBe('');
+  });
+  it('explains typed numbers that are not in the game', async () => {
+    const { typedNumberProblem } = await import('./phone');
+    const def = { nums: '1-5,9' } as never;
+    expect(typedNumberProblem(def, 3)).toBeNull();
+    expect(typedNumberProblem(def, 7)).toBe('Card #0007 isn’t in this game. The paper cards are #0001–#0005, #0009. No paper card? Tap “Give me a random card”.');
+    expect(typedNumberProblem(def, 5123)).toMatch(/phone cards/);
+    expect(typedNumberProblem({} as never, 42)).toBeNull(); // old links without a range
+  });
+});

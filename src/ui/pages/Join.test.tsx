@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Join from './Join';
@@ -92,4 +92,60 @@ test('BINGO sends a claim for the shown card', async () => {
 test('an unknown code says so', async () => {
   open('/join/0000');
   expect(await screen.findByText(/No game with code 0000/)).toBeInTheDocument();
+});
+
+test('a number outside the printed cards is refused with the real range', async () => {
+  open(`/join/${code}`);
+  await userEvent.type(await screen.findByLabelText('Card number'), '42');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Card #0042 isn’t in this game. The paper cards are #0001–#0010.');
+  expect(fake.players).toEqual([]);
+  await userEvent.clear(screen.getByLabelText('Card number'));
+  await userEvent.type(screen.getByLabelText('Card number'), '6000');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(/phone cards/);
+});
+
+test('a card another phone already holds is refused; the same phone can come back to it', async () => {
+  await fake.join(code, 3, 'Ann', 'someone-else');
+  open(`/join/${code}`);
+  await userEvent.type(await screen.findByLabelText('Card number'), '3');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Card #0003 is already being played on another phone.');
+  await userEvent.clear(screen.getByLabelText('Card number'));
+  await userEvent.type(screen.getByLabelText('Card number'), '4');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByTestId('card-number')).toHaveTextContent('#0004');
+  localStorage.removeItem(`mb.join.${code}`); // cards forgotten, but the phone is the same
+  cleanup();
+  open(`/join/${code}`);
+  await userEvent.type(await screen.findByLabelText('Card number'), '4');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByTestId('card-number')).toHaveTextContent('#0004');
+});
+
+test('remove a card frees it; start over clears this phone and goes back to picking', async () => {
+  window.confirm = () => true;
+  open(`/join/${code}`);
+  await userEvent.type(await screen.findByLabelText('Card number'), '5');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  await userEvent.click(screen.getByRole('button', { name: '+ Add a card' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Give me a random card' }));
+  expect(fake.players).toHaveLength(2);
+  await userEvent.click(screen.getByRole('button', { name: 'Remove this card' }));
+  await waitFor(() => expect(fake.players.map((p) => p.cardNumber)).toEqual([5]));
+  expect(within(screen.getByRole('tablist', { name: 'Your cards' })).getAllByRole('tab')).toHaveLength(1);
+  await userEvent.click(screen.getByRole('button', { name: 'Start over' }));
+  expect(await screen.findByRole('button', { name: 'Give me a random card' })).toBeInTheDocument();
+  await waitFor(() => expect(fake.players).toEqual([]));
+  cleanup();
+  open(`/join/${code}`); // scanning the QR again starts fresh
+  expect(await screen.findByRole('button', { name: 'Give me a random card' })).toBeInTheDocument();
+});
+
+test('only the phone holding a card can claim BINGO with it', async () => {
+  await fake.join(code, 8, 'Ann', 'phone-a');
+  await expect(fake.claim(code, 8, 'Bob', 'phone-b')).rejects.toThrow(/isn’t on this phone/);
+  await fake.claim(code, 8, 'Ann', 'phone-a');
+  expect(fake.claims).toHaveLength(1);
 });

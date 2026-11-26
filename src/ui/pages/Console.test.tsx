@@ -186,13 +186,13 @@ describe('live play', () => {
     await setup(row); // card #0001 already has a full top row
     const chip = await screen.findByText(/Live: \d{4}/);
     const code = chip.textContent!.match(/\d{4}/)![0];
-    await fake.join(code, 5001, 'Ann');
+    await act(async () => { await fake.join(code, 5001, 'Ann', 'phoneA'); });
     expect(await screen.findByText(/1 phone/)).toBeInTheDocument();
-    await act(async () => { await fake.claim(code, 1, 'Sam'); });
+    await act(async () => { await fake.join(code, 1, 'Sam', 'phoneS'); await fake.join(code, 2, 'Lee', 'phoneL'); await fake.claim(code, 1, 'Sam', 'phoneS'); });
     const pop = await screen.findByRole('alert', { name: /BINGO claim/ });
     expect(pop).toHaveTextContent(/Sam · card #0001/);
     expect(pop).toHaveTextContent(/VALID/);
-    await act(async () => { await fake.claim(code, 2, 'Lee'); });
+    await act(async () => { await fake.claim(code, 2, 'Lee', 'phoneL'); });
     expect(await screen.findByText(/Lee · card #0002/)).toBeInTheDocument();
     expect(screen.getAllByText(/NOT YET/).length).toBeGreaterThan(0);
   });

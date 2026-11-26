@@ -48,3 +48,28 @@ test('broken link shows a clear message', async () => {
   renderAt('d=garbage!!');
   expect(await screen.findByText(/This card link is broken/)).toBeInTheDocument();
 });
+
+test('a phone link knows the printed card range and refuses numbers outside it', async () => {
+  const { setPhoneDef } = await import('../../game/phoneLink');
+  const { generateCardSet } = await import('../../core/cards');
+  const set = generateCardSet(catPool(), layout(), { seed: 2, count: 5, startNumber: 1 }).set;
+  renderAt(`d=${encodePhoneDef(setPhoneDef(set))}`);
+  await userEvent.type(await screen.findByLabelText('Card number'), '9');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Card #0009 isn’t in this game. The paper cards are #0001–#0005.');
+  await userEvent.clear(screen.getByLabelText('Card number'));
+  await userEvent.type(screen.getByLabelText('Card number'), '5');
+  await userEvent.click(screen.getByRole('button', { name: 'Use this card' }));
+  expect(await screen.findByTestId('card-number')).toHaveTextContent('#0005');
+});
+
+test('start over forgets this phone’s cards', async () => {
+  window.confirm = () => true;
+  const { unmount } = renderAt(`d=${d}`);
+  await userEvent.click(await screen.findByRole('button', { name: 'Give me a random card' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Start over' }));
+  unmount();
+  renderAt(`d=${d}`);
+  expect(await screen.findByRole('button', { name: 'Give me a random card' })).toBeInTheDocument();
+  expect(screen.queryByTestId('card-number')).toBeNull();
+});
