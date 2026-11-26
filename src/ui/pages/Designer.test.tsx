@@ -37,3 +37,15 @@ test('several playlists: each becomes a column with one click and the set rememb
     expect(set.layout.columnCategories).toEqual(['Rock', 'Pop', 'Country', 'Soul', 'Disco']);
   });
 });
+
+test('whole-card theme defaults to the whole playlist even if an empty category exists', async () => {
+  const { flatPool } = await import('../../test/fixtures');
+  await savePool({ ...flatPool(75), id: 'cr', name: 'Classic Rock', categories: ['Classic Rock'] });
+  render(<MemoryRouter initialEntries={['/designer?pool=cr']}><Designer /></MemoryRouter>);
+  await userEvent.click(await screen.findByRole('button', { name: /Whole-card theme/ }));
+  const theme = screen.getByLabelText('Theme');
+  expect(theme).toHaveDisplayValue('Whole playlist (75 songs)');
+  expect(screen.getByRole('option', { name: 'Classic Rock (0 songs)' })).toBeInTheDocument();
+  expect(screen.queryByText(/needs at least/)).toBeNull();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save cards' })).toBeEnabled());
+});

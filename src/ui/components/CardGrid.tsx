@@ -64,7 +64,7 @@ export function CardGrid({ card, layout, songsById, style, marked, highlightMask
         style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gridTemplateRows: `auto repeat(${n}, minmax(0, 1fr))` }}>
         <div role="row" className="contents">
           {layout.headerMode === 'theme'
-            ? <div role="columnheader" className="bc-head bc-banner" style={{ fontSize: `${headSize * 1.2}cqmin` }}>{layout.themeCategory || 'Theme'}</div>
+            ? <div role="columnheader" className="bc-head bc-banner" style={{ fontSize: `${headSize * 1.2}cqmin` }}>{layout.themeCategory || layout.themeLabel || 'Music Bingo'}</div>
             : headers.map((h, i) => (
               <div role="columnheader" key={i} className="bc-head" style={{ fontSize: layout.headerMode === 'letters' ? `${headSize * 1.9}cqmin` : fitSize(h, n, false, true) }}>
                 {style.mysteryColumn === i ? <span>?</span> : h}

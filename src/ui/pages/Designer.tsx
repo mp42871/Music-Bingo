@@ -63,10 +63,11 @@ export default function Designer() {
     if (!pool) return;
     setLayout((l) => {
       const cats = Array.from({ length: l.size }, (_, i) => (pool.categories.includes(l.columnCategories[i]) ? l.columnCategories[i] : pool.categories[i % Math.max(1, pool.categories.length)] ?? ''));
-      const theme = l.themeCategory && pool.categories.includes(l.themeCategory) ? l.themeCategory : pool.categories[0];
+      // Theme defaults to the whole playlist; keep a chosen category only if this playlist has it.
+      const theme = l.themeCategory && pool.categories.includes(l.themeCategory) ? l.themeCategory : '';
       // A playlist without categories can only make letter-header cards.
       const headerMode = pool.categories.length === 0 ? 'letters' : l.headerMode;
-      return { ...l, columnCategories: cats, themeCategory: theme, headerMode };
+      return { ...l, columnCategories: cats, themeCategory: theme, themeLabel: pool.name, headerMode };
     });
   }, [pool, layout.size, layout.headerMode]);
 
@@ -193,9 +194,10 @@ export default function Designer() {
               </div>
             )}
             {layout.headerMode === 'theme' && pool && (
-              <Field label="Theme category">
-                <select value={layout.themeCategory ?? ''} onChange={(e) => set('themeCategory', e.target.value)}>
-                  {pool.categories.map((c) => <option key={c}>{c}</option>)}
+              <Field label="Theme">
+                <select aria-label="Theme" value={layout.themeCategory ?? ''} onChange={(e) => set('themeCategory', e.target.value)}>
+                  <option value="">Whole playlist ({pool.songs.filter((x) => !x.excluded).length} songs)</option>
+                  {pool.categories.map((c) => <option key={c} value={c}>{c} ({pool.songs.filter((x) => !x.excluded && x.categories.includes(c)).length} songs)</option>)}
                 </select>
               </Field>
             )}
@@ -224,7 +226,7 @@ export default function Designer() {
                     <span key={i} className={c.available < c.needed ? 'text-deck-b' : 'text-dim'}>{c.label}: {c.available}/{c.needed}+</span>
                   ))}
                 </div>
-                {validation.messages.map((m) => <p key={m} className="mt-1 text-deck-b">{m}</p>)}
+                {validation.messages.map((m, i) => <p key={i} className="mt-1 text-deck-b">{m}</p>)}
                 {pool && !validation.ok && chosen.length === 1 && <Link to={`/pools/${pool.id}`} className="mt-2 inline-block text-deck-a underline">Add songs to {pool.name}</Link>}
               </div>
             )}

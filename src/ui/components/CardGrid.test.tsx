@@ -44,3 +44,8 @@ test('letters mode shows letters', () => {
   render(<CardGrid card={card} layout={layout({ headerMode: 'letters', letters: 'MUSIC' })} songsById={byId} style={DEFAULT_STYLE} />);
   expect(screen.getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['M', 'U', 'S', 'I', 'C']);
 });
+
+test('whole-playlist theme shows the playlist name across the top', () => {
+  render(<CardGrid card={card} layout={layout({ headerMode: 'theme', themeCategory: undefined, themeLabel: 'Classic Rock' })} songsById={byId} style={DEFAULT_STYLE} />);
+  expect(screen.getByRole('columnheader')).toHaveTextContent('Classic Rock');
+});

@@ -17,7 +17,11 @@ export type HeaderMode = 'categories' | 'theme' | 'letters';
 export type CellContent = 'title' | 'artist' | 'both' | 'artistBingo';
 export interface CardLayout {
   size: 3 | 4 | 5; freeCenter: boolean; freeText: string;
-  headerMode: HeaderMode; columnCategories: string[]; themeCategory?: string;
+  headerMode: HeaderMode; columnCategories: string[];
+  /** Theme category; empty = the whole playlist. */
+  themeCategory?: string;
+  /** Banner text for a whole-playlist theme (the playlist name). */
+  themeLabel?: string;
   letters: string; cellContent: CellContent;
 }
 export type Cell =

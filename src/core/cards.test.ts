@@ -92,3 +92,17 @@ test('printed card numbers never reach the phone range (5000+)', () => {
   expect(res.capped).toBe(true);
   expect(res.message).toMatch(/4999/);
 });
+
+test('whole-card theme with no category uses the whole playlist', () => {
+  const p = flatPool(75);
+  const l = layout({ headerMode: 'theme', themeCategory: undefined, columnCategories: [] });
+  expect(validatePool(p, l).ok).toBe(true);
+  expect(generateCard(p, l, 1, 1).cells.filter((c) => c.kind === 'song')).toHaveLength(24);
+});
+
+test('validation messages are not repeated and say when nothing is tagged', () => {
+  const p = flatPool(30);
+  const v = validatePool(p, layout({ columnCategories: ['Pop', 'Pop', 'Pop', 'Rock', 'Rock'] }));
+  expect(new Set(v.messages).size).toBe(v.messages.length);
+  expect(v.messages.join(' ')).toMatch(/No songs are tagged “Pop”/);
+});
