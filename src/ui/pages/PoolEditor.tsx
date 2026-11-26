@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useSpotify } from '../../app/spotifyStore';
 import { download, exportPoolCsv, exportPoolJson, mergeSongs } from '../../core/io';
 import type { Preset } from '../../core/presets';
 import type { Pool, Song } from '../../core/types';
-import { getPool, savePool } from '../../db/repo';
+import { deletePool, getPool, savePool } from '../../db/repo';
 import { ImportDialog } from '../components/ImportDialog';
 import { mergeFromSources } from '../../core/spotifyImport';
 import { useOnline } from '../../app/online';
@@ -30,6 +30,7 @@ function printSongList(pool: Pool) {
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 export default function PoolEditor() {
+  const nav = useNavigate();
   const { id } = useParams();
   const { api } = useSpotify();
   const [pool, setPool] = useState<Pool | null>(null);
@@ -122,6 +123,11 @@ export default function PoolEditor() {
             </div>
           </details>
           <Link to={`/designer?pool=${pool.id}`} className="btn btn-b">Make cards</Link>
+          <button type="button" className="btn text-dim hover:text-deck-b" onClick={async () => {
+            if (!confirm(`Delete “${pool.name}”? Cards and history that used it are kept.`)) return;
+            await deletePool(pool.id);
+            nav('/pools');
+          }}>Delete playlist</button>
         </div>
       </div>
       {note && <p role="status" className="mb-4 rounded-lg border border-deck-a/40 bg-deck-a/10 px-3 py-2">{note}</p>}

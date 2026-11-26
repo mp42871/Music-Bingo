@@ -14,7 +14,7 @@ const LINKS = [
 export function Nav() {
   const online = useOnline();
   return (
-    <header className="sticky top-0 z-30 border-b border-rail bg-night/85 backdrop-blur print:hidden">
+    <header className="relative z-30 border-b lg:sticky lg:top-0 border-rail bg-night/85 backdrop-blur print:hidden">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
         <NavLink to="/" className="font-display text-xl tracking-wide">
           <span className="text-deck-a glow-a">Music</span> <span className="text-deck-b glow-b">Bingo</span>

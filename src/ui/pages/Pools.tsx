@@ -69,7 +69,7 @@ export default function Pools() {
                   <p className="mt-1 truncate text-xs text-dim">{p.categories.join(' / ')}</p>
                 </div>
               </Link>
-              <button type="button" aria-label={`Delete ${p.name}`} className="absolute right-2 top-2 rounded px-2 text-dim opacity-0 hover:text-deck-b focus:opacity-100 group-hover:opacity-100"
+              <button type="button" aria-label={`Delete ${p.name}`} className="absolute right-1 top-1 rounded px-3 py-2 text-dim hover:text-deck-b focus:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                 onClick={async () => { if (confirm(`Delete “${p.name}”? Cards and history that used it are kept.`)) { await deletePool(p.id); void refresh(); } }}>✕</button>
             </li>
           );

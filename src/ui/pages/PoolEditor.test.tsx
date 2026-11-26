@@ -116,3 +116,10 @@ test('search by artist and album fields', async () => {
   await waitFor(() => expect(api.searchTracks).toHaveBeenCalled());
   expect(api.searchTracks.mock.calls[0][0]).toBe('artist:"Fleetwood Mac" album:"Rumours"');
 });
+
+test('a playlist can be deleted from its own page (works on phones — no hover needed)', async () => {
+  window.confirm = () => true;
+  await renderEditor();
+  await userEvent.click(screen.getByRole('button', { name: 'Delete playlist' }));
+  await waitFor(async () => expect(await repo.getPool(emptyPool().id)).toBeUndefined());
+});

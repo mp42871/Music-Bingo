@@ -14,7 +14,7 @@ import { DevicePicker } from '../console/DevicePicker';
 import { Queue } from '../console/Queue';
 import { RoundDialog } from '../console/RoundDialog';
 import { Transport } from '../console/Transport';
-import { WinnerTracker } from '../console/WinnerTracker';
+import { BingoBar, WinnerTracker } from '../console/WinnerTracker';
 import { ClaimPanel } from '../console/ClaimPanel';
 import { cardNo } from '../components/CardGrid';
 import { autoBackupOnClick } from '../../drive/backup';
@@ -170,7 +170,8 @@ export default function Console() {
         </div>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+      <BingoBar live={live} recorded={recorded} onPhone={phoneCards} onCheck={(n) => openCheck(n)} />
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-5 lg:mt-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
         <div className="flex flex-col gap-5">
           <div className="panel flex flex-wrap items-center gap-3 px-4 py-3">
             <span className="font-display text-deck-a">Round {game.rounds.length || 1}</span>

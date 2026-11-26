@@ -290,3 +290,14 @@ test('leaving the console mid-song and coming back picks up that song where it w
   expect(pos).toBeGreaterThanOrEqual(500);
   expect((await repo.getGame('g1'))!.calls).toHaveLength(1);
 });
+
+test('phones: the bingo count sits in a bar at the top of the console', async () => {
+  const { set } = generateCardSet(pool, layout(), { seed: 1, count: 10, startNumber: 1 });
+  const row = set.cards[0].cells.slice(0, 5).map((c) => (c.kind === 'song' ? c.songId : ''));
+  await setup(row);
+  const bar = screen.getByTestId('bingo-bar');
+  expect(bar).toHaveTextContent(/card(s)? ha(s|ve) bingo/);
+  expect(within(bar).getByRole('button', { name: 'Check #0001' })).toBeInTheDocument();
+  // it comes before the song deck in the page
+  expect(bar.compareDocumentPosition(screen.getByRole('button', { name: 'End round' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
