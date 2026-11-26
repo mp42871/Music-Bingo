@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { QuickGame } from '../components/QuickGame';
+import { JoinQr } from '../components/JoinQr';
+import { phoneUrl } from '../../core/phone';
+import { setPhoneDef } from '../../game/phoneLink';
 import { liveWinners } from '../../core/check';
 import { patternName } from '../../core/patterns';
 import { currentRound, hybridPort, roundMasks, useGame } from '../../game/store';
@@ -31,6 +34,7 @@ export default function Console() {
   const [params] = useSearchParams();
   const fresh = params.get('new') === '1';
   const [quick, setQuick] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const [fileIds, setFileIds] = useState<Set<string>>(new Set());
   const online = useOnline();
   useEffect(() => { listAudio().then((fs) => setFileIds(new Set(fs.map((f) => f.id)))).catch(() => {}); }, []);
@@ -112,6 +116,7 @@ export default function Console() {
             <button type="button" className="ml-1 text-dim underline" onClick={() => { if (confirm('Stop live play? Phones can no longer join or call BINGO.')) void g.stopLive(); }}>Stop</button>
           </span>
         )}
+        <button type="button" className="btn" onClick={() => setShowJoin(true)} title="Show the join code full screen on this computer">Phone QR</button>
         <button type="button" className="btn" onClick={() => { if (cs.phase === 'playing' || cs.phase === 'gap') void ctrl.togglePause(); setQuick(true); }}>⚡ Quick game</button>
         <button type="button" className="btn btn-b" onClick={() => openCheck('open')}>Check a card</button>
       </div>
@@ -213,6 +218,11 @@ export default function Console() {
           }} />
       )}
       {quick && <QuickGame onClose={() => setQuick(false)} />}
+      {showJoin && (
+        <JoinQr onClose={() => setShowJoin(false)}
+          live={g.live.code ? { code: g.live.code, joinUrl: g.live.joinUrl!, site: g.live.typed ? g.live.site : '' } : null}
+          phoneUrl={g.cardSet ? phoneUrl(setPhoneDef(g.cardSet)) : null} />
+      )}
       {checking !== null && <ClaimPanel initial={checking === 'open' ? null : checking} onClose={() => setChecking(null)} />}
     </main>
   );

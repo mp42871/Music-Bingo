@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { openChannel, type AudienceMessage } from '../../game/broadcast';
 import { QR } from '../components/QR';
 import { formatTime } from '../../core/io';
+import { MAX_PHONE_URL } from '../components/JoinQr';
 
 export default function Audience() {
   const [m, setM] = useState<AudienceMessage | null>(null);
@@ -52,16 +53,16 @@ export default function Audience() {
               <QR text={m.live.joinUrl} size={500} className="size-48" />
               <div className="text-left">
                 <div className="text-2xl font-bold">Play on your phone</div>
-                <div className="text-xl">{m.live.site ? <>Scan, or go to <strong>{m.live.site}</strong> → Join a game</> : 'Scan the code with your phone camera'}</div>
+                <div className="text-xl">{m.live.site ? <>Scan, or type <strong>{`${m.live.site}/join`}</strong></> : 'Scan the code with your phone camera'}</div>
                 <div className="mt-1 text-lg">Game code</div>
                 <div className="font-display text-6xl tracking-widest">{m.live.code}</div>
               </div>
             </div>
           )}
-          {m.showQr && !m.live && m.phoneUrl && m.phoneUrl.length <= 1500 && (
-            <div className="flex items-center gap-6 rounded-2xl bg-white p-5 text-night">
-              <QR text={m.phoneUrl} size={900} className="size-80" />
-              <div className="max-w-xs text-left text-2xl font-bold">No card? Scan to play on your phone.</div>
+          {m.showQr && !m.live && m.phoneUrl && m.phoneUrl.length <= MAX_PHONE_URL && (
+            <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-4 text-night">
+              <QR text={m.phoneUrl} size={1200} className="h-[62vh] w-[62vh] max-w-[90vw]" />
+              <div className="text-3xl font-bold">Scan to get your card</div>
             </div>
           )}
         </div>

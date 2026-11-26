@@ -226,3 +226,23 @@ test('when live play fails, the console explains why and can try again', async (
   expect(await screen.findByText(/Live: \d{4}/)).toBeInTheDocument();
   setLiveBackend(undefined);
 });
+
+test('without live play, the console can show the phone QR full screen', async () => {
+  await setup();
+  await userEvent.click(screen.getByRole('button', { name: 'Phone QR' }));
+  const dlg = await screen.findByRole('dialog', { name: 'Join on your phone' });
+  expect(within(dlg).getByText(/Scan to get your card/)).toBeInTheDocument();
+});
+
+test('with live play, the full-screen QR also shows the address to type', async () => {
+  const { createFakeBackend } = await import('../../live/fake');
+  const { setLiveBackend } = await import('../../live/config');
+  setLiveBackend(createFakeBackend());
+  await setup();
+  await screen.findByText(/Live: \d{4}/);
+  useGame.setState((st) => ({ live: { ...st.live, typed: true, site: 'example.test/Music-Bingo' } }));
+  await userEvent.click(screen.getByRole('button', { name: 'Phone QR' }));
+  const dlg = await screen.findByRole('dialog', { name: 'Join on your phone' });
+  expect(within(dlg).getByText('example.test/Music-Bingo/join')).toBeInTheDocument();
+  setLiveBackend(undefined);
+});
