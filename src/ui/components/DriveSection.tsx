@@ -5,6 +5,7 @@ import type { BackupFile } from '../../drive/drive';
 import { disconnectGoogle, googleConnected } from '../../drive/google';
 import { driveService, preloadGoogle, refreshGoogleClientId } from '../../drive/service';
 import { getSetting, importBackup, setSetting } from '../../db/repo';
+import { DEFAULT_GOOGLE_CLIENT_ID } from '../../drive/config';
 import { Field, Section } from './Field';
 
 const when = (t: number) => new Date(t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -24,8 +25,9 @@ export function DriveSection() {
   const [connected, setConnected] = useState(googleConnected());
 
   const refresh = async () => {
-    const id = await refreshGoogleClientId();
-    setClientId(id); setSavedId(id);
+    const own = (await getSetting('googleClientId', '')).trim();
+    setClientId(own);
+    setSavedId((await refreshGoogleClientId()) || DEFAULT_GOOGLE_CLIENT_ID);
     setAuto(await loadAutoBackupSetting());
     setLast(await getSetting('driveLastBackupAt', 0));
     setPending(await getSetting('driveBackupPending', false));
@@ -45,24 +47,26 @@ export function DriveSection() {
     <Section title="Google Drive backup" aside={connected ? <span className="chip text-ok">Connected</span> : <span className="chip text-dim">Not connected</span>}>
       <p className="mb-3 text-sm text-dim">Saves your playlists, cards, game history and settings to a “Music Bingo Backups” folder in your Drive (not music files). The app can only see the files it creates.</p>
       <div className="grid gap-4">
-        <Field label="Google Client ID">
-          <div className="flex gap-2">
-            <input aria-label="Google Client ID" value={clientId} onChange={(e) => setClientId(e.target.value)} className="flex-1 font-mono text-sm" placeholder="…apps.googleusercontent.com" />
-            <button type="button" className="btn" onClick={async () => { await setSetting('googleClientId', clientId.trim()); await refresh(); setMsg('Client ID saved.'); }}>Save</button>
+        <p className="text-sm">Press <strong>Back up now</strong> and sign in with Google — backups go to the Drive of whoever signs in.</p>
+        <details className="rounded-lg border border-rail p-3 text-sm text-dim">
+          <summary className="cursor-pointer font-semibold text-ink">Advanced: use your own Google Cloud project</summary>
+          <p className="mt-2">Not needed — the app has its own. Leave empty to use it.</p>
+          <div className="mt-2">
+            <Field label="Google Client ID">
+              <div className="flex gap-2">
+                <input aria-label="Google Client ID" value={clientId} onChange={(e) => setClientId(e.target.value)} className="flex-1 font-mono text-sm" placeholder="Built in (leave empty)" />
+                <button type="button" className="btn" onClick={async () => { await setSetting('googleClientId', clientId.trim()); await refresh(); setMsg(clientId.trim() ? 'Your Client ID is saved.' : 'Using the built-in Google connection.'); }}>Save</button>
+              </div>
+            </Field>
           </div>
-        </Field>
-        {(
-          <details open={!savedId} className="rounded-lg border border-rail p-3 text-sm text-dim">
-            <summary className="cursor-pointer font-semibold text-ink">One-time Google setup (about 10 minutes)</summary>
-            <ol className="mt-2 list-decimal space-y-1 pl-5">
-              <li>Open the Google Cloud console (console.cloud.google.com) and create a project, e.g. “Music Bingo”.</li>
-              <li>APIs &amp; Services → Library → enable <strong>Google Drive API</strong>.</li>
-              <li>OAuth consent screen → External → app name and your email → add the scope <code>…/auth/drive.file</code> → Publish app (this scope needs no Google review).</li>
-              <li>Credentials → Create credentials → OAuth client ID → Web application. Authorized JavaScript origins: <code>{window.location.origin}</code> (and <code>http://127.0.0.1:5173</code> if you run it locally). No redirect URI needed.</li>
-              <li>Copy the Client ID into the box above and press Save.</li>
-            </ol>
-          </details>
-        )}
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>Open the Google Cloud console (console.cloud.google.com) and create a project, e.g. “Music Bingo”.</li>
+            <li>APIs &amp; Services → Library → enable <strong>Google Drive API</strong>.</li>
+            <li>OAuth consent screen → External → app name and your email → add the scope <code>…/auth/drive.file</code> → Publish app (this scope needs no Google review).</li>
+            <li>Credentials → Create credentials → OAuth client ID → Web application. Authorized JavaScript origins: <code>{window.location.origin}</code> (and <code>http://127.0.0.1:5173</code> if you run it locally). No redirect URI needed.</li>
+            <li>Copy the Client ID into the box above and press Save.</li>
+          </ol>
+        </details>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn btn-a" disabled={!ready || !!busy}
             onClick={() => run('Backing up…', async () => {

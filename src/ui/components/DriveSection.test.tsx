@@ -37,10 +37,17 @@ test('auto backup toggle saves the setting', async () => {
   await waitFor(async () => expect(await repo.getSetting('driveAutoBackup', true)).toBe(false));
 });
 
-test('setup steps stay available for changing the Client ID', async () => {
+test('setup steps stay available for using your own Client ID', async () => {
   render(<DriveSection />);
   expect(await screen.findByText(/Google Cloud console/)).toBeInTheDocument();
   await waitFor(() => expect(screen.getByRole('button', { name: 'Back up now' })).toBeEnabled());
+});
+
+test('works with no Client ID entered: the built-in one is used', async () => {
+  await repo.setSetting('googleClientId', '');
+  render(<DriveSection />);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Back up now' })).toBeEnabled());
+  expect(screen.getByLabelText('Google Client ID')).toHaveValue('');
 });
 
 test('opening Restore also turns automatic backup on the first time', async () => {
