@@ -150,9 +150,15 @@ export const useGame = create<GameStore>((set, get) => ({
         void saveGame(next);
       },
     }, Date.now, Math.random, game.calls.map((c) => c.songId));
-    channel ??= openChannel();
+    if (!channel) {
+      channel = openChannel();
+      // A players' screen opened later asks for the current state.
+      if (channel) channel.onmessage = (e) => { if (e.data?.type === 'hello') broadcast(); };
+    }
     unwatch?.(); unwatch = null;
-    set({ game, cardSet, songs, ctrl, cs: ctrl.state, errors: [], revealed: false, source: null, live: NO_LIVE });
+    // Show how to join from the start, so players can connect before the first song.
+    set({ game, cardSet, songs, ctrl, cs: ctrl.state, errors: [], revealed: false, source: null, live: NO_LIVE, showQr: true });
+    broadcast();
     if (game.status !== 'finished') void get().goLive();
     return true;
   },

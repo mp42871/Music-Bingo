@@ -10,6 +10,7 @@ export default function Audience() {
     const ch = openChannel();
     if (!ch) return;
     ch.onmessage = (e) => e.data?.type === 'state' && setM(e.data);
+    ch.postMessage({ type: 'hello' }); // ask the console for the current state
     return () => ch.close();
   }, []);
 

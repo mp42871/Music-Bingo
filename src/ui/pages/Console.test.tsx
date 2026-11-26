@@ -246,3 +246,11 @@ test('with live play, the full-screen QR also shows the address to type', async 
   expect(within(dlg).getByText('example.test/Music-Bingo/join')).toBeInTheDocument();
   setLiveBackend(undefined);
 });
+
+test('the players’ screen shows the join QR before the game starts, even if opened after the console', async () => {
+  const Audience = (await import('./Audience')).default;
+  await setup();
+  expect(useGame.getState().showQr).toBe(true);
+  render(<Audience />);
+  expect(await screen.findByText(/Scan to get your card|Play on your phone/)).toBeInTheDocument();
+});
