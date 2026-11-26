@@ -64,3 +64,12 @@ test('a project URL must be https', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save live play settings' }));
   expect(await screen.findByText(/should start with https:\/\//)).toBeInTheDocument();
 });
+
+test('with the site’s live play built in, nothing needs setting up and your own project is under Advanced', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ url: 'https://site.supabase.co', key: 'sb_publishable_site' }) })));
+  render(<MemoryRouter><Settings /></MemoryRouter>);
+  expect(await screen.findByText(/Built in — nothing to set up/)).toBeInTheDocument();
+  expect(screen.getByText('Advanced: use your own Supabase project')).toBeInTheDocument();
+  expect(screen.getByLabelText('Supabase Project URL')).toHaveValue('');
+  vi.unstubAllGlobals();
+});
