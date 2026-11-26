@@ -74,7 +74,7 @@ export default function Audience() {
           )}
           {m.showQr && !m.live && m.phoneUrl && m.phoneUrl.length <= MAX_PHONE_URL && (
             <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-4 text-night">
-              <QR text={m.phoneUrl} size={1200} className="h-[62vh] w-[62vh] max-w-[90vw]" />
+              <QR text={m.phoneUrl} size={1200} className="aspect-square h-auto w-[min(62vh,90vw)] [image-rendering:pixelated]" />
               <div className="text-3xl font-bold">Scan to get your card</div>
             </div>
           )}

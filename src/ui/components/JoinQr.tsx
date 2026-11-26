@@ -13,10 +13,11 @@ export function JoinQr({ live, phoneUrl, onClose }: {
     <div role="dialog" aria-modal="true" aria-label="Join on your phone" className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white p-4 text-night" onClick={onClose}>
       {url && !tooLong ? (
         <>
-          <QR text={url} size={1200} className="h-[70vh] w-[70vh] max-w-[92vw]" />
+          {/* Square and crisp at any screen shape (a stretched QR won't scan). */}
+          <QR text={url} size={1200} className="aspect-square h-auto w-[min(70vh,92vw)] [image-rendering:pixelated]" />
           <div className="text-3xl font-bold">Scan to get your card</div>
           {live && live.site && <div className="text-xl">or type <strong>{`${live.site}/join`}</strong></div>}
-          {live && <div className="text-xl">Game code <strong className="font-mono text-3xl">{live.code}</strong></div>}
+          {live && <div className="text-xl">Game code <strong className="font-mono text-4xl">{live.code}</strong></div>}
         </>
       ) : (
         <p className="max-w-md text-center text-xl">This game has too many songs for a phone QR code without live play. Use 100 songs or fewer, or set up Live play in Settings.</p>

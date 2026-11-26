@@ -8,12 +8,24 @@ let cached: { key: string; backend: LiveBackend } | null = null;
 /** Tests (and demos) can plug in a backend directly. */
 export function setLiveBackend(b: LiveBackend | null | undefined) { override = b; }
 
+/**
+ * The live project the host uses: the one saved in Settings, or else this site's own (public/live.json),
+ * so a host on a phone or another computer goes live without typing the project details again.
+ */
+export async function hostProject(): Promise<{ url: string; key: string; fromSite: boolean } | null> {
+  const url = await getSetting('supabaseUrl', '');
+  const key = await getSetting('supabaseKey', '');
+  if (url && key) return { url, key, fromSite: false };
+  const site = await siteProject();
+  return site ? { ...site, fromSite: true } : null;
+}
+
 /** The host's live backend, or null when live play isn't set up. */
 export async function liveBackend(): Promise<LiveBackend | null> {
   if (override !== undefined) return override;
-  const url = await getSetting('supabaseUrl', '');
-  const key = await getSetting('supabaseKey', '');
-  if (!url || !key) return null;
+  const proj = await hostProject();
+  if (!proj) return null;
+  const { url, key } = proj;
   if (cached?.key !== url + key) cached = { key: url + key, backend: createSupabaseBackend(url, key) };
   return cached.backend;
 }

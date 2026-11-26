@@ -11,11 +11,10 @@ import { getCardSet, getGame, saveGame } from '../db/repo';
 import { liveSongsFor } from './liveSongs';
 import { withLatestFiles } from '../core/offline';
 import { getAccessToken } from '../spotify/auth';
-import { liveBackend, encodeProject, siteProject } from '../live/config';
+import { liveBackend, encodeProject, hostProject, siteProject } from '../live/config';
 import type { LiveClaim } from '../live/types';
 import { liveDef } from './phoneLink';
 import { checkClaim, missingCount } from '../core/claim';
-import { getSetting } from '../db/repo';
 import { loadPlayer } from '../spotify/sdk';
 import { openChannel, type AudienceMessage } from './broadcast';
 import { createHybridPort } from './hybridPort';
@@ -219,7 +218,8 @@ export const useGame = create<GameStore>((set, get) => ({
       const code = await backend.publish(game.name, liveDef(cardSet), game.liveCode);
       if (get().game?.id !== game.id) return;
       if (game.liveCode !== code) { const next = { ...get().game!, liveCode: code }; set({ game: next }); await saveGame(next); }
-      const [url, key] = await Promise.all([getSetting('supabaseUrl', ''), getSetting('supabaseKey', '')]);
+      const proj = await hostProject();
+      const url = proj?.url ?? '', key = proj?.key ?? '';
       const base = window.location.href.split('#')[0].split('?')[0];
       const joinUrl = `${base}#/join/${code}${url && key ? `?p=${encodeProject(url, key)}` : ''}`;
       const site = `${window.location.host}${window.location.pathname}`.replace(/\/$/, '');
