@@ -1,11 +1,21 @@
-export interface SearchFilters { text?: string; yearFrom?: number; yearTo?: number; genre?: string }
+export interface SearchFilters {
+  text?: string; track?: string; artist?: string; album?: string;
+  yearFrom?: number; yearTo?: number; genre?: string;
+}
+
+const field = (name: string, v?: string) => {
+  const clean = v?.replace(/"/g, '').trim();
+  return clean ? `${name}:"${clean}"` : null;
+};
 
 export function buildSearchQuery(q: SearchFilters): string {
   const parts: string[] = [];
   if (q.text?.trim()) parts.push(q.text.trim());
+  for (const p of [field('track', q.track), field('artist', q.artist), field('album', q.album)]) if (p) parts.push(p);
   if (q.yearFrom && q.yearTo && q.yearTo !== q.yearFrom) parts.push(`year:${q.yearFrom}-${q.yearTo}`);
   else if (q.yearFrom || q.yearTo) parts.push(`year:${q.yearFrom ?? q.yearTo}`);
-  if (q.genre?.trim()) parts.push(`genre:"${q.genre.trim()}"`);
+  const g = field('genre', q.genre);
+  if (g) parts.push(g);
   return parts.join(' ');
 }
 

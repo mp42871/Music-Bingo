@@ -19,6 +19,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
   const { api, connected } = useSpotify();
   const online = useOnline();
   const [f, setF] = useState<SearchFilters>({});
+  const [more, setMore] = useState(false);
   const [results, setResults] = useState<Song[]>([]);
   const [total, setTotal] = useState(0);
   const [query, setQuery] = useState('');
@@ -70,6 +71,7 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
         <div className="mt-2">
           <PresetPicker mode="pick" disabled={!online} onPick={(p) => {
             setF(p.query ?? {});
+            if (p.query?.genre || p.query?.yearFrom) setMore(true);
             onPreset(p);
             if (p.songs) void runCurated(parseCurated(p.songs), `${p.name} (hand-picked)`);
             else void runQueries(presetQueries(p), p.name);
@@ -77,19 +79,27 @@ export function SearchPanel({ inPool, onAdd, onAddMany, onPreset }: {
         </div>
       </div>
       <form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); void run(f); }}>
-        <input aria-label="Search songs" placeholder="Song, artist or keyword" value={f.text ?? ''} onChange={(e) => setF({ ...f, text: e.target.value })} />
-        <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2">
-          <NumberInput aria-label="From year" className="w-full" value={f.yearFrom ?? 0} min={0} max={2100}
-            onChange={(n) => setF({ ...f, yearFrom: n || undefined })} />
-          <NumberInput aria-label="To year" className="w-full" value={f.yearTo ?? 0} min={0} max={2100}
-            onChange={(n) => setF({ ...f, yearTo: n || undefined })} />
-          <input aria-label="Genre" placeholder="Genre (e.g. country)" value={f.genre ?? ''} onChange={(e) => setF({ ...f, genre: e.target.value })} />
-        </div>
+        <input aria-label="Search songs" placeholder="Anything: song, artist or keyword" value={f.text ?? ''} onChange={(e) => setF({ ...f, text: e.target.value })} />
+        <button type="button" className="self-start text-sm text-dim underline" aria-expanded={more} onClick={() => setMore(!more)}>
+          {more ? 'Fewer search options' : 'More search options (title, artist, album, genre, years)'}
+        </button>
+        {more && (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <input aria-label="Song title" placeholder="Song title" value={f.track ?? ''} onChange={(e) => setF({ ...f, track: e.target.value })} />
+            <input aria-label="Artist" placeholder="Artist" value={f.artist ?? ''} onChange={(e) => setF({ ...f, artist: e.target.value })} />
+            <input aria-label="Album" placeholder="Album" value={f.album ?? ''} onChange={(e) => setF({ ...f, album: e.target.value })} />
+            <input aria-label="Genre" placeholder="Genre (e.g. country, disco)" value={f.genre ?? ''} onChange={(e) => setF({ ...f, genre: e.target.value })} />
+            <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+              <NumberInput aria-label="From year" className="w-full" value={f.yearFrom ?? 0} min={0} max={2100} onChange={(n) => setF({ ...f, yearFrom: n || undefined })} />
+              <NumberInput aria-label="To year" className="w-full" value={f.yearTo ?? 0} min={0} max={2100} onChange={(n) => setF({ ...f, yearTo: n || undefined })} />
+            </div>
+            <p className="text-xs text-dim sm:col-span-2">Fill in any mix — e.g. Artist “Fleetwood Mac” + Album “Rumours”. Years: 0 means any.</p>
+          </div>
+        )}
         <div className="flex gap-2">
           <button className="btn btn-a flex-1" disabled={busy || !online || !buildSearchQuery(f)}>{busy ? 'Searching…' : 'Search Spotify'}</button>
-          <button type="button" className="btn" onClick={() => { setF({}); setResults([]); setTotal(0); }}>Clear</button>
+          <button type="button" className="btn" onClick={() => { setF({}); setResults([]); setTotal(0); setPaging(null); }}>Clear</button>
         </div>
-        <p className="text-xs text-dim">Years: use 0 for “any”. Leave both years blank to search all time.</p>
       </form>
       {!online && <p className="text-sm text-peak">You're offline — Spotify search needs internet. Your saved playlists still work.</p>}
       {online && !connected && <p className="text-sm text-peak">Connect Spotify in Settings to search.</p>}

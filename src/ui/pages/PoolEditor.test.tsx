@@ -106,3 +106,13 @@ test('a search fills the list with 50 results, and Load more adds 50 more', asyn
   await userEvent.click(screen.getByRole('button', { name: 'Load more' }));
   expect(await screen.findByText(/100 of 500 results/)).toBeInTheDocument();
 });
+
+test('search by artist and album fields', async () => {
+  await renderEditor();
+  await userEvent.click(screen.getByRole('button', { name: /More search options/ }));
+  await userEvent.type(screen.getByLabelText('Artist'), 'Fleetwood Mac');
+  await userEvent.type(screen.getByLabelText('Album'), 'Rumours');
+  await userEvent.click(screen.getByRole('button', { name: 'Search Spotify' }));
+  await waitFor(() => expect(api.searchTracks).toHaveBeenCalled());
+  expect(api.searchTracks.mock.calls[0][0]).toBe('artist:"Fleetwood Mac" album:"Rumours"');
+});
