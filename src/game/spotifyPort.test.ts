@@ -46,11 +46,29 @@ test('prime unlocks the in-browser player synchronously', () => {
 });
 
 test('a silent first start is retried once (pause, then play again)', async () => {
-  const h = setup({ states: [null, null, null, null, null, null, null, null, null, null, { paused: false, position: 800 }] });
+  const h = setup({ states: [...Array(11).fill(null), { paused: false, position: 800 }] });
   await h.port.play('spotify:track:x', 30000);
   expect(h.api.play).toHaveBeenCalledTimes(2);
   expect(h.api.play).toHaveBeenLastCalledWith('dev1', 'spotify:track:x', 30000);
+  expect(h.sdk.pause).not.toHaveBeenCalled(); // nothing loaded yet: pausing would only cause "no list was loaded"
+});
+
+test('a loaded but silent first start is paused, then played again', async () => {
+  const h = setup({ states: Array(11).fill({ paused: true, position: 0 }) });
+  await h.port.play('spotify:track:x', 0);
   expect(h.sdk.pause).toHaveBeenCalled();
+  expect(h.api.play).toHaveBeenCalledTimes(2);
+});
+
+test('pause and seek with nothing loaded in the browser player do nothing (no "no list was loaded" error)', async () => {
+  const h = setup({ states: [null] });
+  await h.port.pause();
+  await h.port.seek(1000);
+  await h.port.resume();
+  expect(h.sdk.pause).not.toHaveBeenCalled();
+  expect(h.sdk.seek).not.toHaveBeenCalled();
+  expect(h.sdk.resume).not.toHaveBeenCalled();
+  expect(h.api.resume).toHaveBeenCalledWith('dev1');
 });
 
 test('a start that is really playing is not retried', async () => {

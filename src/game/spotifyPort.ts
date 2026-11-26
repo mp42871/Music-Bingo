@@ -36,6 +36,8 @@ export function createSpotifyPort(d: SpotifyPortDeps): PlaybackPort {
     return false;
   };
 
+  const loaded = async (player: Spotify.Player) => !!(await player.getCurrentState().catch(() => null));
+
   return {
     prime() {
       // Must run inside the click/keypress: lets the browser play the in-browser player's audio.
@@ -46,7 +48,9 @@ export function createSpotifyPort(d: SpotifyPortDeps): PlaybackPort {
         await d.api().play(dev(), uri, pos);
         const player = d.browserPlayer();
         if (player && !(await reallyPlaying(player))) {
-          await player.pause().catch(() => {});
+          // Only pause a song the player actually has: with nothing loaded the player complains
+          // ("no list was loaded") even though nothing is wrong.
+          if (await loaded(player)) await player.pause().catch(() => {});
           await d.api().play(dev(), uri, pos);
         }
       } catch (e) {
@@ -58,9 +62,10 @@ export function createSpotifyPort(d: SpotifyPortDeps): PlaybackPort {
         throw e;
       }
     },
-    async pause() { const p = d.browserPlayer(); if (p) await p.pause(); else await d.api().pause(dev()); },
-    async resume() { const p = d.browserPlayer(); if (p) await p.resume(); else await d.api().resume(dev()); },
-    async seek(ms) { const p = d.browserPlayer(); if (p) await p.seek(Math.max(0, Math.round(ms))); else await d.api().seek(dev(), ms); },
+    // With nothing loaded in the in-browser player there is nothing to pause or seek.
+    async pause() { const p = d.browserPlayer(); if (p) { if (await loaded(p)) await p.pause(); } else await d.api().pause(dev()); },
+    async resume() { const p = d.browserPlayer(); if (p && (await loaded(p))) await p.resume(); else await d.api().resume(dev()); },
+    async seek(ms) { const p = d.browserPlayer(); if (p) { if (await loaded(p)) await p.seek(Math.max(0, Math.round(ms))); } else await d.api().seek(dev(), ms); },
     async setVolume(v) {
       const p = d.browserPlayer();
       if (p) await p.setVolume(Math.max(0, Math.min(1, v / 100)));

@@ -28,7 +28,11 @@ export async function loadPlayer(
   player.addListener('initialization_error', ({ message }) => onError(`Player failed to start: ${message}`));
   player.addListener('authentication_error', ({ message }) => onError(`Spotify sign-in problem: ${message}. Reconnect in Settings.`));
   player.addListener('account_error', () => onError('Spotify Premium is required for in-browser playback.'));
-  player.addListener('playback_error', ({ message }) => onError(`Playback error: ${message}`));
+  player.addListener('playback_error', ({ message }) => {
+    // Sent when a command reaches the player before a song is loaded — harmless, the song still starts.
+    if (/no list was loaded/i.test(message)) return;
+    onError(`Playback error: ${message}`);
+  });
   const deviceId = await new Promise<string>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('The Spotify player did not respond. Try again or pick another device.')), 15000);
     player.addListener('ready', ({ device_id }) => { clearTimeout(timer); resolve(device_id); });
