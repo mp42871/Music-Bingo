@@ -16,6 +16,7 @@ import { ReconnectNote } from './Settings';
 import { NumberInput } from '../components/NumberInput';
 import { PatternPicker } from '../components/PatternPicker';
 import { Readiness } from '../components/Readiness';
+import { QuickGame } from '../components/QuickGame';
 import { listAudio } from '../../db/audio';
 import { useOnline } from '../../app/online';
 
@@ -32,6 +33,7 @@ export default function Home() {
   const [clip, setClip] = useState<ClipSettings>(DEFAULT_CLIP);
   const [showClip, setShowClip] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [quick, setQuick] = useState(false);
   const [fileIds, setFileIds] = useState<Set<string>>(new Set());
   const online = useOnline();
   const [liveSongs, setLiveSongs] = useState<Song[] | undefined>();
@@ -81,6 +83,8 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-20 -top-28 size-96 rounded-full" style={{ background: 'repeating-radial-gradient(circle, #1a1238 0 3px, #120b2a 3px 6px)', boxShadow: '0 0 120px -20px var(--color-deck-b)' }} />
         <h1 className="relative font-display text-5xl leading-none md:text-7xl"><span className="text-deck-a glow-a">Drop</span><br /><span className="text-deck-b glow-b">the beat.</span></h1>
         <p className="relative mt-4 max-w-md text-lg text-dim">Build a playlist, print the cards, and run the game from one screen.</p>
+        <button type="button" className="btn btn-b relative mt-6 px-5 py-2.5 text-lg" onClick={() => setQuick(true)}>⚡ Quick game</button>
+        <p className="relative mt-1 text-sm text-dim">Crowd request? Pick a theme or artist and play in under a minute.</p>
         <div className="relative mt-6 flex flex-wrap gap-2 text-sm">
           <Link to="/pools" className="chip">1 · Make a playlist</Link>
           <Link to="/designer" className="chip">2 · Print cards</Link>
@@ -158,6 +162,7 @@ export default function Home() {
           </div>
         )}
       </section>
+      {quick && <QuickGame onClose={() => setQuick(false)} />}
     </main>
   );
 }

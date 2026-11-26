@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { QuickGame } from '../components/QuickGame';
 import { liveWinners } from '../../core/check';
 import { patternName } from '../../core/patterns';
 import { currentRound, hybridPort, roundMasks, useGame } from '../../game/store';
@@ -26,13 +27,20 @@ export default function Console() {
   const [roundDlg, setRoundDlg] = useState(false);
   const [checking, setChecking] = useState<number | null | 'open'>(null);
   const [settingsOpen, setSettingsOpen] = useState(true);
+  const [params] = useSearchParams();
+  const fresh = params.get('new') === '1';
+  const [quick, setQuick] = useState(false);
   const [fileIds, setFileIds] = useState<Set<string>>(new Set());
   const online = useOnline();
   useEffect(() => { listAudio().then((fs) => setFileIds(new Set(fs.map((f) => f.id)))).catch(() => {}); }, []);
 
   useEffect(() => {
     let alive = true;
-    useGame.getState().load(gameId!).then((ok) => alive && !ok && setMissing(true));
+    useGame.getState().load(gameId!).then((ok) => {
+      if (!alive) return;
+      if (!ok) return setMissing(true);
+      if (fresh) useGame.getState().setShowQr(true); // quick game: phone cards straight away
+    });
     return () => {
       alive = false;
       // Save, stop the music and drop this controller — but only if a newer console hasn't loaded one already.
@@ -97,8 +105,15 @@ export default function Console() {
         <h1 className="mr-auto font-display text-2xl md:text-3xl">{game.name}</h1>
         {g.makePort === hybridPort && <DevicePicker onError={(m) => useGame.setState((s) => ({ errors: [...s.errors.slice(-3), m] }))} />}
         <button type="button" className="btn" onClick={() => window.open(`${window.location.pathname}#/audience`, 'mb-audience', 'width=1280,height=720')}>Open screen for players</button>
+        <button type="button" className="btn" onClick={() => { if (cs.phase === 'playing' || cs.phase === 'gap') void ctrl.togglePause(); setQuick(true); }}>⚡ Quick game</button>
         <button type="button" className="btn btn-b" onClick={() => openCheck('open')}>Check a card</button>
       </div>
+      {fresh && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-ok/40 bg-ok/10 px-4 py-3">
+          <p className="flex-1">Cards are ready. Phone-card QR is on the players’ screen — or print a stack.</p>
+          <a href={`#/print/${game.cardSetId}`} target="_blank" rel="noreferrer" className="btn btn-a">Print cards</a>
+        </div>
+      )}
 
       {g.errors.length > 0 && (
         <div className="mb-4 grid gap-2" role="alert">
@@ -167,6 +182,7 @@ export default function Console() {
             nav(`/history?game=${game.id}`);
           }} />
       )}
+      {quick && <QuickGame onClose={() => setQuick(false)} />}
       {checking !== null && <ClaimPanel initial={checking === 'open' ? null : checking} onClose={() => setChecking(null)} />}
     </main>
   );

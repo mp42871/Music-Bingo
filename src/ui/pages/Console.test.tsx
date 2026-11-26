@@ -162,3 +162,13 @@ test('ending the game finishes it and leaves even while the Drive backup is stil
   await waitFor(async () => expect((await repo.getGame('g1'))!.status).toBe('finished'));
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Next round' })).toBeNull());
 });
+
+test('a quick game opens with the phone QR on and a print link ready', async () => {
+  const { set } = generateCardSet(pool, layout(), { seed: 1, count: 10, startNumber: 1 });
+  await repo.saveCardSet({ ...set, id: 'cs' });
+  await repo.saveGame({ id: 'gq', name: 'Quick', createdAt: 1, pool, cardSetId: 'cs', settings: { ...DEFAULT_CLIP, startMode: 'beginning', fadeSec: 0 }, callOrder: pool.songs.map((s) => s.id), calls: [], rounds: [{ patternId: 'line', winners: [], startCall: 0 }], status: 'setup' });
+  useGame.setState({ makePort: () => ({ play: vi.fn(async () => {}), pause: vi.fn(async () => {}), resume: vi.fn(async () => {}), seek: vi.fn(async () => {}), setVolume: vi.fn(async () => {}) }) });
+  render(<MemoryRouter initialEntries={['/console/gq?new=1']}><Routes><Route path="/console/:gameId" element={<Console />} /></Routes></MemoryRouter>);
+  expect(await screen.findByRole('link', { name: 'Print cards' })).toHaveAttribute('target', '_blank');
+  await waitFor(() => expect(useGame.getState().showQr).toBe(true));
+});

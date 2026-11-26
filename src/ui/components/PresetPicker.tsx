@@ -17,7 +17,7 @@ export function PresetPicker({ mode, selected = [], onPick, disabled }: {
       </div>
       <div className="flex flex-wrap gap-1.5">
         {PRESETS.filter((p) => p.group === group).map((p) => mode === 'pick' ? (
-          <button key={p.id} type="button" className="chip hover:border-deck-a" disabled={disabled} onClick={() => onPick(p)}
+          <button key={p.id} type="button" className={`chip hover:border-deck-a ${selected.includes(p.id) ? 'border-deck-b text-deck-b' : ''}`} aria-pressed={selected.length ? selected.includes(p.id) : undefined} disabled={disabled} onClick={() => onPick(p)}
             title={presetSize(p) ? `${presetSize(p)} hand-picked songs` : 'Spotify search'}>{p.name}</button>
         ) : (
           <label key={p.id} className={`chip cursor-pointer ${selected.includes(p.id) ? 'border-deck-b text-deck-b' : ''}`}>
